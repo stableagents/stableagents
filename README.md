@@ -64,5 +64,6 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 ## Desktop Install 
 
 - [Lindy AI](https://lindy.ai)
+- [Boundless.so](https://boundless.so)
 
   
