@@ -11,18 +11,19 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 
 ## Stable Agents
 
-- [Recommended reading](#recommended-reading)
-- [Text](#text)
-- [Code](#code)
-- [Image](#image)
-- [Video](#video)
-- [Audio](#audio)
-- [Other](#other)
-- [Learning resources](#learning-resources)
-- [More lists](#more-lists)
-- [Autonomous agents](#autonomous-agents)
+- [Chidori:A reactive runtime for building durable AI agents](https://github.com/ThousandBirdsInc/chidori.git)
+- [TF-Agents: A reliable, scalable and easy to use TensorFlow library for Contextual Bandits and Reinforcement Learning]    (https://github.com/tensorflow/agents.git)
+
 
 ## Research
+
+- [Dynalang: An AI Agent that Learns a Multimodal World Model](https://www.marktechpost.com/2023/08/07/uc-berkeley-researchers-introduce-dynalang-an-ai-agent-that-learns-a-multimodal-world-model-to-predict-future-text-and-image-representations-and-learns-to-act-from-imagined-model-rollouts/)
+- [25 AI agents together in an RPG town](https://arstechnica.com/information-technology/2023/04/surprising-things-happen-when-you-put-25-ai-agents-together-in-an-rpg-town/)
+
+## Papers to Read
+
+- [TPTU: Task Planning and Tool Usage of Large Language Model-based AI Agents](https://huggingface.co/papers/2308.03427)
+- 
 
 - [Dynalang: An AI Agent that Learns a Multimodal World Model](https://www.marktechpost.com/2023/08/07/uc-berkeley-researchers-introduce-dynalang-an-ai-agent-that-learns-a-multimodal-world-model-to-predict-future-text-and-image-representations-and-learns-to-act-from-imagined-model-rollouts/)
 - [25 AI agents together in an RPG town](https://arstechnica.com/information-technology/2023/04/surprising-things-happen-when-you-put-25-ai-agents-together-in-an-rpg-town/)
