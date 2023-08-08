@@ -38,3 +38,8 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 
 - [Multion AI](https://www.multion.ai)
 - [HyperWrite AI - Personal Assistant](https://hyperwrite.com)
+- [Aomni Agent](https://www.aomni.com)
+- [Toliman AI - Autonomous Research ](https://tolimanai.com/landing)
+- [Fine-Tuner](https://fine-tuner.ai)
+- [Spellpage](https://www.spellpage.com)
+- [Do Anything Machine](https://www.doanythingmachine.com)
