@@ -12,7 +12,7 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 ## Stable Agents
 
 - [Chidori:A reactive runtime for building durable AI agents](https://github.com/ThousandBirdsInc/chidori.git)
-- [TF-Agents: A reliable, scalable and easy to use TensorFlow library](https://github.com/tensorflow/agents.git)
+- [TF-Agents:A reliable,scalable TensorFlow library](https://github.com/tensorflow/agents.git)
 
 
 ## Research
