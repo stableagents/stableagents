@@ -19,13 +19,14 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 
 - [Dynalang: An AI Agent that Learns a Multimodal World Model](https://www.marktechpost.com/2023/08/07/uc-berkeley-researchers-introduce-dynalang-an-ai-agent-that-learns-a-multimodal-world-model-to-predict-future-text-and-image-representations-and-learns-to-act-from-imagined-model-rollouts/)
 - [25 AI agents together in an RPG town](https://arstechnica.com/information-technology/2023/04/surprising-things-happen-when-you-put-25-ai-agents-together-in-an-rpg-town/)
-- [Deepmind/Lab:Customisable 3D platform for AI Agent Research](https://github.com/deepmind/lab.git) 
+- [Deepmind/Lab:Customisable 3D platform for AI Agent Research](https://github.com/deepmind/lab.git)
 
 ## Papers to Read
 
 - [TPTU: Task Planning and Tool Usage of Large Language Model-based AI Agents](https://huggingface.co/papers/2308.03427)
 - [Dynalang: An AI Agent that Learns a Multimodal World Model](https://www.marktechpost.com/2023/08/07/uc-berkeley-researchers-introduce-dynalang-an-ai-agent-that-learns-a-multimodal-world-model-to-predict-future-text-and-image-representations-and-learns-to-act-from-imagined-model-rollouts/)
 - [25 AI agents together in an RPG town](https://arstechnica.com/information-technology/2023/04/surprising-things-happen-when-you-put-25-ai-agents-together-in-an-rpg-town/)
+- [Yeager.ai x LangChain: Exploring GenWorlds a Framework for Coordinating AI Agents](https://blog.langchain.dev/exploring-genworlds/)
 
 ## Autonomous agents
 
