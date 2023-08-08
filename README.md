@@ -9,11 +9,19 @@ Agents are growing in popularity and while they do it's important to have a clea
 
 Contributions to this list are welcome. Before submitting your suggestions, please review the [Contribution Guidelines](CONTRIBUTING.md) to ensure your entries meet the criteria. Add links through [pull requests](https://github.com/plowsai/stableagents/pulls) or create an [issue](https://github.com/plowsai/stableagents/issues) to start a discussion.
 
-## Stable Agents
 
-- [Chidori:A reactive runtime for building durable AI agents](https://github.com/ThousandBirdsInc/chidori.git)
-- [TF-Agents:A reliable,scalable TensorFlow library](https://github.com/tensorflow/agents.git)
+## MutliTasking Agents
 
+- [ ] Purchase and then summarize a book from Amazon.com
+- [ ] Donate to a twitch streamer
+- [ ] Shop for house and accurately find one baesd on my description
+- [ ] Create a Spotify Playlist 
+
+## SingleTasking Agents 
+
+- [X] Order on Doordash
+- [X] Send a Tweet
+- [X] Open a Youtube Video
 
 ## Research
 
@@ -28,7 +36,12 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 - [25 AI agents together in an RPG town](https://arstechnica.com/information-technology/2023/04/surprising-things-happen-when-you-put-25-ai-agents-together-in-an-rpg-town/)
 - [Yeager.ai x LangChain: Exploring GenWorlds a Framework for Coordinating AI Agents](https://blog.langchain.dev/exploring-genworlds/)
 
-## Autonomous agents
+## Agents (repos)
+
+- [Chidori:A reactive runtime for building durable AI agents](https://github.com/ThousandBirdsInc/chidori.git)
+- [TF-Agents:A reliable,scalable TensorFlow library](https://github.com/tensorflow/agents.git)
+
+## Autonomous agents (repos)
 
 - [Auto-GPT](https://github.com/Torantulino/Auto-GPT) - An experimental open-source attempt to make GPT-4 fully autonomous.
 - [babyagi](https://github.com/yoheinakajima/babyagi) - An AI-powered task management system.
