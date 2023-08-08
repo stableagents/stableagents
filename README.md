@@ -10,18 +10,20 @@ Agents are growing in popularity and while they do it's important to have a clea
 Contributions to this list are welcome. Before submitting your suggestions, please review the [Contribution Guidelines](CONTRIBUTING.md) to ensure your entries meet the criteria. Add links through [pull requests](https://github.com/plowsai/stableagents/pulls) or create an [issue](https://github.com/plowsai/stableagents/issues) to start a discussion.
 
 
-## MutliTasking Agents
+## Mutli-Tasking Agents
 
 - [ ] Purchase and then summarize a book from Amazon.com
 - [ ] Donate to a twitch streamer
 - [ ] Shop for house and accurately find one baesd on my description
 - [ ] Create a Spotify Playlist 
 
-## SingleTasking Agents 
+## Single-Tasking Agents 
 
 - [X] Order on Doordash
 - [X] Send a Tweet
 - [X] Open a Youtube Video
+- [ ] Run Payroll
+- [ ] Adjust a time on my calendar and send a "I'm running late" email
 
 ## Research
 
@@ -49,7 +51,7 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 - [AgentGPT](https://github.com/reworkd/AgentGPT) - Assemble, configure, and deploy autonomous AI Agents in your browser.
 - [GPT Engineer](https://github.com/AntonOsika/gpt-engineer) - Specify what you want it to build, the AI asks for clarification, and then builds it.
 
-## Downloads
+## Browser Installs
 
 - [Multion AI](https://www.multion.ai)
 - [HyperWrite AI - Personal Assistant](https://hyperwrite.com)
@@ -58,3 +60,9 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 - [Fine-Tuner](https://fine-tuner.ai)
 - [Spellpage](https://www.spellpage.com)
 - [Do Anything Machine](https://www.doanythingmachine.com)
+
+## Desktop Install 
+
+- [Lindy AI](https://lindy.ai)
+
+  
