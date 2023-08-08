@@ -27,9 +27,3 @@ A project may be included in the [Main List](https://github.com/steven2358/aweso
 Please make sure that your suggested project meets at least one of these criteria before [submitting](https://github.com/steven2358/awesome-generative-ai/pulls) it for inclusion in the Main List.
 
 ⚠️ If your project does not fulfill any of these criteria, it will be added to the Discoveries list. If your project fails to meet the quality standards, the pull request will be respectfully rejected.
-
-## Inclusion in the Discoveries List
-
-The [Discoveries list](DISCOVERIES.md) is a special showcase for the community, celebrating a wide range of fascinating Generative AI projects. It provides a platform to feature projects that may not meet the inclusion criteria for the main list but are still valuable, unique, or innovative contributions to the field.
-
-The Discoveries list is an inclusive and vibrant collection of projects that demonstrate the diversity and creativity within the Generative AI community. If you have a project, service, or resource related to Generative AI that you would like to share, feel free to submit it through a [pull request](https://github.com/steven2358/awesome-generative-ai/pulls).
