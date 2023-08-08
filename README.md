@@ -9,7 +9,7 @@ Agents are growing in popularity and while they do it's important to have a clea
 
 Contributions to this list are welcome. Before submitting your suggestions, please review the [Contribution Guidelines](CONTRIBUTING.md) to ensure your entries meet the criteria. Add links through [pull requests](https://github.com/plowsai/stableagents/pulls) or create an [issue](https://github.com/plowsai/stableagents/issues) to start a discussion.
 
-## Agents 
+## Stable Agents
 
 - [Recommended reading](#recommended-reading)
 - [Text](#text)
@@ -21,6 +21,11 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 - [Learning resources](#learning-resources)
 - [More lists](#more-lists)
 - [Autonomous agents](#autonomous-agents)
+
+
+## Research
+
+- [Dynalang](https://www.marktechpost.com/2023/08/07/uc-berkeley-researchers-introduce-dynalang-an-ai-agent-that-learns-a-multimodal-world-model-to-predict-future-text-and-image-representations-and-learns-to-act-from-imagined-model-rollouts/)
 
 ## Autonomous agents
 
