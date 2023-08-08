@@ -3,31 +3,6 @@
     <i>A collective list of Stable Agents</i>
 </div>
 
-<br />
-
-<div align="center">
-    <sup>Status</sup>
-    <br />
-    <a href="https://github.com/public-apis/public-apis#index">
-        <img alt="Number of Categories" src="https://img.shields.io/badge/dynamic/json?url=https://api.publicapis.org/categories&label=Number%20of%20Categories&query=$.count&color=informational" />
-    </a>
-    <a href="https://github.com/public-apis/public-apis">
-        <img alt="Number of APIs" src="https://img.shields.io/badge/dynamic/json?url=https://api.publicapis.org/entries&label=Number%20of%20APIs&query=$.count&color=informational" />
-    </a>
-    <br />
-    <a href="https://github.com/public-apis/public-apis/actions/workflows/test_of_push_and_pull.yml">
-        <img alt="Tests of push and pull" src="https://github.com/public-apis/public-apis/actions/workflows/test_of_push_and_pull.yml/badge.svg" />
-    </a>
-    <a href="https://github.com/public-apis/public-apis/actions/workflows/validate_links.yml">
-        <img alt="Validate links" src="https://github.com/public-apis/public-apis/actions/workflows/validate_links.yml/badge.svg" />
-    </a>
-    <a href="https://github.com/public-apis/public-apis/actions/workflows/test_of_validate_package.yml">
-        <img alt="Tests of validate package" src="https://github.com/public-apis/public-apis/actions/workflows/test_of_validate_package.yml/badge.svg" />
-    </a>
-</div>
-
-<br />
-
 > A curated list of modern Generative Artificial Intelligence projects and services.
 
 Generative Artificial Intelligence is a technology that creates original content such as images, sounds, and texts by using machine learning algorithms that are trained on large amounts of data. Unlike other forms of AI, it is capable of creating unique and previously unseen outputs such as photorealistic images, digital art, music, and writing. These outputs often have their own unique style and can even be hard to distinguish from human-created works. Generative AI has a wide range of applications in fields such as of art, entertainment, marketing, academia, and computer science.
