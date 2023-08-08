@@ -14,8 +14,8 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 
 - [ ] Purchase and then summarize a book from Amazon.com
 - [ ] Donate to a twitch streamer
-- [ ] Shop for house and accurately find one baesd on my description
-- [ ] Create a Spotify Playlist 
+- [X] Shop for house and accurately find one baesd on my description
+- [X] Create a Spotify Playlist
 
 ## Single-Tasking Agents 
 
