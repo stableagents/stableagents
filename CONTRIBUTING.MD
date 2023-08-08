@@ -16,14 +16,3 @@ All projects should follow these quality standards:
 - Actively maintained (even if that simply means addressing open issues).
 - Well-documented.
 
-## Inclusion criteria for the Main List
-
-A project may be included in the [Main List](https://github.com/steven2358/awesome-generative-ai/blob/main/README.md) if it fulfills at least one of the following criteria:
-
-1. **High general interest and significant Twitter followers**: The project should generate considerable interest and have a substantial number of Twitter followers (at least 1,000). This demonstrates the project's popularity, wide recognition, and potential value to a large audience.
-
-2. **Personally interesting to the maintainer**: The project should be of particular interest to the maintainer of this Awesome list. This may include innovative approaches, niche applications, or projects that showcase unique capabilities in the realm of generative AI.
-
-Please make sure that your suggested project meets at least one of these criteria before [submitting](https://github.com/steven2358/awesome-generative-ai/pulls) it for inclusion in the Main List.
-
-⚠️ If your project does not fulfill any of these criteria, it will be added to the Discoveries list. If your project fails to meet the quality standards, the pull request will be respectfully rejected.
