@@ -22,10 +22,10 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 - [More lists](#more-lists)
 - [Autonomous agents](#autonomous-agents)
 
-
 ## Research
 
 - [Dynalang: An AI Agent that Learns a Multimodal World Model](https://www.marktechpost.com/2023/08/07/uc-berkeley-researchers-introduce-dynalang-an-ai-agent-that-learns-a-multimodal-world-model-to-predict-future-text-and-image-representations-and-learns-to-act-from-imagined-model-rollouts/)
+- [25 AI agents together in an RPG town](https://arstechnica.com/information-technology/2023/04/surprising-things-happen-when-you-put-25-ai-agents-together-in-an-rpg-town/)
 
 ## Autonomous agents
 
@@ -34,3 +34,7 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 - [AgentGPT](https://github.com/reworkd/AgentGPT) - Assemble, configure, and deploy autonomous AI Agents in your browser.
 - [GPT Engineer](https://github.com/AntonOsika/gpt-engineer) - Specify what you want it to build, the AI asks for clarification, and then builds it.
 
+## Downloads
+
+- [Multion AI](https://www.multion.ai)
+- [HyperWrite AI - Personal Assistant](https://hyperwrite.com)
