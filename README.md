@@ -25,7 +25,7 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 
 ## Research
 
-- [Dynalang](https://www.marktechpost.com/2023/08/07/uc-berkeley-researchers-introduce-dynalang-an-ai-agent-that-learns-a-multimodal-world-model-to-predict-future-text-and-image-representations-and-learns-to-act-from-imagined-model-rollouts/)
+- [Dynalang: An AI Agent that Learns a Multimodal World Model](https://www.marktechpost.com/2023/08/07/uc-berkeley-researchers-introduce-dynalang-an-ai-agent-that-learns-a-multimodal-world-model-to-predict-future-text-and-image-representations-and-learns-to-act-from-imagined-model-rollouts/)
 
 ## Autonomous agents
 
