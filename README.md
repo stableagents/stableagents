@@ -54,6 +54,7 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 - [SlashGPT](https://github.com/snakajima/SlashGPT.git) - The Uncle of BabyAGI
 - [AgentGPT](https://github.com/reworkd/AgentGPT) - Assemble, configure, and deploy autonomous AI Agents in your browser.
 - [GPT Engineer](https://github.com/AntonOsika/gpt-engineer) - Specify what you want it to build, the AI asks for clarification, and then builds it.
+- [smol developer](https://github.com/smol-ai/developer) - the first library to let you embed a developer agent in your own app!
 
 ## Browser Installs
 
