@@ -1,26 +1,37 @@
 import openai
 import subprocess
+import time
 
-openai.api_key = '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'
+openai.api_key = ''
 
-def execute_command(command):
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "system", "content": command}]
-    )
-    return completion['choices'][0]['message']['content'].strip()
-
+def control_volume(volume_change):
     script = f'''
-    osascript -e 'set volume output volume (output volume of (get volume settings) - 10)'
+    osascript -e 'set volume output volume (output volume of (get volume settings) {volume_change})'
     '''
+    print(f"Executing AppleScript command: {script}")
     result = subprocess.getoutput(script)
     return result
+
+def execute_command(command):
+    if command.lower() == "turn down the volume":
+        result = control_volume("- 10")
+        print(result)
+        time.sleep(3)  # Wait for 3 seconds
+    else:
+        completion = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "system", "content": command}]
+        )
+        response = completion['choices'][0]['message']['content'].strip()
+        if "action can not be completed" in response:
+            print("Action can not be completed, try again later")
+        else:
+            print(response)
 
 def main():
     while True:
         command = input("Enter a command: ")
-        result = execute_command(command)
-        print(result)
+        execute_command(command)
         follow_up = input("Do you have another command? (yes/no): ")
         if follow_up.lower() != "yes":
             break
