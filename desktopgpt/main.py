@@ -1,10 +1,11 @@
 import openai
 import subprocess
 import time
-from notes import * 
-from browser import * 
+from apps.notes import * 
+from apps.browser import * 
 
-openai.api_key = ''
+
+openai.api_key = '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'
 
 def control_volume(volume_change):
     script = f'''
@@ -19,6 +20,8 @@ def execute_command(command):
         result = control_volume("- 10")
         print(result)
         time.sleep(3)  # Wait for 3 seconds
+    elif command.lower() == "open browser":
+        browser.open_browser()
     else:
         completion = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
