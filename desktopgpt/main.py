@@ -1,6 +1,8 @@
 import openai
 import subprocess
 import time
+from notes import * 
+from browser import * 
 
 openai.api_key = ''
 
