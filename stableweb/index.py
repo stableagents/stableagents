@@ -4,4 +4,3 @@ import json
 
 class Web():
     pass
-
