@@ -1,15 +1,8 @@
-
 cff-version: 1.2.0
-message: If you use this software, please cite it using these metadata.
-title: Stable Agents
-abstract: A repo to deploy LLM agents in production.
+message: "If you use this software, please cite it as below."
 authors:
-  - family-names: Plows 
-    given-names: Jordan
-  - name: "Stable Agents"
-version: 0.11.2
-date-released: "2024-03-21"
-identifiers:
-  - description: This is a production repo to that aspires to deploy agents with minimal halluctions
-license: Apache-2.0
-repository-code: "https://github.com/light-hq/stableagents
+- family-names: "Plows"
+  given-names: "Jordan"
+title: "Stable Agents"
+date-released: 2024-03-21
+url: "https://github.com/light-hq/stableagents"
