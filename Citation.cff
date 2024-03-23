@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Plows"
+  given-names: "Jordan"
+title: "stableagents"
+version: 1.0.0
+date-released: 2024-03-23
+url: "https://github.com/stableagents/stableagents"
