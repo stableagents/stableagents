@@ -19,7 +19,7 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 - [X] Create a Spotify Playlist
 - [ ] Opening Google Docs and drafting that CBER/CDRH jurisdictional clarification letter I’ve been dragging my feet on sending to FDA.
 - [ ] Reading the fact that there are a bunch of job offers to go out off of my Asana inbox, and opening tabs with the DocuSign offers I need to sign.
-- [ ] Generating a pull request to fix some bugs or maybe pick off an Asana task in one of the web app projects.
+- [X] Generating a pull request to fix some bugs or maybe pick off an Asana task in one of the web app projects <a href="https://codegen.com"> See Codegen </a>.
 
 ## Single-Tasking Agents 
 
