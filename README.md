@@ -1,6 +1,6 @@
 <div align="center">
     <h1>Stable Agents</h1>
-    <i>A collective list of Stable Agents</i>
+    <i>A collective list of Agents</i>
 </div>
 <br/>
 <br
@@ -10,11 +10,21 @@ Agents are growing in popularity and while they do it's important to have a clea
 Contributions to this list are welcome. Before submitting your suggestions, please review the [Contribution Guidelines](CONTRIBUTING.md) to ensure your entries meet the criteria. Add links through [pull requests](https://github.com/plowsai/stableagents/pulls) or create an [issue](https://github.com/plowsai/stableagents/issues) to start a discussion.
 
 
+## Stable Agents List [⚠️ Coming Soon]
+<p> This is a list of agents that can reliable do the same task over and over again </p>
+
+
 ## Agents
 
 - [Mind2Web Generalist Web Browsing Agent](https://github.com/OSU-NLP-Group/Mind2Web)
 - [HyperWrite Personal Assistant](https://www.hyperwriteai.com/personal-assistant)
 - [Agent Ops](https://www.agentops.ai)
+- [Agent Hub](https://agenthub.dev)
+- [Super Agent](https://superagent.sh)
+- [Lutra AI](https://lutra.ai)
+- [Nexus GPT](https://gpt.nexus)
+- [AutoGen](https://microsoft.github.io/autogen/)
+- [Meta GPT](https://deepwisdom.ai)
 
 
 ## Agent Capabilites 
