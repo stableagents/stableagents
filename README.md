@@ -10,24 +10,28 @@ Agents are growing in popularity and while they do it's important to have a clea
 Contributions to this list are welcome. Before submitting your suggestions, please review the [Contribution Guidelines](CONTRIBUTING.md) to ensure your entries meet the criteria. Add links through [pull requests](https://github.com/plowsai/stableagents/pulls) or create an [issue](https://github.com/plowsai/stableagents/issues) to start a discussion.
 
 
-## Mutli-Tasking Agents
+## Agents
 
-- [ ] Purchase and then summarize a book from Amazon.com
-- [ ] Donate to a twitch streamer
-- [ ] Updating an expired discord link for my webapp, copy and pasting the new link to my codebase on github and redeploy my webapp
+- [Mind2Web Generalist Web Browsing Agent](https://github.com/OSU-NLP-Group/Mind2Web)
+- [HyperWrite Personal Assistant](https://www.hyperwriteai.com/personal-assistant)
+- [Agent Ops](https://www.agentops.ai)
+
+
+## Agent Capabilites 
+
+- [?] Purchase and then summarize a book from Amazon.com
+- [?] Donate to a twitch streamer
+- [?] Updating an expired discord link for my webapp, copy and pasting the new link to my codebase on github and redeploy my webapp
 - [X] Shop for house and accurately find one baesd on my description
 - [X] Create a Spotify Playlist
-- [ ] Opening Google Docs and drafting that CBER/CDRH jurisdictional clarification letter I’ve been dragging my feet on sending to FDA.
-- [ ] Reading the fact that there are a bunch of job offers to go out off of my Asana inbox, and opening tabs with the DocuSign offers I need to sign.
+- [?] Opening Google Docs and drafting that CBER/CDRH jurisdictional clarification letter I’ve been dragging my feet on sending to FDA.
+- [X] Reading the fact that there are a bunch of job offers to go out off of my Asana inbox, and opening tabs with the DocuSign offers I need to sign.
 - [X] Generating a pull request to fix some bugs or maybe pick off an Asana task in one of the web app projects <a href="https://codegen.com"> See Codegen </a>.
-
-## Single-Tasking Agents 
-
 - [X] Order on Doordash
 - [X] Send a Tweet
 - [X] Open a Youtube Video
-- [ ] Run Payroll
-- [ ] Adjust a time on my calendar and send a "I'm running late" email
+- [X] Run Payroll
+- [X] Adjust a time on my calendar and send a "I'm running late" email
 
 ## Research
 
