@@ -14,7 +14,7 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 <p> This is a list of agents that can reliable do the same task over and over again </p>
 
 
-## Agents
+## Existing Agents
 
 - [Mind2Web Generalist Web Browsing Agent](https://github.com/OSU-NLP-Group/Mind2Web)
 - [HyperWrite Personal Assistant](https://www.hyperwriteai.com/personal-assistant)
@@ -27,7 +27,7 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 - [Meta GPT](https://deepwisdom.ai)
 
 
-## Agent Capabilites 
+## Agent Capabilites (w/o SA)
 
 - [?] Purchase and then summarize a book from Amazon.com
 - [?] Donate to a twitch streamer
@@ -43,39 +43,3 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 - [X] Run Payroll
 - [X] Adjust a time on my calendar and send a "I'm running late" email
 
-## Research
-
-- [Dynalang: An AI Agent that Learns a Multimodal World Model](https://www.marktechpost.com/2023/08/07/uc-berkeley-researchers-introduce-dynalang-an-ai-agent-that-learns-a-multimodal-world-model-to-predict-future-text-and-image-representations-and-learns-to-act-from-imagined-model-rollouts/)
-- [25 AI agents together in an RPG town](https://arstechnica.com/information-technology/2023/04/surprising-things-happen-when-you-put-25-ai-agents-together-in-an-rpg-town/)
-- [Deepmind/Lab:Customisable 3D platform for AI Agent Research](https://github.com/deepmind/lab.git)
-
-## Papers to Read
-
-- [TPTU: Task Planning and Tool Usage of Large Language Model-based AI Agents](https://huggingface.co/papers/2308.03427)
-- [Dynalang: An AI Agent that Learns a Multimodal World Model](https://www.marktechpost.com/2023/08/07/uc-berkeley-researchers-introduce-dynalang-an-ai-agent-that-learns-a-multimodal-world-model-to-predict-future-text-and-image-representations-and-learns-to-act-from-imagined-model-rollouts/)
-- [25 AI agents together in an RPG town](https://arstechnica.com/information-technology/2023/04/surprising-things-happen-when-you-put-25-ai-agents-together-in-an-rpg-town/)
-- [Yeager.ai x LangChain: Exploring GenWorlds a Framework for Coordinating AI Agents](https://blog.langchain.dev/exploring-genworlds/)
-
-## Agents (repos)
-
-- [Chidori:A reactive runtime for building durable AI agents](https://github.com/ThousandBirdsInc/chidori.git)
-- [TF-Agents:A reliable,scalable TensorFlow library](https://github.com/tensorflow/agents.git)
-
-## Autonomous agents (repos)
-
-- [Auto-GPT](https://github.com/Torantulino/Auto-GPT) - An experimental open-source attempt to make GPT-4 fully autonomous.
-- [babyagi](https://github.com/yoheinakajima/babyagi) - An AI-powered task management system.
-- [SlashGPT](https://github.com/snakajima/SlashGPT.git) - The Uncle of BabyAGI
-- [AgentGPT](https://github.com/reworkd/AgentGPT) - Assemble, configure, and deploy autonomous AI Agents in your browser.
-- [GPT Engineer](https://github.com/AntonOsika/gpt-engineer) - Specify what you want it to build, the AI asks for clarification, and then builds it.
-- [smol developer](https://github.com/smol-ai/developer) - the first library to let you embed a developer agent in your own app!
-
-## Browser Installs
-
-- [Multion AI](https://www.multion.ai)
-- [HyperWrite AI - Personal Assistant](https://hyperwrite.com)
-- [Aomni Agent](https://www.aomni.com)
-- [Toliman AI - Autonomous Research ](https://tolimanai.com/landing)
-- [Fine-Tuner](https://fine-tuner.ai)
-- [Spellpage](https://www.spellpage.com)
-- [Do Anything Machine](https://www.doanythingmachine.com)
