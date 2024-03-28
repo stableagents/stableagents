@@ -10,8 +10,8 @@ Agents are growing in popularity and while they do it's important to have a clea
 Contributions to this list are welcome. Before submitting your suggestions, please review the [Contribution Guidelines](CONTRIBUTING.md) to ensure your entries meet the criteria. Add links through [pull requests](https://github.com/plowsai/stableagents/pulls) or create an [issue](https://github.com/plowsai/stableagents/issues) to start a discussion.
 
 
-## Stable Agents List [⚠️ Coming Soon]
-<p> This is a list of agents that can reliable do the same task over and over again </p>
+## Stable Agents
+<p> Stable Agents are agents which are highly capable at complex reasoning and planning with minimal to no supervision.  </p>
 
 
 ## Existing Agents
