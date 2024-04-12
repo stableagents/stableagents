@@ -13,6 +13,10 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 ## Stable Agents
 <p> Stable Agents are agents which are highly capable at complex reasoning and planning with minimal to no supervision.  </p>
 
+- [X] Autoclick "Skip Intro" on a browser based streaming service without having to click it 
+
+- [ ] Create a routine for tasks to be completed autoregressively
+s
 
 ## Existing Agents
 
