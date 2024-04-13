@@ -1,6 +1,6 @@
 <div align="center">
     <h1>Stable Agents [WIP🚧]</h1>
-    <i>A collective list of Agents</i>
+    <!-- <i>A collective list of Agents</i> -->
 </div>
 <br/>
 <br
@@ -16,7 +16,6 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 - [X] Autoclick "Skip Intro" on a browser based streaming service without having to click it 
 
 - [ ] Create a routine for tasks to be completed autoregressively
-s
 
 ## Existing Agents
 
