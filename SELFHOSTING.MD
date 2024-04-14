@@ -14,9 +14,9 @@
 
 - Access to GPU's: <i> Below are a few options </i>
 
- - [Brev AI](https://brev.dev)
- - [Runpod](https://runpod.io)
- - [GPU LIST AI)(https://gpulist.ai)
+  [Brev AI](https://brev.dev)
+  [Runpod](https://runpod.io)
+  [GPU LIST AI](https://gpulist.ai)
 
     
 ## Roadmap
