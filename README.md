@@ -21,7 +21,7 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 
 <p> Organizations will be interested in powering everything with an LLM and to make this possible we will allow organizations that apply to use Stable Agents to generate revenue. Instead of charging a monthly fee or a yearly contract, we will put a cap on the amount of revenue/value a Stable Agent can add to an organization before revenue share is implemented </p>
 
-<p> If you are one of these companies interested consider joining our [Discord](https://discord.gg/STrYnEDu9U)
+<p> If you are one of these companies interested in revenue sharing, consider joining our [Discord](https://discord.gg/STrYnEDu9U) and type the name of your company in channel <i> #revenue-generating-agnets</i>
 
 ## Stable Agents
 <p> Stable Agents are agents which are highly capable at complex reasoning and planning with minimal to no supervision.  </p>
