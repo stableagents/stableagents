@@ -39,6 +39,8 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 
 - [ ] Init Stable Agents in your terminal to avoid dealing with boilerplate code [ 🚧 Not yet available]
 
+<hr>
+
 ## Existing Agents
 
 - [Mind2Web Generalist Web Browsing Agent](https://github.com/OSU-NLP-Group/Mind2Web)
