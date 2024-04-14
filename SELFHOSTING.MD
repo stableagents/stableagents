@@ -13,12 +13,11 @@
 - Comfortable using EC2 and other AWS Infra
 
 - Access to GPU's: <i> Below are a few options </i>
-        
-         ```[Brev AI](https://brev.dev)```
-         
-         ```[Runpod](https://runpod.io)``` 
-         
-         ```[gpulist.ai](https://gpulist.ai)```
+
+ - [Brev AI](https://brev.dev)
+ - [Runpod](https://runpod.io)
+ - [GPU LIST AI)(https://gpulist.ai)
+
     
 ## Roadmap
 
