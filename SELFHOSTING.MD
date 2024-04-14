@@ -12,11 +12,11 @@
 
 - Comfortable using EC2 and other AWS Infra
 
-- Access to GPU's:
+- Access to GPU's: <i> Below are a few options </i>
         
-        <i> Brev.dev </i>
-        <i> Runpod.io </i>
-        <i> gpulist.ai </ai>
+       ``` Brev.dev 
+         Runpod.io 
+         gpulist.ai ```
     
 ## Roadmap
 
