@@ -14,7 +14,7 @@
 
 - Access to GPU's: <i> Below are a few options </i>
         
-        Brev.dev 
+         Brev.dev 
          Runpod.io 
          gpulist.ai 
     
