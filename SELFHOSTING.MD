@@ -19,7 +19,7 @@
   [GPU LIST AI](https://gpulist.ai)
 
     
-## Roadmap
+## Roadmap for self-hosting
 
 - [ ] Offer paid hosting options for Stable Agents 
 
