@@ -26,11 +26,16 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 ## Stable Agents
 <p> Stable Agents are agents which are highly capable at complex reasoning. Eventually Stable Agents will be able to complete tasks with little to no supervision. Stable Agents will also be able to add LLM capabilites any non-intelligent software</p>
 
+### Media Based Agents
 - [X] Autoclick "Skip Intro" on a browser based streaming service without having to click it 
 
+
+### Productivity Agents
 - [ ] Create a routine for tasks to be completed autoregressively
 
 - [ ] Assign a task you would normally assign or hire for on a platform like UPWORK. <i>We rate the complexity of the task before initiation to set proper expectations, Stable Agents is evovling and can't complete all tasks just yet</i>
+
+### Coding Agents
 
 - [ ] Init Stable Agents in your terminal to avoid dealing with boilerplate code [ 🚧 Not yet available]
 
