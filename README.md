@@ -13,6 +13,16 @@ Agents are growing in popularity and while they do it's important to have a clea
 Contributions to this list are welcome. Before submitting your suggestions, please review the [Contribution Guidelines](CONTRIBUTING.md) to ensure your entries meet the criteria. Add links through [pull requests](https://github.com/plowsai/stableagents/pulls) or create an [issue](https://github.com/plowsai/stableagents/issues) to start a discussion.
 
 
+## Future 
+
+<p> In the future you will be able to hire and employee a Stable Agent for a wide range of tasks. Similar to how companies now use retool to cut time on internal tools, you will use Stable Agents to cut down on the time it takes to complete task without unncessarily hiring. The future billion/trillion dollar companies will be small robust teams, not large organizations</p>
+
+<br>
+
+<p> Organizations will be interested in powering everything with an LLM and to make this possible we will allow organizations that apply to use Stable Agents to generate revenue. Instead of charging a monthly fee or a yearly contract, we will put a cap on the amount of revenue/value a Stable Agent can add to an organization before revenue share is implemented </p>
+
+<p> If you are one of these companies interested consider joining our [Discord](https://discord.gg/STrYnEDu9U)
+
 ## Stable Agents
 <p> Stable Agents are agents which are highly capable at complex reasoning and planning with minimal to no supervision.  </p>
 
