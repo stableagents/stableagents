@@ -32,7 +32,7 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 
 - [ ] Assign a task you would normally assign or hire for on a platform like UPWORK. <i>We rate the complexity of the task before initiation to set proper expectations, Stable Agents is evovling and can't complete all tasks just yet</i>
 
-- [ ]Init Stable Agents in your terminal to avoid dealing with boilerplate code [ 🚧 Not yet available]
+- [ ] Init Stable Agents in your terminal to avoid dealing with boilerplate code [ 🚧 Not yet available]
 
 ## Existing Agents
 
