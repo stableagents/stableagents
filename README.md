@@ -70,3 +70,9 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 - [X] Run Payroll
 - [X] Adjust a time on my calendar and send a "I'm running late" email
 
+
+## License 
+
+<p> If you have any questions regarding the license or using the repo: please email jordan@stableagents.com. The mission is to empower anyone to use Stable Agents, while preventing anyone from making modifications or monetizing the repo for negative gain.</p>
+
+
