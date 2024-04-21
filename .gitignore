@@ -2,6 +2,10 @@
 __pycache__/
 *.py[cod]
 *$py.class
+agents
+agents/
+/agents
+Citation.cff
 
 # C extensions
 *.so
