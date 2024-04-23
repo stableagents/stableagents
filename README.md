@@ -6,9 +6,9 @@
     <a>email:team@stableagents.com</a><i>
 </div>
 <br/>
-<br
 
 ## Install Locally
+
 
 <p> First get an API Token: </p>
 
