@@ -13,7 +13,7 @@
 <p> First get an API Token: </p>
 
 ```
-platform.stableagents.com
+https://platform.stableagents.com
 ```
 <p> Then install: </p>
 
