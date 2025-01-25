@@ -4,8 +4,8 @@
 <!--     <i> Early access to the SLAM-1 model is only available upon request with a paid contract
     <br> -->
 <!--     <a>email:team@stableagents.com</a><i> -->
-</div>
-<br/>
+<!-- </div>
+<br/> -->
 
 ## Install Locally
 
