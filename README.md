@@ -9,13 +9,14 @@
 
 ## Install Locally
 
-
-<p> First get an API Token: </p>
+<!---p> First get an API Token: </p>
 
 ```
 https://platform.stableagents.com
 ```
-<p> Then install: </p>
+<p> Then install: </p-->
+
+<!--p> First get an API Token: </p-->
 
 ```
 pip install stableagents
