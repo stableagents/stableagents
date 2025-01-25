@@ -1,7 +1,5 @@
-# Stable Agents
 
 ## Install Locally
-
 <!---p> First get an API Token: </p>
 
 ```
