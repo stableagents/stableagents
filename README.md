@@ -11,6 +11,10 @@ https://platform.stableagents.com
 
 <!--p> First get an API Token: </p-->
 
+<p> Problem: preventing LLM's from hallucinating is hard </p>
+
+<p> Solution: Predictive Response Routing </p>
+
 ```
 pip install stableagents
 ```
