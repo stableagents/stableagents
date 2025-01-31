@@ -13,7 +13,7 @@ https://platform.stableagents.com
 
 <p> Problem: preventing LLM's from hallucinating is hard </p>
 
-<p> Solution: Predictive Response Routing </p>
+<p> Solution: Next Token Predictive Response Routing </p>
 
 ```
 pip install stableagents
