@@ -10,4 +10,4 @@ async def stableagents ():
 def agentsurfer ():
     pass
 
-print (stableagents)clear
+print (stableagents)
