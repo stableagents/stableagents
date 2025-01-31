@@ -1,3 +1,1 @@
-
-# def class():
-#     pass
+from stableagents import stable_surfer
