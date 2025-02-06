@@ -1,8 +1,13 @@
-# Stable Agents
+# ⚠️ WARNING: UNSTABLE - NOT PRODUCTION READY ⚠️
 
-## Install Locally
+This project is in early experimental stages and is NOT ready for production use. Please be aware:
 
-<!---p> First get an API Token: </p>
+- Features may break or change without notice
+- Security has not been fully tested
+- Performance and reliability are not guaranteed
+- APIs and interfaces are subject to major changes
+- May contain critical bugs and issues
+- No warranty or support provided
 
 ```
 https://platform.stableagents.com
