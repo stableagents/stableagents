@@ -9,20 +9,6 @@ This project is in early experimental stages and is NOT ready for production use
 - May contain critical bugs and issues
 - No warranty or support provided
 
-```
-https://platform.stableagents.com
-```
-<p> Then install: </p-->
-
-<!--p> First get an API Token: </p-->
-
-<p> Problem: preventing LLM's from hallucinating is hard </p>
-
-<p> Solution: Next Token Predictive Response Routing </p>
-
-```
-pip install stableagents
-```
 
 Agents are growing in popularity and while they do it's important to have a clear and comprehensive list of what they can and more important currently can't do. This repo exists to stay up to date with the latest advancements and use cases in AI Agents.
 
