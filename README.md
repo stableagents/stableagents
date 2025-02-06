@@ -1,4 +1,4 @@
-# ⚠️ WARNING: UNSTABLE - NOT PRODUCTION READY ⚠️
+# ⚠️ WARNING: UNSTABLE - NOT PRODUCTION READY
 
 This project is in early experimental stages and is NOT ready for production use. Please be aware:
 
