@@ -1,4 +1,4 @@
-# ⚠️ WARNING: UNSTABLE - NOT PRODUCTION READY
+# Stable Agents - Version 0.0.1
 
 This project is in early experimental stages and is NOT ready for production use. Please be aware:
 
