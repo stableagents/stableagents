@@ -8,7 +8,7 @@ Stable Agents is different than other agent frameworks in that it is the only fr
 
 Here is a code snippet of a Stable Agent in action:
 
-```
+```python
 from stableagents.agent import Agent
 from stableagents.task import Task
 
