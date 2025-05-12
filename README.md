@@ -58,6 +58,7 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 - [Open Interpreter](https://www.openinterpreter.com)
 - [Open AI Operator](https://operator.chatgpt.com)
 - [Artisan AI](https://artisan.co)
+- [Relevance AI](https://relevanceai.com)
 
 ## Agent Capabilites (w/o SA)
 
