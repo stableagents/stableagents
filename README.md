@@ -29,7 +29,7 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 <p> Stable Agents are agents which are highly capable at complex reasoning. Eventually Stable Agents will be able to complete tasks with little to no supervision. Stable Agents will also be able to add LLM capabilites any non-intelligent software</p>
 
 ### Media Based Agents
-- [X] Autoclick "Skip Intro" on a browser based streaming service without having to click it 
+- [X] Autoclick "Skip Intro" on a browser based streaming service without having to click it manually. ** Note this could be handled by a selenium script but the idea is to have a Stable Agent handle it. ** 
 
 
 ### Productivity Agents
@@ -62,7 +62,7 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 
 ## Agent Capabilites (w/o SA)
 
-- [?] Purchase and then summarize a book from Amazon.com
+- [X] Purchase and then summarize a book from Amazon.com
 - [?] Donate to a twitch streamer
 - [?] Updating an expired discord link for my webapp, copy and pasting the new link to my codebase on github and redeploy my webapp
 - [X] Shop for house and accurately find one baesd on my description
@@ -72,13 +72,8 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 - [X] Generating a pull request to fix some bugs or maybe pick off an Asana task in one of the web app projects <a href="https://codegen.com"> See Codegen </a>.
 - [X] Order on Doordash
 - [X] Send a Tweet
-- [X] Open a Youtube Video
-- [X] Run Payroll
-- [X] Adjust a time on my calendar and send a "I'm running late" email
-
-
-## License 
-
-<p> If you have any questions regarding the license or using the repo: please email jordan@stableagents.com. The mission is to empower anyone to use Stable Agents, while preventing anyone from making modifications or monetizing the repo for negative gain.</p>
+- [X] Open a Youtube Video and fast forward to the 10:00 mark
+- [?] Run Payroll
+- [?] Adjust a time on my calendar and send a "I'm running late" email
 
 
