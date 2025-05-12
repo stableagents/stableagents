@@ -54,7 +54,10 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 - [Nexus GPT](https://gpt.nexus)
 - [AutoGen](https://microsoft.github.io/autogen/)
 - [Meta GPT](https://deepwisdom.ai)
-
+- [Manus AI](https://manus.im)
+- [Open Interpreter](https://www.openinterpreter.com)
+- [Open AI Operator](https://operator.chatgpt.com)
+- [Artisan AI](https://artisan.co)
 
 ## Agent Capabilites (w/o SA)
 
