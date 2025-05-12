@@ -17,7 +17,7 @@ task = Task(
     description="Write a blog post about the benefits of using Stable Agents",
     expected_output="A blog post about the benefits of using Stable Agents"
 )
-
+```
 
 
 
