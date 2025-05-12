@@ -11,11 +11,18 @@ Here is a code snippet of a Stable Agent in action:
 ```python
 from stableagents.agent import Agent
 from stableagents.task import Task
+from stableagents.tools import *
+from stableagents.tools.web_search import WebSearch
 
-# Define a task
-task = Task(
-    description="Write a blog post about the benefits of using Stable Agents",
-    expected_output="A blog post about the benefits of using Stable Agents"
+# Define a web search tool
+web_search = WebSearch()
+
+
+# Define an agent
+agent = Agent(
+    name="Stable Agent",
+    tools=[web_search],
+    task=task
 )
 ```
 
