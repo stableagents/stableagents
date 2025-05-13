@@ -1,0 +1,24 @@
+# Stable Agents Changelog
+
+## [0.0.1] - 2024-03-20
+### Added
+- Initial project setup
+- Basic agent framework structure
+- Web search tool implementation
+- Documentation and README
+- List of agent capabilities and limitations
+- Public agent registry
+
+### Planned
+- Revenue sharing model for organizations
+- Enhanced agent learning capabilities
+- Terminal integration for boilerplate code reduction
+- Expanded productivity and media-based agents
+- Improved task complexity rating system
+
+### Known Issues
+- Project is in early experimental stages
+- Features may break or change without notice
+- Security not fully tested
+- Performance and reliability not guaranteed
+- APIs and interfaces subject to major changes
