@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "stableagents"
+version = "0.1.0"
+description = "Stable Agents project"
+authors = ["Your Name"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pydantic = "^2.11.4"
+scapy = "^2.6.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
