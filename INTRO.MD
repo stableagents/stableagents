@@ -1,6 +1,13 @@
 # Stable Agents - Version 0.0.1
 
-Stable Agents is a standard client-side layer for tool discovery, ranking and execution. 
+This project is in early experimental stages and is NOT ready for production use. Please be aware:
+
+- Features may break or change without notice
+- Security has not been fully tested
+- Performance and reliability are not guaranteed
+- APIs and interfaces are subject to major changes
+- May contain critical bugs and issues
+- No warranty or support provided
 
 
 Agents are growing in popularity and while they do it's important to have a clear and comprehensive list of what they can and more important currently can't do. This repo exists to stay up to date with the latest advancements and use cases in AI Agents.
