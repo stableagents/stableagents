@@ -9,7 +9,9 @@ import logging
 
 class StableAgents:
     """
+    
     This is the stable agent libraries
+   
     """
     
     def __init__(self):
