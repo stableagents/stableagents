@@ -1,6 +1,25 @@
 import json 
+import os
+import threading
+import datetime
+import sys
 # from stableagents import * 
 
+
+class StableAgents:
+
+    pass
+
+def local_setup():
+    pass
+
+@property
+def anonymous_telemetry(self) -> bool:
+    return not self.disable_telemetry and not self.offline
+
+@property
+def will_contribute(self):
+    pass
 
 
 def agents():
@@ -34,3 +53,7 @@ def agentstatus():
     return json.dumps(status, indent=2)
 
 print(agentstatus)
+
+
+
+
