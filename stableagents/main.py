@@ -4,6 +4,7 @@ import threading
 import datetime
 import sys
 import logging
+import tensorflow as tf
 # from stableagents import * 
 
 
@@ -28,6 +29,8 @@ class StableAgents:
             "context": {},
             "last_accessed": datetime.datetime.now()
         }
+        # Initialize TensorFlow
+        self.tf_model = None
     
     def reset(self):
         if hasattr(self, 'computer') and self.computer:
@@ -39,6 +42,8 @@ class StableAgents:
         self.memory["short_term"] = []
         self.memory["context"] = {}
         self.memory["last_accessed"] = datetime.datetime.now()
+        # Reset TensorFlow model
+        self.tf_model = None
     
     def display_messages(self, markdown):
         if self.plain_text_display:
