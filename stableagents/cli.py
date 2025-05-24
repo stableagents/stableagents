@@ -3,18 +3,10 @@ import argparse
 import sys
 import logging
 import os
-import importlib.util
 
-# Handle import whether run as a script or as part of package
-try:
-    from stableagents import StableAgents
-except ImportError:
-    # Try relative import
-    try:
-        from .main import StableAgents
-    except ImportError:
-        # Direct import for when running script directly
-        from main import StableAgents
+# Direct import from main.py when running as script
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from stableagents.main import StableAgents
 
 def setup_logging(verbose):
     """Configure logging based on verbosity level"""
