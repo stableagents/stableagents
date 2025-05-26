@@ -4,9 +4,8 @@ import sys
 import logging
 import os
 
-# Direct import from main.py when running as script
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from stableagents.main import StableAgents
+# Import from the package
+from stableagents import StableAgents
 
 def setup_logging(verbose):
     """Configure logging based on verbosity level"""

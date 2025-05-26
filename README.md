@@ -4,64 +4,67 @@ A framework for building stable AI agents.
 
 ## Installation
 
-### Option 1: Install as a package
+### From PyPI
 
 ```bash
-# Install in development mode
-pip install -e .
+pip install stableagents
 ```
 
-After installation, you can use the CLI from anywhere:
+### From Source with Poetry
 
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/stableagents.git
+cd stableagents
+
+# Install with Poetry
+poetry install
+```
+
+## Usage
+
+### As a Command-Line Tool
+
+```bash
+# Interactive mode
 stableagents interactive
-```
 
-### Option 2: Run directly
-
-```bash
-# Make sure script is executable
-chmod +x cli.py
-
-# Run the script
-./cli.py interactive
-```
-
-## CLI Usage
-
-The CLI provides several ways to interact with StableAgents:
-
-### Interactive Mode
-
-```bash
-stableagents interactive
-```
-
-This starts an interactive session where you can type commands:
-
-- `memory.add TYPE KEY VALUE` - Add to memory (TYPE: short_term, long_term, context)
-- `memory.get TYPE [KEY]` - Get from memory
-- `reset` - Reset the agent
-- `help` - Show available commands
-- `exit` or `quit` - Exit the program
-
-### Memory Operations
-
-```bash
-# Add to memory
+# Memory operations
 stableagents memory add short_term test_key "test value"
+stableagents memory get short_term test_key
+```
+
+### As a Python Library
+
+```python
+from stableagents import StableAgents
+
+# Create an agent
+agent = StableAgents()
+
+# Add to memory
+agent.add_to_memory("short_term", "key", "value")
 
 # Get from memory
-stableagents memory get short_term test_key
-
-# Get all items from a memory type
-stableagents memory get short_term
+value = agent.get_from_memory("short_term", "key")
 ```
 
-### Verbose Mode
-
-Add `-v` or `--verbose` to enable verbose logging:
+## Development
 
 ```bash
-stableagents -v interactive
+# Install dev dependencies
+poetry install
+
+# Run tests
+poetry run pytest
+```
+
+## Publishing to PyPI
+
+```bash
+# Build the package
+poetry build
+
+# Publish to PyPI
+poetry publish
 ``` 
