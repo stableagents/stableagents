@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "stableagents"
-version = "0.1.0"
+version = "0.2.0"
 description = "StableAgents - A framework for building stable AI agents"
 authors = ["StableAgents Team <info@stableagents.org>"]
 readme = "README.md"

@@ -19,7 +19,7 @@ def setup_logging(verbose):
 def interactive_mode(agent):
     """Run an interactive session with the agent"""
     print("Starting interactive StableAgents session. Type 'exit' or 'quit' to end.")
-    print("Commands: memory.add TYPE KEY VALUE, memory.get TYPE [KEY], reset, help")
+    print("Commands: memory.add TYPE KEY VALUE, memory.get TYPE [KEY], control [COMMAND], reset, help")
     
     while True:
         try:
@@ -32,6 +32,7 @@ def interactive_mode(agent):
                 print("\nAvailable commands:")
                 print("  memory.add TYPE KEY VALUE - Add to memory (TYPE: short_term, long_term, context)")
                 print("  memory.get TYPE [KEY] - Get from memory")
+                print("  control [COMMAND] - Control computer with natural language")
                 print("  reset - Reset the agent")
                 print("  exit/quit - Exit the program")
                 continue
@@ -59,6 +60,15 @@ def interactive_mode(agent):
                     key = parts[2] if len(parts) > 2 else None
                     result = agent.get_from_memory(parts[1], key)
                     print(f"Memory ({parts[1]}, {key}):", result)
+                continue
+                
+            if user_input.startswith('control '):
+                command = user_input[8:].strip()
+                if not command:
+                    print("Please provide a command after 'control'")
+                else:
+                    result = agent.control_computer(command)
+                    print(result)
                 continue
                 
             # Default: display as message
@@ -94,6 +104,10 @@ def main():
     get_parser.add_argument('type', choices=['short_term', 'long_term', 'context'], help='Memory type')
     get_parser.add_argument('key', nargs='?', help='Memory key (optional)')
     
+    # Computer control
+    control_parser = subparsers.add_parser('control', help='Control computer with natural language')
+    control_parser.add_argument('command', nargs='+', help='Natural language command')
+    
     args = parser.parse_args()
     logger = setup_logging(args.verbose)
     
@@ -111,6 +125,10 @@ def main():
         elif args.memory_command == 'get':
             result = agent.get_from_memory(args.type, args.key)
             print(result)
+    elif args.command == 'control':
+        command = ' '.join(args.command)
+        result = agent.control_computer(command)
+        print(result)
     
     return 0
 
