@@ -81,23 +81,3 @@ copy file.txt to file_copy.txt
 delete example.txt
 execute echo "Hello World"
 ```
-
-## Development
-
-```bash
-# Install dev dependencies
-poetry install
-
-# Run tests
-poetry run pytest
-```
-
-## Publishing to PyPI
-
-```bash
-# Build the package
-poetry build
-
-# Publish to PyPI
-poetry publish
-``` 
