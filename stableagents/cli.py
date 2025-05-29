@@ -4,6 +4,7 @@ import sys
 import logging
 import os
 import json
+import getpass
 
 # Import from the package
 from stableagents import StableAgents
@@ -17,10 +18,73 @@ def setup_logging(verbose):
     )
     return logging.getLogger('stableagents-cli')
 
-def interactive_mode(agent):
+def setup_ai_provider(agent):
+    """Interactive setup for AI provider and API key"""
+    providers = agent.list_ai_providers()
+    
+    # Get providers with keys
+    providers_with_keys = [p for p in providers if p["has_key"]]
+    
+    # If we have an active provider with a key, use it
+    active_provider = next((p for p in providers_with_keys if p["is_active"]), None)
+    if active_provider:
+        print(f"Using active AI provider: {active_provider['name']}")
+        return True
+        
+    # If we have providers with keys but none is active, select the first one
+    if providers_with_keys:
+        provider_name = providers_with_keys[0]["name"]
+        agent.set_active_ai_provider(provider_name)
+        print(f"Selected AI provider: {provider_name}")
+        return True
+        
+    # No providers with keys, ask user to choose one
+    print("\nNo AI provider configured. Please select a provider:")
+    for i, provider in enumerate(providers, 1):
+        print(f"  {i}. {provider['name']}")
+    
+    try:
+        choice = input("Enter number (or press Enter to skip): ")
+        if not choice:
+            print("AI setup skipped.")
+            return False
+            
+        choice = int(choice)
+        if choice < 1 or choice > len(providers):
+            print("Invalid choice. AI setup skipped.")
+            return False
+            
+        provider_name = providers[choice-1]["name"]
+        
+        # Ask for API key
+        print(f"\nPlease enter your {provider_name.capitalize()} API key:")
+        api_key = getpass.getpass("> ")
+        
+        if api_key:
+            agent.set_api_key(provider_name, api_key)
+            agent.set_active_ai_provider(provider_name)
+            print(f"AI provider {provider_name} configured successfully.")
+            return True
+        else:
+            print("No API key provided. AI setup skipped.")
+            return False
+            
+    except (ValueError, IndexError):
+        print("Invalid input. AI setup skipped.")
+        return False
+
+def interactive_mode(agent, setup_ai=True):
     """Run an interactive session with the agent"""
     print("Starting interactive StableAgents session. Type 'exit' or 'quit' to end.")
     print("Commands: memory.add TYPE KEY VALUE, memory.get TYPE [KEY], control [COMMAND], ai [PROMPT], apikey [PROVIDER] [KEY], help")
+    
+    # Setup AI provider if requested
+    if setup_ai:
+        ai_configured = setup_ai_provider(agent)
+        if ai_configured:
+            print("\nAI provider configured. You can use 'ai' and 'chat' commands.")
+        else:
+            print("\nAI provider not configured. Use 'apikey' command to set up.")
     
     while True:
         try:
@@ -82,6 +146,13 @@ def interactive_mode(agent):
                 if not prompt:
                     print("Please provide a prompt after 'ai'")
                 else:
+                    # Check if AI provider is configured
+                    if not agent.get_active_ai_provider():
+                        print("No active AI provider. Setting up now...")
+                        if not setup_ai_provider(agent):
+                            print("AI setup failed. Please use 'apikey' command to set up.")
+                            continue
+                    
                     result = agent.generate_text(prompt)
                     print(result)
                 continue
@@ -91,6 +162,13 @@ def interactive_mode(agent):
                 if not message:
                     print("Please provide a message after 'chat'")
                 else:
+                    # Check if AI provider is configured
+                    if not agent.get_active_ai_provider():
+                        print("No active AI provider. Setting up now...")
+                        if not setup_ai_provider(agent):
+                            print("AI setup failed. Please use 'apikey' command to set up.")
+                            continue
+                    
                     # Get previous messages from memory, if any
                     prev_messages = agent.get_from_memory("short_term", "chat_history")
                     if not prev_messages:
@@ -121,6 +199,10 @@ def interactive_mode(agent):
                     success = agent.set_api_key(provider, key)
                     if success:
                         print(f"API key set for {provider}")
+                        # Set as active provider if no active provider
+                        if not agent.get_active_ai_provider():
+                            agent.set_active_ai_provider(provider)
+                            print(f"Active provider set to {provider}")
                     else:
                         print(f"Failed to set API key for {provider}")
                 continue
@@ -155,6 +237,103 @@ def interactive_mode(agent):
         except Exception as e:
             print(f"Error: {e}")
 
+def run_examples(agent):
+    """Run a guided example of AI capabilities"""
+    print("\nStableAgents AI Integration Example")
+    print("====================================")
+    
+    # Setup AI provider
+    if not setup_ai_provider(agent):
+        print("AI setup required to run examples. Exiting.")
+        return 1
+    
+    print(f"\nUsing {agent.get_active_ai_provider().capitalize()} as the AI provider")
+    
+    # Example 1: Generate text with a prompt
+    print("\n1. Text Generation Example")
+    print("==========================")
+    
+    example_prompt = "Write a short poem about artificial intelligence."
+    print(f"Default prompt: {example_prompt}")
+    
+    user_prompt = input("Enter your own prompt (or press Enter to use default): ").strip()
+    prompt = user_prompt or example_prompt
+    
+    print(f"\nGenerating text for: {prompt}")
+    response = agent.generate_text(prompt)
+    print("\nAI Response:")
+    print(response)
+    
+    input("\nPress Enter to continue to the next example...")
+    
+    # Example 2: Chat conversation
+    print("\n2. Chat Conversation Example")
+    print("===========================")
+    
+    messages = [
+        {"role": "system", "content": "You are a helpful assistant that specializes in computer science."},
+        {"role": "user", "content": "What is a neural network in simple terms?"}
+    ]
+    
+    print("Starting a chat with the AI...")
+    print("System: You are a helpful assistant that specializes in computer science.")
+    print("User: What is a neural network in simple terms?")
+    
+    response = agent.generate_chat(messages)
+    print(f"AI: {response}")
+    
+    # Add the assistant's response to the conversation
+    messages.append({"role": "assistant", "content": response})
+    
+    # Continue the conversation
+    next_question = "Can you give an example of how they're used?"
+    print(f"\nDefault next question: {next_question}")
+    
+    user_question = input("Enter your own follow-up question (or press Enter to use default): ").strip()
+    question = user_question or next_question
+    
+    messages.append({"role": "user", "content": question})
+    print(f"\nUser: {question}")
+    
+    response = agent.generate_chat(messages)
+    print(f"AI: {response}")
+    
+    input("\nPress Enter to continue to the next example...")
+    
+    # Example 3: AI + Computer Control Integration
+    print("\n3. AI + Computer Control Integration")
+    print("==================================")
+    
+    example_prompt = "Suggest a terminal command to list all Python files in the current directory."
+    print(f"Default prompt: {example_prompt}")
+    
+    user_prompt = input("Enter your own prompt (or press Enter to use default): ").strip()
+    prompt = user_prompt or example_prompt
+    
+    print(f"\nGenerating suggestion for: {prompt}")
+    response = agent.generate_text(prompt)
+    print(f"AI Suggestion: {response}")
+    
+    execute = input("\nWould you like to execute this command? (y/n) ")
+    if execute.lower() == 'y':
+        # Extract command from the AI's response (simple heuristic)
+        import re
+        command_match = re.search(r'`(.*?)`', response)
+        command = command_match.group(1) if command_match else response.strip()
+        
+        print(f"Executing: {command}")
+        result = agent.control_computer(f"execute {command}")
+        print(f"Result: {result}")
+    
+    print("\nExample run complete!")
+    
+    # Ask if user wants to continue to interactive mode
+    continue_interactive = input("\nWould you like to continue in interactive mode? (y/n) ")
+    if continue_interactive.lower() == 'y':
+        interactive_mode(agent, setup_ai=False)
+    
+    return 0
+
 def main():
     parser = argparse.ArgumentParser(description='StableAgents CLI')
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
@@ -163,6 +342,9 @@ def main():
     
     # Interactive mode
     interactive_parser = subparsers.add_parser('interactive', help='Start interactive session')
+    
+    # Examples mode
+    examples_parser = subparsers.add_parser('examples', help='Run guided AI examples')
     
     # Memory commands
     memory_parser = subparsers.add_parser('memory', help='Memory operations')
@@ -225,6 +407,8 @@ def main():
     # Process commands
     if args.command == 'interactive' or not args.command:
         interactive_mode(agent)
+    elif args.command == 'examples':
+        return run_examples(agent)
     elif args.command == 'memory':
         if args.memory_command == 'add':
             agent.add_to_memory(args.type, args.key, args.value)
@@ -237,6 +421,13 @@ def main():
         result = agent.control_computer(command)
         print(result)
     elif args.command == 'ai':
+        # Check if we have an active provider with key
+        if not agent.get_active_ai_provider():
+            print("No active AI provider. Setting up now...")
+            if not setup_ai_provider(agent):
+                print("AI setup failed. Exiting.")
+                return 1
+        
         prompt = ' '.join(args.prompt)
         kwargs = {}
         if args.model:
@@ -247,6 +438,13 @@ def main():
         result = agent.generate_text(prompt, **kwargs)
         print(result)
     elif args.command == 'chat':
+        # Check if we have an active provider with key
+        if not agent.get_active_ai_provider():
+            print("No active AI provider. Setting up now...")
+            if not setup_ai_provider(agent):
+                print("AI setup failed. Exiting.")
+                return 1
+        
         message = ' '.join(args.message)
         kwargs = {}
         if args.model:
@@ -263,6 +461,10 @@ def main():
             success = agent.set_api_key(args.provider, args.key)
             if success:
                 print(f"API key set for {args.provider}")
+                # Set as active if no active provider
+                if not agent.get_active_ai_provider():
+                    agent.set_active_ai_provider(args.provider)
+                    print(f"Active provider set to {args.provider}")
             else:
                 print(f"Failed to set API key for {args.provider}")
         elif args.apikey_command == 'get':
