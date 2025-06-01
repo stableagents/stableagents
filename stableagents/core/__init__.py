@@ -1,0 +1,1 @@
+from .personality import Personality, PersonalityManager 

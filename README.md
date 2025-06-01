@@ -1,4 +1,4 @@
-# <div align="center">StableAgents</div>
+# <div align="center">Stable Agents</div>
 
 Stable Agents is a foundational framework that provides the core infrastructure, stability, and extensibility needed to build production-grade AI agents. Just as Linux powers everything from smartphones to supercomputers, StableAgents serves as the bedrock for creating reliable, secure, and scalable AI agents that can be deployed across any environment. With its modular architecture, robust memory management, and comprehensive tooling, it enables developers to build agents that are as stable and trustworthy as traditional software systems.
 ## Installation
