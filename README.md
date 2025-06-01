@@ -1,6 +1,6 @@
 # StableAgents AI
 
-A framework for creating stable and reliable AI agents.
+A framework for building the Linux kernel of AI agents - providing the core infrastructure and system-level capabilities that enable reliable, secure, and efficient AI agent operations.
 
 ## Installation
 
