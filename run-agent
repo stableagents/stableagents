@@ -1,0 +1,5 @@
+#!/bin/bash
+# Simple entry point for StableAgents CLI
+
+# Run the Python entry point script
+python3 "$(dirname "$0")/stableagents/run_cli.py" "$@" 
