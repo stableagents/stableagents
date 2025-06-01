@@ -8,6 +8,7 @@ import getpass
 
 # Import from the package
 from stableagents import StableAgents
+from stableagents.core import get_banner
 
 def setup_logging(verbose):
     """Configure logging based on verbosity level"""
@@ -73,8 +74,11 @@ def setup_ai_provider(agent):
         print("Invalid input. AI setup skipped.")
         return False
 
-def interactive_mode(agent, setup_ai=True):
+def interactive_mode(agent, setup_ai=True, banner_style="default"):
     """Run an interactive session with the agent"""
+    # Display ASCII art banner
+    print(get_banner(banner_style))
+    
     print("Starting interactive StableAgents session. Type 'exit' or 'quit' to end.")
     print("Commands: memory.add TYPE KEY VALUE, memory.get TYPE [KEY], control [COMMAND], ai [PROMPT], apikey [PROVIDER] [KEY], help")
     
@@ -237,8 +241,11 @@ def interactive_mode(agent, setup_ai=True):
         except Exception as e:
             print(f"Error: {e}")
 
-def run_examples(agent):
+def run_examples(agent, banner_style="default"):
     """Run a guided example of AI capabilities"""
+    # Display ASCII art banner for examples
+    print(get_banner(banner_style))
+    
     print("\nStableAgents AI Integration Example")
     print("====================================")
     
@@ -330,13 +337,15 @@ def run_examples(agent):
     # Ask if user wants to continue to interactive mode
     continue_interactive = input("\nWould you like to continue in interactive mode? (y/n) ")
     if continue_interactive.lower() == 'y':
-        interactive_mode(agent, setup_ai=False)
+        interactive_mode(agent, setup_ai=False, banner_style=banner_style)
     
     return 0
 
 def main():
     parser = argparse.ArgumentParser(description='StableAgents CLI')
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
+    parser.add_argument('--banner', choices=['default', 'simple', 'compact'], default='default', 
+                      help='Select ASCII art banner style (default, simple, compact)')
     
     subparsers = parser.add_subparsers(dest='command', help='Command to run')
     
@@ -400,15 +409,19 @@ def main():
     args = parser.parse_args()
     logger = setup_logging(args.verbose)
     
+    # Display banner for all commands
+    if args.command != 'interactive':  # Skip here as interactive mode already shows the banner
+        print(get_banner(args.banner))
+    
     # Create agent instance
     agent = StableAgents()
     logger.debug("StableAgents initialized")
     
     # Process commands
     if args.command == 'interactive' or not args.command:
-        interactive_mode(agent)
+        interactive_mode(agent, banner_style=args.banner)
     elif args.command == 'examples':
-        return run_examples(agent)
+        return run_examples(agent, args.banner)
     elif args.command == 'memory':
         if args.memory_command == 'add':
             agent.add_to_memory(args.type, args.key, args.value)

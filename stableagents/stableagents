@@ -1,0 +1,20 @@
+#!/bin/bash
+# Simple entry point for StableAgents CLI
+# Usage: stableagents <model> <api_key>
+# Where model is one of: openai, anthropic, google, custom
+
+# Check if arguments are provided
+if [ $# -lt 2 ]; then
+  echo "Usage: stableagents <model> <api_key>"
+  echo "Models: openai, anthropic, google, custom"
+  exit 1
+fi
+
+MODEL=$1
+API_KEY=$2
+
+# Get the directory of this script
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+# Set the API key and run in interactive mode with simple banner
+python3 -m stableagents.cli apikey set $MODEL "$API_KEY" && python3 -m stableagents.cli interactive --banner simple 
