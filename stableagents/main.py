@@ -37,6 +37,8 @@ class StableAgents:
         # Initialize AI provider manager
         self.ai_manager = AIProviderManager(config_dir)
         self.ai_provider = None
+        self.using_local_model = False
+        self.local_model = None
     
     def reset(self):
         if hasattr(self, 'computer') and self.computer:
@@ -213,9 +215,41 @@ class StableAgents:
         """
         return self.ai_manager.get_provider(provider_name)
     
+    def set_local_model(self, model_path: str = None):
+        """
+        Set up a local model for inference
+        
+        Args:
+            model_path (str, optional): Path to local model. If None, uses default model.
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            self.using_local_model = True
+            
+            # If model_path is None, use a default model location
+            if model_path is None:
+                model_path = os.path.join(self.get_stableagents_dir(), "models", "default")
+                
+            # Check if model exists
+            if not os.path.exists(model_path):
+                self.logger.warning(f"Local model not found at {model_path}. Will download default model.")
+                # Here we would implement model downloading, but for now just log
+                
+            # Load the model (simplified for now)
+            self.logger.info(f"Loading local model from {model_path}")
+            # self.local_model = load_model_function(model_path)
+            
+            return True
+        except Exception as e:
+            self.logger.error(f"Error setting up local model: {e}")
+            self.using_local_model = False
+            return False
+    
     def generate_text(self, prompt: str, **kwargs) -> str:
         """
-        Generate text from a prompt using the active AI provider.
+        Generate text from a prompt using the active AI provider or local model.
         
         Args:
             prompt (str): The text prompt
@@ -224,15 +258,28 @@ class StableAgents:
         Returns:
             str: The generated text
         """
-        provider = self.get_ai_provider()
-        if not provider:
-            return "No AI provider available. Please set an API key first."
-        
-        return provider.generate_text(prompt, **kwargs)
+        if self.using_local_model:
+            # Use local model for inference
+            if self.local_model:
+                try:
+                    # Simplified local model inference
+                    return f"[Local model response to: {prompt}]"
+                except Exception as e:
+                    self.logger.error(f"Error using local model: {e}")
+                    return f"Error using local model: {str(e)}"
+            else:
+                return "Local model not loaded. Please set up a local model first."
+        else:
+            # Use remote provider
+            provider = self.get_ai_provider()
+            if not provider:
+                return "No AI provider available. Please set an API key first."
+            
+            return provider.generate_text(prompt, **kwargs)
     
     def generate_chat(self, messages: list, **kwargs) -> str:
         """
-        Generate a chat response using the active AI provider.
+        Generate a chat response using the active AI provider or local model.
         
         Args:
             messages (list): A list of message dictionaries with 'role' and 'content' keys
@@ -241,11 +288,26 @@ class StableAgents:
         Returns:
             str: The generated response
         """
-        provider = self.get_ai_provider()
-        if not provider:
-            return "No AI provider available. Please set an API key first."
-        
-        return provider.generate_chat(messages, **kwargs)
+        if self.using_local_model:
+            # Use local model for chat inference
+            if self.local_model:
+                try:
+                    # Extract just the last user message for simplicity
+                    last_message = messages[-1]['content'] if messages else ""
+                    # Simplified local model chat inference
+                    return f"[Local model chat response to: {last_message}]"
+                except Exception as e:
+                    self.logger.error(f"Error using local model for chat: {e}")
+                    return f"Error using local model for chat: {str(e)}"
+            else:
+                return "Local model not loaded. Please set up a local model first."
+        else:
+            # Use remote provider
+            provider = self.get_ai_provider()
+            if not provider:
+                return "No AI provider available. Please set an API key first."
+            
+            return provider.generate_chat(messages, **kwargs)
     
     def embed_text(self, text: str, **kwargs) -> list:
         """

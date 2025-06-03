@@ -25,14 +25,20 @@ class UnifiedCLI:
             "provider": self.provider_command,
             "clear": self.clear_screen
         }
+        self.use_local_model = False
         
-    def start(self, model=None, api_key=None):
+    def start(self, model=None, api_key=None, use_local=False):
         """Start the CLI interface"""
         # Display banner
         print(get_banner("simple"))
         
-        # Set up provider if provided
-        if model and api_key:
+        # Set up local or remote provider
+        self.use_local_model = use_local
+        
+        if use_local:
+            print("Using local model")
+            self.agent.set_local_model()
+        elif model and api_key:
             success = self.agent.set_api_key(model, api_key)
             if success:
                 self.agent.set_active_ai_provider(model)
@@ -77,10 +83,14 @@ class UnifiedCLI:
         print("  memory get <type> [key]        - Get from memory")
         print("  control <command> - Control computer with natural language")
         print("  provider list     - List available AI providers")
-        print("  provider set <name> <key> - Set provider and API key")
+        print("  provider set <n> <key> - Set provider and API key")
         print("  clear             - Clear the screen")
         print("  help              - Show this help message")
         print("  exit/quit         - Exit the program")
+        
+        if self.use_local_model:
+            print("\nRunning with local model")
+        
         print("\nDefault: Any text not matching a command is sent to the AI")
     
     def exit(self, args):
@@ -91,8 +101,8 @@ class UnifiedCLI:
     def ai_command(self, prompt):
         """Generate text using AI"""
         # Check if AI provider is configured
-        if not self.agent.get_active_ai_provider():
-            print("No active AI provider. Please set one with 'provider set <name> <key>'")
+        if not self.use_local_model and not self.agent.get_active_ai_provider():
+            print("No active AI provider. Please set one with 'provider set <n> <key>'")
             return
             
         # If this is a chat-style message (not a command prefix), use chat mode
@@ -137,7 +147,7 @@ class UnifiedCLI:
     def provider_command(self, args):
         """Provider operations"""
         if not args:
-            print("Usage: provider list or provider set <name> <key>")
+            print("Usage: provider list or provider set <n> <key>")
             return
             
         parts = args.split(maxsplit=2)
@@ -159,7 +169,7 @@ class UnifiedCLI:
             else:
                 print(f"Failed to set API key for {provider}")
         else:
-            print("Usage: provider list or provider set <name> <key>")
+            print("Usage: provider list or provider set <n> <key>")
     
     def clear_screen(self, args):
         """Clear the terminal screen"""
@@ -172,12 +182,13 @@ def main():
     parser.add_argument('--model', choices=['openai', 'anthropic', 'google', 'custom'], 
                         help='AI provider model (optional)')
     parser.add_argument('--key', help='API key for the model (optional)')
+    parser.add_argument('--local', action='store_true', help='Use local model instead of remote')
     
     args = parser.parse_args()
     
     # Start the CLI
     cli = UnifiedCLI()
-    cli.start(args.model, args.key)
+    cli.start(args.model, args.key, args.local)
     
     return 0
 
