@@ -8,6 +8,7 @@ setup(
         "requests>=2.28.0",
         "openai>=1.0.0",
         "anthropic>=0.5.0",
+        "tensorflow>=2.0.0",
     ],
     entry_points={
         'console_scripts': [

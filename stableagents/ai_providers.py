@@ -9,7 +9,7 @@ import importlib.util
 class AIProviderManager:
     """Manages AI provider integrations and API keys."""
     
-    SUPPORTED_PROVIDERS = ["openai", "anthropic", "google", "custom"]
+    SUPPORTED_PROVIDERS = ["openai", "anthropic", "google", "custom", "local"]
     
     def __init__(self, config_dir: Optional[str] = None):
         self.logger = logging.getLogger(__name__)
@@ -95,6 +95,13 @@ class AIProviderManager:
             self.logger.error(f"Unsupported provider: {provider}")
             return False
             
+        # Special case for local provider, which doesn't need an API key
+        if provider == "local":
+            self.api_keys["active_provider"] = provider
+            self.active_provider = provider
+            self._save_api_keys()
+            return True
+            
         if provider not in self.api_keys:
             self.logger.error(f"No API key set for provider: {provider}")
             return False
@@ -112,7 +119,12 @@ class AIProviderManager:
         """List all supported providers and their status."""
         providers = []
         for provider in self.SUPPORTED_PROVIDERS:
-            has_key = provider in self.api_keys and bool(self.api_keys[provider])
+            # Local provider doesn't need an API key
+            if provider == "local":
+                has_key = True
+            else:
+                has_key = provider in self.api_keys and bool(self.api_keys[provider])
+                
             is_active = provider == self.active_provider
             providers.append({
                 "name": provider,
@@ -136,6 +148,12 @@ class AIProviderManager:
         # Check if we already have an instance
         if provider_name in self.provider_instances:
             return self.provider_instances[provider_name]
+            
+        # Special case for local provider
+        if provider_name == "local":
+            provider = LocalModelProvider(self.config_dir)
+            self.provider_instances[provider_name] = provider
+            return provider
             
         # Get the API key
         api_key = self.get_api_key(provider_name)
@@ -161,6 +179,8 @@ class AIProviderManager:
             return AnthropicProvider
         elif provider_name == "google":
             return GoogleProvider
+        elif provider_name == "local":
+            return LocalModelProvider
         elif provider_name == "custom":
             # Load custom provider if configured
             custom_path = self.api_keys.get("custom_provider_path")
@@ -393,4 +413,118 @@ class GoogleProvider(AIProvider):
         
     def transcribe_audio(self, audio_file: str, **kwargs) -> str:
         """Transcribe audio to text using Google."""
-        return "Google AI provider not fully implemented yet" 
+        return "Google AI provider not fully implemented yet"
+
+class LocalModelProvider(AIProvider):
+    """Provider for local LLM inference (Llama, etc.)"""
+    
+    def __init__(self, config_dir: str = None):
+        super().__init__(api_key="")  # No API key needed for local models
+        self.config_dir = config_dir or os.path.join(os.path.expanduser("~"), ".stableagents")
+        self.models_dir = os.path.join(self.config_dir, "models")
+        self.model = None
+        self.model_path = None
+        
+        # Create models directory if it doesn't exist
+        os.makedirs(self.models_dir, exist_ok=True)
+        
+    def load_model(self, model_path: str = None):
+        """Load a local LLM model."""
+        try:
+            # If model_path is not provided, try to find default model
+            if not model_path:
+                default_model_dir = os.path.join(self.models_dir, "default")
+                if os.path.exists(default_model_dir):
+                    # Find first .gguf file in directory
+                    for file in os.listdir(default_model_dir):
+                        if file.endswith(".gguf"):
+                            model_path = os.path.join(default_model_dir, file)
+                            break
+                            
+            if not model_path or not os.path.exists(model_path):
+                self.logger.error(f"Model not found at {model_path}")
+                return False
+                
+            self.logger.info(f"Loading local model from {model_path}")
+            
+            # Try to import llama_cpp module
+            try:
+                from llama_cpp import Llama
+                self.model = Llama(model_path=model_path, n_ctx=2048)
+                self.model_path = model_path
+                return True
+            except ImportError:
+                self.logger.error("llama-cpp-python not installed. Please install it to use local models.")
+                return False
+                
+        except Exception as e:
+            self.logger.error(f"Error loading local model: {e}")
+            return False
+            
+    def generate_text(self, prompt: str, **kwargs) -> str:
+        """Generate text using a local model."""
+        if not self.model:
+            # Try to load default model
+            if not self.load_model():
+                return "No local model loaded. Please load a model first."
+                
+        try:
+            # Set default parameters for generation
+            max_tokens = kwargs.get("max_tokens", 512)
+            temperature = kwargs.get("temperature", 0.7)
+            
+            # Generate text with the local model
+            output = self.model(
+                prompt, 
+                max_tokens=max_tokens,
+                temperature=temperature,
+                stop=kwargs.get("stop", [])
+            )
+            
+            return output["choices"][0]["text"]
+        except Exception as e:
+            self.logger.error(f"Error generating text with local model: {e}")
+            return f"Error: {str(e)}"
+            
+    def generate_chat(self, messages: List[Dict[str, str]], **kwargs) -> str:
+        """Generate chat response using a local model."""
+        if not self.model:
+            # Try to load default model
+            if not self.load_model():
+                return "No local model loaded. Please load a model first."
+                
+        try:
+            # Format messages into a prompt that local models can understand
+            formatted_prompt = ""
+            for message in messages:
+                role = message.get("role", "").lower()
+                content = message.get("content", "")
+                
+                if role == "system":
+                    formatted_prompt += f"SYSTEM: {content}\n\n"
+                elif role == "user":
+                    formatted_prompt += f"USER: {content}\n\n"
+                elif role == "assistant":
+                    formatted_prompt += f"ASSISTANT: {content}\n\n"
+                    
+            formatted_prompt += "ASSISTANT: "
+            
+            # Generate response
+            return self.generate_text(formatted_prompt, **kwargs)
+        except Exception as e:
+            self.logger.error(f"Error generating chat response with local model: {e}")
+            return f"Error: {str(e)}"
+            
+    def embed_text(self, text: str, **kwargs) -> List[float]:
+        """Generate embeddings with local model."""
+        # This is a placeholder for local embeddings
+        # Most local LLMs don't have built-in embedding capability
+        self.logger.warning("Embeddings not supported with basic local models")
+        return []
+        
+    def transcribe_audio(self, audio_file: str, **kwargs) -> str:
+        """Transcribe audio with local model."""
+        # This is a placeholder for local transcription
+        # Most local LLMs don't have built-in audio transcription
+        self.logger.warning("Audio transcription not supported with basic local models")
+        return "Audio transcription not supported with local models" 

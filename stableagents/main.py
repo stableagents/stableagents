@@ -3,10 +3,12 @@ import os
 import threading
 import datetime
 import sys
+import time
 import logging
 import tensorflow as tf
 from .computer import ComputerControl
 from .ai_providers import AIProviderManager, AIProvider
+from .core.self_healing import SelfHealingController
 # from stableagents import * 
 
 
@@ -17,7 +19,7 @@ class StableAgents:
    
     """
     
-    def __init__(self, config_dir: str = None):
+    def __init__(self, config_dir: str = None, enable_self_healing: bool = False):
         self.computer = ComputerControl()
         self.computer_has_imported_computer_api = True
         self.messages = []
@@ -39,6 +41,199 @@ class StableAgents:
         self.ai_provider = None
         self.using_local_model = False
         self.local_model = None
+        
+        # Initialize self-healing system
+        self.self_healing = SelfHealingController(agent=self)
+        self.self_healing_enabled = False
+        
+        # Enable self-healing if requested
+        if enable_self_healing:
+            self.enable_self_healing()
+            
+        # Register standard components for health monitoring
+        self._register_health_components()
+    
+    def _register_health_components(self):
+        """Register standard components for health monitoring."""
+        # Register AI provider health check
+        self.self_healing.register_component(
+            "ai_provider",
+            self._check_ai_provider_health,
+            thresholds={
+                "provider_available": {"min": True, "severity": "high"},
+                "response_time": {"max": 10.0, "severity": "medium"}
+            }
+        )
+        
+        # Register memory health check
+        self.self_healing.register_component(
+            "memory",
+            self._check_memory_health,
+            thresholds={
+                "short_term_count": {"max": 1000, "severity": "medium"},
+                "memory_usage_mb": {"max": 1000, "severity": "high"}
+            }
+        )
+        
+        # Register local model health check if using local model
+        if self.using_local_model:
+            self.self_healing.register_component(
+                "local_model",
+                self._check_local_model_health,
+                thresholds={
+                    "model_loaded": {"min": True, "severity": "high"}
+                }
+            )
+    
+    def _check_ai_provider_health(self):
+        """Check the health of the AI provider."""
+        from .core.self_healing.monitor import HealthMetric
+        
+        metrics = []
+        timestamp = time.time()
+        
+        # Check if a provider is active
+        active_provider = self.get_active_ai_provider()
+        provider_available = active_provider is not None
+        
+        metrics.append(HealthMetric(
+            name="provider_available",
+            value=provider_available,
+            timestamp=timestamp,
+            healthy=provider_available
+        ))
+        
+        if provider_available:
+            metrics.append(HealthMetric(
+                name="active_provider",
+                value=active_provider,
+                timestamp=timestamp,
+                healthy=True
+            ))
+            
+            # Test API response time
+            try:
+                start_time = time.time()
+                self.generate_text("test", max_tokens=5)
+                response_time = time.time() - start_time
+                
+                metrics.append(HealthMetric(
+                    name="response_time",
+                    value=response_time,
+                    timestamp=timestamp,
+                    healthy=response_time < 10.0
+                ))
+            except Exception as e:
+                metrics.append(HealthMetric(
+                    name="api_error",
+                    value=str(e),
+                    timestamp=timestamp,
+                    healthy=False
+                ))
+        
+        return metrics
+    
+    def _check_memory_health(self):
+        """Check the health of the memory system."""
+        from .core.self_healing.monitor import HealthMetric
+        
+        metrics = []
+        timestamp = time.time()
+        
+        # Check short-term memory size
+        short_term_count = len(self.memory["short_term"])
+        metrics.append(HealthMetric(
+            name="short_term_count",
+            value=short_term_count,
+            timestamp=timestamp,
+            healthy=short_term_count < 1000
+        ))
+        
+        # Check memory usage
+        import psutil
+        try:
+            process = psutil.Process(os.getpid())
+            memory_info = process.memory_info()
+            memory_usage_mb = memory_info.rss / (1024 * 1024)
+            
+            metrics.append(HealthMetric(
+                name="memory_usage_mb",
+                value=memory_usage_mb,
+                timestamp=timestamp,
+                healthy=memory_usage_mb < 1000
+            ))
+        except:
+            # psutil might not be available
+            pass
+            
+        return metrics
+    
+    def _check_local_model_health(self):
+        """Check the health of the local model."""
+        from .core.self_healing.monitor import HealthMetric
+        
+        metrics = []
+        timestamp = time.time()
+        
+        # Check if local model is being used
+        metrics.append(HealthMetric(
+            name="using_local_model",
+            value=self.using_local_model,
+            timestamp=timestamp,
+            healthy=True
+        ))
+        
+        if self.using_local_model:
+            # Get the local provider
+            local_provider = self.ai_manager.get_provider("local")
+            model_loaded = local_provider is not None and local_provider.model is not None
+            
+            metrics.append(HealthMetric(
+                name="model_loaded",
+                value=model_loaded,
+                timestamp=timestamp,
+                healthy=model_loaded
+            ))
+            
+            if model_loaded and hasattr(local_provider, "model_path"):
+                metrics.append(HealthMetric(
+                    name="model_path",
+                    value=local_provider.model_path,
+                    timestamp=timestamp,
+                    healthy=True
+                ))
+        
+        return metrics
+    
+    def enable_self_healing(self, auto_recovery: bool = False):
+        """
+        Enable the self-healing system.
+        
+        Args:
+            auto_recovery: Whether to automatically recover from issues
+        """
+        if self.self_healing_enabled:
+            return
+            
+        self.self_healing_enabled = True
+        self.self_healing.start(auto_recovery=auto_recovery)
+        self.logger.info("Self-healing system enabled")
+        
+    def disable_self_healing(self):
+        """Disable the self-healing system."""
+        if not self.self_healing_enabled:
+            return
+            
+        self.self_healing_enabled = False
+        self.self_healing.stop()
+        self.logger.info("Self-healing system disabled")
+        
+    def get_health_report(self):
+        """Get a health report for the agent."""
+        if not self.self_healing_enabled:
+            return {"status": "self_healing_disabled"}
+            
+        return self.self_healing.get_health_report()
     
     def reset(self):
         if hasattr(self, 'computer') and self.computer:
@@ -228,19 +423,24 @@ class StableAgents:
         try:
             self.using_local_model = True
             
-            # If model_path is None, use a default model location
-            if model_path is None:
-                model_path = os.path.join(self.get_stableagents_dir(), "models", "default")
-                
-            # Check if model exists
-            if not os.path.exists(model_path):
-                self.logger.warning(f"Local model not found at {model_path}. Will download default model.")
-                # Here we would implement model downloading, but for now just log
-                
-            # Load the model (simplified for now)
-            self.logger.info(f"Loading local model from {model_path}")
-            # self.local_model = load_model_function(model_path)
+            # Set the provider to local
+            self.ai_manager.set_active_provider("local")
             
+            # Get the local provider
+            local_provider = self.ai_manager.get_provider("local")
+            if not local_provider:
+                self.logger.error("Failed to initialize local model provider")
+                self.using_local_model = False
+                return False
+                
+            # Load the model
+            success = local_provider.load_model(model_path)
+            if not success:
+                self.logger.error("Failed to load local model")
+                self.using_local_model = False
+                return False
+                
+            self.logger.info(f"Local model loaded successfully")
             return True
         except Exception as e:
             self.logger.error(f"Error setting up local model: {e}")
@@ -259,16 +459,12 @@ class StableAgents:
             str: The generated text
         """
         if self.using_local_model:
-            # Use local model for inference
-            if self.local_model:
-                try:
-                    # Simplified local model inference
-                    return f"[Local model response to: {prompt}]"
-                except Exception as e:
-                    self.logger.error(f"Error using local model: {e}")
-                    return f"Error using local model: {str(e)}"
-            else:
-                return "Local model not loaded. Please set up a local model first."
+            # Use local provider
+            local_provider = self.ai_manager.get_provider("local")
+            if not local_provider:
+                return "Local model provider not initialized. Please set up a local model first."
+                
+            return local_provider.generate_text(prompt, **kwargs)
         else:
             # Use remote provider
             provider = self.get_ai_provider()
@@ -289,18 +485,12 @@ class StableAgents:
             str: The generated response
         """
         if self.using_local_model:
-            # Use local model for chat inference
-            if self.local_model:
-                try:
-                    # Extract just the last user message for simplicity
-                    last_message = messages[-1]['content'] if messages else ""
-                    # Simplified local model chat inference
-                    return f"[Local model chat response to: {last_message}]"
-                except Exception as e:
-                    self.logger.error(f"Error using local model for chat: {e}")
-                    return f"Error using local model for chat: {str(e)}"
-            else:
-                return "Local model not loaded. Please set up a local model first."
+            # Use local provider for chat inference
+            local_provider = self.ai_manager.get_provider("local")
+            if not local_provider:
+                return "Local model provider not initialized. Please set up a local model first."
+                
+            return local_provider.generate_chat(messages, **kwargs)
         else:
             # Use remote provider
             provider = self.get_ai_provider()

@@ -14,6 +14,9 @@ def main():
     model = None
     api_key = None
     use_local = False
+    model_path = None
+    enable_self_healing = False
+    auto_recovery = False
     
     # Parse arguments manually to handle special characters in API keys
     i = 0
@@ -27,13 +30,23 @@ def main():
         elif args[i] == "--local":
             use_local = True
             i += 1
+        elif args[i] == "--model-path" and i + 1 < len(args):
+            model_path = args[i + 1]
+            i += 2
+        elif args[i] == "--self-healing":
+            enable_self_healing = True
+            i += 1
+        elif args[i] == "--auto-recovery":
+            enable_self_healing = True
+            auto_recovery = True
+            i += 1
         else:
             # Skip unknown argument
             i += 1
     
     # Start the CLI
     cli = UnifiedCLI()
-    cli.start(model, api_key, use_local)
+    cli.start(model, api_key, use_local, model_path, enable_self_healing, auto_recovery)
 
 if __name__ == "__main__":
     main() 
