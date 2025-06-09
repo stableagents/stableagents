@@ -1,158 +1,115 @@
-# StableAgents AI
+# StableAgents Framework
 
-A framework for building the Linux kernel of AI agents - providing the core infrastructure and system-level capabilities that enable reliable, secure, and efficient AI agent operations.
+A production-ready framework for building enterprise-grade AI agents - providing robust infrastructure and system-level capabilities that enable reliable, secure, and efficient AI agent operations at scale.
+
+## Overview
+
+StableAgents is designed to be the foundation for large-scale AI agent deployments with a focus on:
+
+- **Reliability**: Built-in self-healing mechanisms ensure consistent operation even under adverse conditions
+- **Scalability**: Architecture supports everything from single-agent deployments to complex multi-agent systems
+- **Security**: Implement proper authentication, access controls, and data protection mechanisms
+- **Extensibility**: Modular design allows for customization and extension of core capabilities
+
+## Key Features
+
+- **Multi-Provider Support**: Seamlessly integrate with OpenAI, Anthropic, and other AI providers
+- **Local Model Integration**: Run models offline with local inference capabilities
+- **Self-Healing System**: Automatic issue detection, diagnosis, and recovery
+- **Memory Management**: Efficient handling of context and persistent storage
+- **Computer Control**: Safe system interaction capabilities
+- **Comprehensive Logging**: Detailed activity tracking and monitoring
 
 ## Installation
 
+For development:
+
 ```bash
-pip install stableagents-ai
+git clone https://github.com/yourusername/stableagents.git
+cd stableagents
+pip install -e .
 ```
 
-Or with Poetry:
+With additional features:
 
 ```bash
-poetry add stableagents-ai
-```
+# For local model support
+pip install -e ".[local]"
 
-For local LLM support:
-
-```bash
-pip install stableagents-ai[local]
-# or with Poetry
-poetry add stableagents-ai -E local
+# For all features
+pip install -e ".[all]"
 ```
 
 ## Quick Start
 
 ```python
-# Using the Python API
 from stableagents import StableAgents
 
-agent = StableAgents()
+# Initialize with your preferred configuration
+agent = StableAgents(
+    enable_self_healing=True,
+    enable_logging=True
+)
+
+# Configure AI provider
 agent.set_api_key('openai', 'your-api-key')
 agent.set_active_ai_provider('openai')
 
-response = agent.generate_text("Tell me about AI agents")
-print(response)
-
-# Using with a local model
-agent = StableAgents()
-agent.set_local_model()  # Uses default model location
-# or specify a model path
-# agent.set_local_model("/path/to/your/model.gguf")
-response = agent.generate_text("Tell me about AI agents")
+# Generate text with the agent
+response = agent.generate_text("Analyze the performance of our product in Q1")
 print(response)
 ```
 
-## Command Line Interface
+## Development
 
-StableAgents comes with a simple CLI that you can run from anywhere:
+### Project Structure
+
+```
+stableagents/
+├── core/           # Core system components
+├── logic/          # Business logic implementation
+├── memory/         # Memory and state management
+├── utils/          # Utility functions and helpers
+├── __init__.py     # Package initialization
+├── ai_providers.py # AI provider integrations
+├── cli.py          # Command-line interface
+├── computer.py     # System interaction capabilities
+└── main.py         # Main application entry point
+```
+
+### Testing
+
+Run the test suite:
 
 ```bash
-# Run the CLI directly with any of these commands
-stableagents
-stableagents-ai
-run-stableagents
-
-# Run with a specific model and API key
-stableagents --model openai --key your-api-key
-
-# Run with a local model
-stableagents --local
-
-# Run with a local model from a specific path
-stableagents --local --model-path /path/to/your/model.gguf
+pytest
 ```
 
-Once in the CLI, you can:
-- Chat with the AI directly by typing any text
-- Use commands like `memory`, `control`, and `provider`
-- Type `help` to see all available commands
+## Extending the Framework
 
-## Features
+StableAgents is designed to be extended for specific use cases:
 
-- Multiple AI provider support (OpenAI, Anthropic, etc.)
-- Local model support for offline usage (via llama-cpp-python)
-- Self-healing system for automatic issue detection and recovery
-- Memory management
-- Computer control capabilities
-- Simple but powerful CLI
-- Logging system
-
-## Local Models
-
-StableAgents supports running LLM inference locally using [llama-cpp-python](https://github.com/abetlen/llama-cpp-python). To use local models:
-
-1. Install the local dependencies: `pip install stableagents-ai[local]`
-2. Download a compatible GGUF model file (e.g., from [TheBloke on Hugging Face](https://huggingface.co/TheBloke))
-3. Place the model file in `~/.stableagents/models/default/` or specify the path when loading
+### Custom AI Providers
 
 ```python
-# Load a model from a specific path
-agent.set_local_model("/path/to/your/model.gguf")
+from stableagents.ai_providers import BaseAIProvider
 
-# Or run the CLI with local mode
-# stableagents --local
-
-# Or specify a custom model path in the CLI
-# stableagents --local --model-path /path/to/your/model.gguf
-```
-
-The framework will automatically search for a .gguf file in the default directory if no path is specified.
-
-## Self-Healing System
-
-StableAgents includes a powerful self-healing system that can detect issues, diagnose problems, and automatically recover from failures. This makes your AI agents more robust and reliable.
-
-### Features
-
-- Automatic monitoring of system components
-- Issue detection and severity classification
-- AI-assisted diagnosis of complex problems
-- Automated recovery actions with configurable risk levels
-- Learning from past recoveries to improve future reliability
-
-### Usage
-
-```python
-# Enable self-healing in the Python API
-from stableagents import StableAgents
-
-# Enable self-healing without auto-recovery
-agent = StableAgents(enable_self_healing=True)
-
-# Or with auto-recovery for higher reliability
-agent = StableAgents(enable_self_healing=True)
-agent.self_healing.set_config({"auto_recovery": True})
-
-# Get health report
-health_report = agent.get_health_report()
-print(f"System status: {health_report['status']}")
-```
-
-In the CLI:
-
-```bash
-# Enable self-healing without auto-recovery
-stableagents --self-healing
-
-# Enable self-healing with auto-recovery
-stableagents --auto-recovery
-
-# Check system health in the CLI
-> health
+class CustomProvider(BaseAIProvider):
+    def __init__(self, api_key):
+        super().__init__(api_key)
+        # Custom initialization
+        
+    def generate_text(self, prompt, **kwargs):
+        # Custom implementation
+        pass
 ```
 
 ### Custom Health Checks
 
-You can register custom components for health monitoring:
-
 ```python
-# Define a health check function
 def check_database_health():
     from stableagents.core.self_healing.monitor import HealthMetric
     metrics = []
-    # Add your health metrics
     metrics.append(HealthMetric(
         name="connection_status",
         value=is_connected(),
@@ -161,7 +118,6 @@ def check_database_health():
     ))
     return metrics
 
-# Register with the self-healing system
 agent.self_healing.register_component(
     "database",
     check_database_health,
