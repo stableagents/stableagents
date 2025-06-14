@@ -9,6 +9,7 @@ import getpass
 # Import from the package
 from stableagents import StableAgents
 from stableagents.core import get_banner
+from stableagents.desktop import DesktopAutomation, run_async
 
 def setup_logging(verbose):
     """Configure logging based on verbosity level"""
@@ -406,6 +407,27 @@ def main():
     provider_parser = subparsers.add_parser('provider', help='Set active AI provider')
     provider_parser.add_argument('name', choices=['openai', 'anthropic', 'google', 'custom'], help='Provider name')
     
+    # Desktop automation commands
+    desktop_parser = subparsers.add_parser('desktop', help='Desktop automation commands')
+    desktop_subparsers = desktop_parser.add_subparsers(dest='desktop_command', help='Desktop command')
+    
+    # Navigate command
+    navigate_parser = desktop_subparsers.add_parser('navigate', help='Navigate to a URL')
+    navigate_parser.add_argument('url', help='URL to navigate to')
+    
+    # Click command
+    click_parser = desktop_subparsers.add_parser('click', help='Click an element')
+    click_parser.add_argument('selector', help='CSS selector of the element to click')
+    
+    # Type command
+    type_parser = desktop_subparsers.add_parser('type', help='Type text into an input field')
+    type_parser.add_argument('selector', help='CSS selector of the input field')
+    type_parser.add_argument('text', help='Text to type')
+    
+    # Screenshot command
+    screenshot_parser = desktop_subparsers.add_parser('screenshot', help='Take a screenshot')
+    screenshot_parser.add_argument('path', help='Path to save the screenshot')
+    
     args = parser.parse_args()
     logger = setup_logging(args.verbose)
     
@@ -498,6 +520,25 @@ def main():
             print(f"Active provider set to {args.name}")
         else:
             print(f"Failed to set active provider to {args.name}")
+    elif args.command == 'desktop':
+        desktop = DesktopAutomation()
+        try:
+            if args.desktop_command == 'navigate':
+                run_async(desktop.navigate(args.url))
+                print(f"Navigated to {args.url}")
+            elif args.desktop_command == 'click':
+                run_async(desktop.click(args.selector))
+                print(f"Clicked element: {args.selector}")
+            elif args.desktop_command == 'type':
+                run_async(desktop.type_text(args.selector, args.text))
+                print(f"Typed text into: {args.selector}")
+            elif args.desktop_command == 'screenshot':
+                run_async(desktop.screenshot(args.path))
+                print(f"Screenshot saved to: {args.path}")
+            else:
+                print("Unknown desktop command. Use --help for available commands.")
+        finally:
+            run_async(desktop.close())
     
     return 0
 

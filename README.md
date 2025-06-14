@@ -67,16 +67,6 @@ agent.self_healing.register_component(
 )
 ```
 
-## Enterprise Support
-
-Enterprise customers receive:
-
-- 24/7 priority support
-- Custom integration services
-- Performance optimization
-- Security audits
-- Dedicated account management
-
 ## Use Cases
 
 - **Customer Service**: Deploy conversational agents that can understand, respond, and solve customer issues

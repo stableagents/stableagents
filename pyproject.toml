@@ -24,12 +24,14 @@ openai = "^1.0.0"
 anthropic = "^0.5.0"
 llama-cpp-python = { version = "^0.2.0", optional = true }
 psutil = "^5.9.0"
+pyppeteer = "^1.0.2"
 # Add any other dependencies required by your project
 
 [tool.poetry.extras]
 local = ["llama-cpp-python"]
 self-healing = ["psutil"]
-all = ["llama-cpp-python", "psutil"]
+desktop = ["pyppeteer"]
+all = ["llama-cpp-python", "psutil", "pyppeteer"]
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.0.0"
