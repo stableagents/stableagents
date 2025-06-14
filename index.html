@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StableAgents - Enterprise AI Agent Framework</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #4f46e5;
+            --text-color: #1f2937;
+            --text-light: #4b5563;
+            --bg-color: #f9fafb;
+            --white: #ffffff;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --success-color: #10b981;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-color);
+            line-height: 1.6;
+            background-color: var(--bg-color);
+        }
+        
+        .banner {
+            background-color: #0c4a6e;
+            color: white;
+            text-align: center;
+            padding: 12px;
+            font-weight: 500;
+        }
+        
+        .banner a {
+            color: white;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+        
+        .banner a:hover {
+            text-decoration: none;
+        }
+        
+        header {
+            background-color: var(--white);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background-color: var(--white);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--gray-100);
+        }
+        
+        .hero {
+            padding: 6rem 0;
+            text-align: center;
+            background: linear-gradient(to bottom, var(--white), var(--bg-color));
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-light);
+            max-width: 700px;
+            margin: 0 auto 2.5rem;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        
+        .features {
+            padding: 5rem 0;
+            background-color: var(--white);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .feature-card {
+            background-color: var(--white);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            background-color: var(--gray-100);
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .feature-card p {
+            color: var(--text-light);
+        }
+        
+        .vision {
+            padding: 5rem 0;
+            background-color: var(--bg-color);
+        }
+        
+        .vision-content {
+            display: flex;
+            gap: 4rem;
+            align-items: center;
+        }
+        
+        .vision-text {
+            flex: 1;
+        }
+        
+        .vision-image {
+            flex: 1;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .vision-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .section-heading {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .section-subheading {
+            font-size: 1.125rem;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            max-width: 800px;
+        }
+        
+        .cta {
+            padding: 5rem 0;
+            background-color: var(--primary-color);
+            color: var(--white);
+            text-align: center;
+        }
+        
+        .cta h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .cta p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            opacity: 0.9;
+        }
+        
+        footer {
+            background-color: var(--text-color);
+            color: var(--white);
+            padding: 4rem 0 2rem;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3rem;
+        }
+        
+        .footer-logo {
+            flex: 2;
+        }
+        
+        .footer-links {
+            flex: 1;
+        }
+        
+        .footer-links h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        
+        .footer-links ul {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+        
+        .footer-links a {
+            color: var(--gray-300);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--white);
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+            text-align: center;
+            color: var(--gray-300);
+            font-size: 0.875rem;
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .vision-content {
+                flex-direction: column;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="banner">
+        Domain for sale: <a href="https://stableagents.com" target="_blank">Purchase stableagents.com</a> for your enterprise AI needs
+    </div>
+    
+    <header>
+        <div class="container">
+            <nav>
+                <a href="#" class="logo">StableAgents</a>
+                <div class="nav-links">
+                    <a href="#vision">Vision</a>
+                    <a href="#features">Features</a>
+                    <a href="https://docs.stableagents.dev">Documentation</a>
+                    <a href="#contact">Contact</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+    
+    <section class="hero">
+        <div class="container">
+            <h1>The Enterprise-Grade Framework for AI Agents</h1>
+            <p>Build reliable, secure, and scalable AI agent systems with the most robust infrastructure available for production deployments.</p>
+            <div class="hero-buttons">
+                <a href="https://docs.stableagents.dev" class="btn">View Documentation</a>
+                <a href="#contact" class="btn btn-secondary">Request Access</a>
+            </div>
+        </div>
+    </section>
+    
+    <section id="vision" class="vision">
+        <div class="container">
+            <div class="vision-content">
+                <div class="vision-text">
+                    <h2 class="section-heading">Our Vision</h2>
+                    <p class="section-subheading">Creating a world where AI agents work reliably at scale to solve complex problems across industries.</p>
+                    <p>StableAgents was founded on a simple but powerful idea: AI agents should work flawlessly in production environments, just like enterprise software. While many AI frameworks focus on research and prototyping, we've built StableAgents from the ground up for production reliability.</p>
+                    <p style="margin-top: 1rem;">Our vision is to create the industry standard for deploying AI agents in mission-critical systems. Just as the Linux kernel provides a stable foundation for operating systems, StableAgents offers the core infrastructure that enables reliable, secure, and efficient AI agent operations at enterprise scale.</p>
+                    <p style="margin-top: 1rem;">We believe that AI agents will transform industries, from customer service to healthcare, from finance to logistics. But only if they can be trusted to operate reliably 24/7. That's the future we're building at StableAgents.</p>
+                </div>
+                <div class="vision-image">
+                    <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="AI Visualization">
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-heading" style="text-align: center;">Key Capabilities</h2>
+            <p class="section-subheading" style="text-align: center; margin-left: auto; margin-right: auto;">Enterprise-ready features that make StableAgents the most reliable framework for production AI deployments.</p>
+            
+            <div class="features-grid" style="max-width: 1000px; margin-left: auto; margin-right: auto;">
+                <div class="feature-card" style="text-align: center;">
+                    <div class="feature-icon" style="margin-left: auto; margin-right: auto;">🛡️</div>
+                    <h3>Self-Healing System</h3>
+                    <p>Automatic issue detection, diagnosis, and recovery mechanisms ensure your AI agents maintain operational status even when problems occur.</p>
+                </div>
+                
+                <div class="feature-card" style="text-align: center;">
+                    <div class="feature-icon" style="margin-left: auto; margin-right: auto;">🔄</div>
+                    <h3>Multi-Provider Support</h3>
+                    <p>Seamlessly integrate with OpenAI, Anthropic, and other AI providers, with the ability to switch between them without code changes.</p>
+                </div>
+                
+                <div class="feature-card" style="text-align: center;">
+                    <div class="feature-icon" style="margin-left: auto; margin-right: auto;">🔒</div>
+                    <h3>Enterprise Security</h3>
+                    <p>Industry-standard authentication, access controls, and data protection mechanisms to keep your AI deployments secure.</p>
+                </div>
+                
+                <div class="feature-card" style="text-align: center;">
+                    <div class="feature-icon" style="margin-left: auto; margin-right: auto;">📊</div>
+                    <h3>Comprehensive Logging</h3>
+                    <p>Detailed activity tracking and monitoring for complete visibility into your AI agent operations and performance.</p>
+                </div>
+                
+                <div class="feature-card" style="text-align: center;">
+                    <div class="feature-icon" style="margin-left: auto; margin-right: auto;">💾</div>
+                    <h3>Memory Management</h3>
+                    <p>Efficient handling of context and persistent storage, allowing agents to maintain state and learn from past interactions.</p>
+                </div>
+                
+                <div class="feature-card" style="text-align: center;">
+                    <div class="feature-icon" style="margin-left: auto; margin-right: auto;">📈</div>
+                    <h3>Scalability</h3>
+                    <p>Architecture designed to support everything from single-agent deployments to complex multi-agent systems handling millions of requests.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="powered-by" class="powered-by" style="padding: 5rem 0; background-color: var(--bg-color);">
+        <div class="container">
+            <h2 class="section-heading" style="text-align: center;">Powered by StableAgents</h2>
+            <p class="section-subheading" style="text-align: center; margin-left: auto; margin-right: auto;">Innovative solutions built on our enterprise-grade AI agent framework</p>
+            
+            <div class="features-grid" style="max-width: 1000px; margin-left: auto; margin-right: auto;">
+                <div class="feature-card" style="text-align: center;">
+                    <div class="feature-icon" style="background-color: rgba(79, 70, 229, 0.1); color: var(--secondary-color); margin-left: auto; margin-right: auto;">🧠</div>
+                    <h3>Human Turk</h3>
+                    <p>An intelligent task distribution platform that combines human expertise with AI capabilities for superior results in complex workflows.</p>
+                    <a href="#" style="display: block; margin-top: 1rem; color: var(--primary-color); font-weight: 500; text-decoration: none;">Learn more →</a>
+                </div>
+                
+                <div class="feature-card" style="text-align: center;">
+                    <div class="feature-icon" style="background-color: rgba(79, 70, 229, 0.1); color: var(--secondary-color); margin-left: auto; margin-right: auto;">🤖</div>
+                    <h3>AgentOps</h3>
+                    <p>Enterprise operations platform that automates routine tasks and provides real-time monitoring and analytics for AI-powered systems.</p>
+                    <a href="#" style="display: block; margin-top: 1rem; color: var(--primary-color); font-weight: 500; text-decoration: none;">Learn more →</a>
+                </div>
+                
+                <div class="feature-card" style="text-align: center;">
+                    <div class="feature-icon" style="background-color: rgba(79, 70, 229, 0.1); color: var(--secondary-color); margin-left: auto; margin-right: auto;">💼</div>
+                    <h3>Cognitive Assistant Pro</h3>
+                    <p>A business-focused AI assistant that integrates with enterprise systems to provide actionable insights and automate complex processes.</p>
+                    <a href="#" style="display: block; margin-top: 1rem; color: var(--primary-color); font-weight: 500; text-decoration: none;">Learn more →</a>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 3rem;">
+                <p style="margin-bottom: 1.5rem; font-size: 1.125rem;">Building something with StableAgents? We'd love to feature your solution.</p>
+                <a href="mailto:partners@stableagents.dev" class="btn btn-secondary">Partner with us</a>
+            </div>
+        </div>
+    </section>
+    
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to build reliable AI agents?</h2>
+            <p>Get access to StableAgents and start building enterprise-grade AI agent systems that work reliably in production.</p>
+            <a href="https://docs.stableagents.dev" class="btn">View Documentation</a>
+        </div>
+    </section>
+    
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-content" style="text-align: center;">
+                <div class="footer-logo" style="text-align: center;">
+                    <h3>StableAgents</h3>
+                    <p style="margin-top: 1rem; color: var(--gray-300);">The enterprise-grade framework for AI agents that provides robust infrastructure and system-level capabilities.</p>
+                </div>
+                
+                <div class="footer-links" style="text-align: center;">
+                    <h3>Resources</h3>
+                    <ul style="padding-left: 0;">
+                        <li><a href="https://docs.stableagents.dev">Documentation</a></li>
+                        <li><a href="https://docs.stableagents.dev/api">API Reference</a></li>
+                        <li><a href="https://docs.stableagents.dev/examples">Examples</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-links" style="text-align: center;">
+                    <h3>Company</h3>
+                    <ul style="padding-left: 0;">
+                        <li><a href="#vision">About Us</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#powered-by">Solutions</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-links" style="text-align: center;">
+                    <h3>Contact</h3>
+                    <ul style="padding-left: 0;">
+                        <li><a href="mailto:support@stableagents.dev">support@stableagents.dev</a></li>
+                        <li><a href="#">Request a Demo</a></li>
+                        <li><a href="https://stableagents.com" target="_blank">Purchase stableagents.com</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>© 2023-2024 StableAgents. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html> 
