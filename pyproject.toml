@@ -5,26 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "stableagents-ai"
 version = "0.2.1"
-description = "StableAgents AI Framework"
-requires-python = ">=3.8"
-dependencies = [
-    "requests>=2.28.0",
-    "openai>=1.0.0",
-    "anthropic>=0.5.0",
-]
-
-[tool.setuptools]
-packages = ["stableagents"]
-package-dir = {"" = "."}
-
-[tool.poetry]
-name = "stableagents-ai"
-version = "0.3.0"
 description = "A framework for self healing agents that can run locally and minimize hallucinations"
-authors = ["Your Name <your.email@example.com>"]
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
 readme = "README.md"
-license = "MIT"
-packages = [{include = "stableagents"}]
+license = {text = "MIT"}
+requires-python = ">=3.8"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -34,28 +21,21 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
+dependencies = [
+    "requests>=2.28.0",
+    "openai>=1.0.0",
+    "anthropic>=0.5.0",
+    "psutil>=5.9.0",
+    "pyppeteer>=1.0.2",
+]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-# Add your dependencies here
-requests = "^2.28.0"
-openai = "^1.0.0"
-anthropic = "^0.5.0"
-llama-cpp-python = { version = "^0.2.0", optional = true }
-psutil = "^5.9.0"
-pyppeteer = "^1.0.2"
-# Add any other dependencies required by your project
+[project.optional-dependencies]
+local = ["llama-cpp-python>=0.2.0"]
+all = ["llama-cpp-python>=0.2.0"]
 
-[tool.poetry.extras]
-local = ["llama-cpp-python"]
-self-healing = ["psutil"]
-desktop = ["pyppeteer"]
-all = ["llama-cpp-python", "psutil", "pyppeteer"]
+[project.scripts]
+stableagents-ai = "stableagents.run_cli:main"
 
-[tool.poetry.dev-dependencies]
-pytest = "^7.0.0"
-black = "^23.0.0"
-flake8 = "^6.0.0"
-
-[tool.poetry.scripts]
-run-stableagents = "stableagents.run_cli:main"
+[tool.setuptools]
+packages = ["stableagents"]
+package-dir = {"" = "."}
