@@ -198,27 +198,24 @@ def interactive_mode(agent, setup_ai=True, banner_style="default"):
             if user_input.startswith('apikey '):
                 parts = user_input.split(' ', 2)
                 if len(parts) < 3:
-                    print("Usage: apikey PROVIDER KEY")
+                    print("Usage: apikey [PROVIDER] [KEY]")
                 else:
-                    _, provider, key = parts
-                    success = agent.set_api_key(provider, key)
-                    if success:
-                        print(f"API key set for {provider}")
-                        # Set as active provider if no active provider
-                        if not agent.get_active_ai_provider():
-                            agent.set_active_ai_provider(provider)
-                            print(f"Active provider set to {provider}")
+                    provider_name = parts[1]
+                    api_key = parts[2]
+                    if agent.set_api_key(provider_name, api_key):
+                        print(f"API key set for {provider_name}")
+                        agent.set_active_ai_provider(provider_name)
+                        print(f"Set {provider_name} as active provider")
                     else:
-                        print(f"Failed to set API key for {provider}")
+                        print(f"Failed to set API key for {provider_name}")
                 continue
                 
             if user_input.lower() == 'providers':
-                providers = agent.list_ai_providers()
                 print("\nAvailable AI providers:")
-                for provider in providers:
-                    status = "ACTIVE" if provider["is_active"] else ""
-                    key_status = "✓" if provider["has_key"] else "✗"
-                    print(f"  {provider['name']} {status} [Key: {key_status}]")
+                print("  openai - OpenAI's GPT models")
+                print("  anthropic - Anthropic's Claude models")
+                print("\nTo set up a provider, use: apikey [PROVIDER] [KEY]")
+                print("Example: apikey openai sk-...")
                 continue
                 
             if user_input.startswith('provider '):
@@ -511,9 +508,9 @@ def main():
         providers = agent.list_ai_providers()
         print("Available AI providers:")
         for provider in providers:
-            status = "ACTIVE" if provider["is_active"] else ""
-            key_status = "✓" if provider["has_key"] else "✗"
-            print(f"  {provider['name']} {status} [Key: {key_status}]")
+            status = "✓" if provider["has_key"] else "✗"
+            active = " (active)" if provider["is_active"] else ""
+            print(f"  {status} {provider['name']}{active}")
     elif args.command == 'provider':
         success = agent.set_active_ai_provider(args.name)
         if success:

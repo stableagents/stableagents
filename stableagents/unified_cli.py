@@ -23,6 +23,7 @@ class UnifiedCLI:
             "memory": self.memory_command,
             "control": self.control_command,
             "provider": self.provider_command,
+            "providers": self.providers_command,
             "clear": self.clear_screen,
             "health": self.health_command
         }
@@ -205,6 +206,14 @@ class UnifiedCLI:
                 print(f"Failed to set API key for {provider}")
         else:
             print("Usage: provider list or provider set <n> <key>")
+    
+    def providers_command(self, args):
+        """List available AI providers"""
+        print("\nAvailable AI providers:")
+        print("  openai - OpenAI's GPT models")
+        print("  anthropic - Anthropic's Claude models")
+        print("\nTo set up a provider, use: provider set [PROVIDER] [KEY]")
+        print("Example: provider set openai sk-...")
     
     def clear_screen(self, args):
         """Clear the terminal screen"""
