@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "stableagents-ai"
-version = "0.2.0"
+version = "0.3.0"
 description = "A framework for self healing agents that can run locally and minimize hallucinations"
 authors = ["Your Name <your.email@example.com>"]
 readme = "README.md"
