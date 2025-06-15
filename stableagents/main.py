@@ -5,7 +5,14 @@ import datetime
 import sys
 import time
 import logging
-import tensorflow as tf
+
+# Make TensorFlow optional
+try:
+    import tensorflow as tf
+    TENSORFLOW_AVAILABLE = True
+except ImportError:
+    TENSORFLOW_AVAILABLE = False
+
 from .computer import ComputerControl
 from .ai_providers import AIProviderManager, AIProvider
 from .core.self_healing import SelfHealingController
@@ -33,8 +40,8 @@ class StableAgents:
             "context": {},
             "last_accessed": datetime.datetime.now()
         }
-        # Initialize TensorFlow
-        self.tf_model = None
+        # Initialize TensorFlow if available
+        self.tf_model = None if not TENSORFLOW_AVAILABLE else None
         
         # Initialize AI provider manager
         self.ai_manager = AIProviderManager(config_dir)
