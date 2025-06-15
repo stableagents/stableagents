@@ -11,6 +11,12 @@ def main():
     # Check for arguments
     args = sys.argv[1:]
     
+    # If no arguments or 'start' command, run in interactive mode
+    if not args or args[0] == 'start':
+        cli = UnifiedCLI()
+        cli.start()
+        return
+    
     model = None
     api_key = None
     use_local = False
@@ -44,7 +50,7 @@ def main():
             # Skip unknown argument
             i += 1
     
-    # Start the CLI
+    # Start the CLI with specified options
     cli = UnifiedCLI()
     cli.start(model, api_key, use_local, model_path, enable_self_healing, auto_recovery)
 

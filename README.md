@@ -79,4 +79,4 @@ agent.self_healing.register_component(
 
 Proprietary software licensed exclusively to authorized partners and customers.
 
-© 2023-2024 StableAgents. All rights reserved.
+© 2023-2025 StableAgents. All rights reserved.
