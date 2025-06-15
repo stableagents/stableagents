@@ -1,17 +1,15 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
 
-[project]
+[tool.poetry]
 name = "stableagents-ai"
 version = "0.2.1"
 description = "A framework for self healing agents that can run locally and minimize hallucinations"
-authors = [
-    {name = "Your Name", email = "your.email@example.com"}
-]
+authors = ["Jordan Plows jordan@plows.ai]
 readme = "README.md"
-license = {text = "MIT"}
-requires-python = ">=3.8"
+license = "MIT"
+packages = [{include = "stableagents"}]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -21,21 +19,23 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
-dependencies = [
-    "requests>=2.28.0",
-    "openai>=1.0.0",
-    "anthropic>=0.5.0",
-    "psutil>=5.9.0",
-    "pyppeteer>=1.0.2",
-]
 
-[project.optional-dependencies]
-local = ["llama-cpp-python>=0.2.0"]
-all = ["llama-cpp-python>=0.2.0"]
+[tool.poetry.dependencies]
+python = "^3.8"
+requests = "^2.28.0"
+openai = "^1.0.0"
+anthropic = "^0.5.0"
+psutil = "^5.9.0"
+pyppeteer = "^1.0.2"
 
-[project.scripts]
+[tool.poetry.extras]
+local = ["llama-cpp-python"]
+all = ["llama-cpp-python"]
+
+[tool.poetry.scripts]
 stableagents-ai = "stableagents.run_cli:main"
 
-[tool.setuptools]
-packages = ["stableagents"]
-package-dir = {"" = "."}
+[tool.poetry.dev-dependencies]
+pytest = "^7.0.0"
+black = "^23.0.0"
+flake8 = "^6.0.0"
