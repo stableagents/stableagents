@@ -80,3 +80,45 @@ agent.self_healing.register_component(
 Proprietary software licensed exclusively to authorized partners and customers.
 
 © 2023-2025 StableAgents. All rights reserved.
+
+## Quick Installation
+
+To install StableAgents globally on your system, run:
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/stableagents.git
+cd stableagents
+
+# Run the installation script
+chmod +x install.sh
+./install.sh
+```
+
+The installation script will:
+1. Check for required dependencies (Python 3 and pip)
+2. Install StableAgents globally
+3. Add the necessary PATH entries to your shell configuration
+4. Verify the installation
+
+After installation, you can run StableAgents from anywhere using:
+```bash
+stableagents-ai start
+```
+
+## Manual Installation
+
+If you prefer to install manually:
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/stableagents.git
+cd stableagents
+
+# Install globally
+pip install --user -e .
+
+# Add to your PATH (if not already done)
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc  # or ~/.zshrc
+source ~/.bashrc  # or source ~/.zshrc
+```
