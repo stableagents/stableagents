@@ -6,7 +6,7 @@ build-backend = "poetry.core.masonry.api"
 name = "stableagents-ai"
 version = "0.2.1"
 description = "A framework for self healing agents that can run locally and minimize hallucinations"
-authors = ["Jordan Plows jordan@plows.ai]
+authors = ["Jordan Plows <jordan@plows.ai>"]
 readme = "README.md"
 license = "MIT"
 packages = [{include = "stableagents"}]
@@ -33,6 +33,7 @@ local = ["llama-cpp-python"]
 all = ["llama-cpp-python"]
 
 [tool.poetry.scripts]
+stableagents = "stableagents.run_cli:main"
 stableagents-ai = "stableagents.run_cli:main"
 
 [tool.poetry.dev-dependencies]

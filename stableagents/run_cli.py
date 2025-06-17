@@ -11,8 +11,8 @@ def main():
     # Check for arguments
     args = sys.argv[1:]
     
-    # If no arguments or 'start' command, run in interactive mode
-    if not args or args[0] == 'start':
+    # If no arguments or 'start' command or --start flag, run in interactive mode
+    if not args or args[0] == 'start' or args[0] == '--start':
         cli = UnifiedCLI()
         cli.start()
         return
