@@ -34,7 +34,6 @@ local = ["llama-cpp-python"]
 all = ["llama-cpp-python"]
 
 [project.scripts]
-stableagents = "stableagents.run_cli:main"
 stableagents-ai = "stableagents.run_cli:main"
 
 [tool.setuptools.packages.find]

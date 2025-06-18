@@ -23,6 +23,7 @@ def main():
     model_path = None
     enable_self_healing = False
     auto_recovery = False
+    show_banner = True
     
     # Parse arguments manually to handle special characters in API keys
     i = 0
@@ -46,13 +47,16 @@ def main():
             enable_self_healing = True
             auto_recovery = True
             i += 1
+        elif args[i] == "--no-banner":
+            show_banner = False
+            i += 1
         else:
             # Skip unknown argument
             i += 1
     
     # Start the CLI with specified options
     cli = UnifiedCLI()
-    cli.start(model, api_key, use_local, model_path, enable_self_healing, auto_recovery)
+    cli.start(model, api_key, use_local, model_path, enable_self_healing, auto_recovery, show_banner)
 
 if __name__ == "__main__":
     main() 

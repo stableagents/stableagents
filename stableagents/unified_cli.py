@@ -5,16 +5,12 @@ Unified CLI for StableAgents that provides simple access to all framework featur
 import sys
 import os
 import argparse
-from stableagents import StableAgents
-from stableagents.core import get_banner, LogManager
-
-# Set up logging
-log_manager = LogManager()
-logger = log_manager.logger
 
 class UnifiedCLI:
     def __init__(self):
-        self.agent = StableAgents()
+        # Lazy load heavy modules
+        self.agent = None
+        self.log_manager = None
         self.commands = {
             "help": self.show_help,
             "exit": self.exit,
@@ -32,11 +28,27 @@ class UnifiedCLI:
         self.self_healing_enabled = False
         self.auto_recovery = False
         
+    def _lazy_load_agent(self):
+        """Lazy load the StableAgents instance"""
+        if self.agent is None:
+            from stableagents import StableAgents
+            self.agent = StableAgents()
+        return self.agent
+        
+    def _lazy_load_logging(self):
+        """Lazy load the logging manager"""
+        if self.log_manager is None:
+            from stableagents.core import LogManager
+            self.log_manager = LogManager()
+        return self.log_manager
+        
     def start(self, model=None, api_key=None, use_local=False, model_path=None, 
-              enable_self_healing=False, auto_recovery=False):
+              enable_self_healing=False, auto_recovery=False, show_banner=True):
         """Start the CLI interface"""
-        # Display banner
-        print(get_banner("simple"))
+        # Display banner only if requested
+        if show_banner:
+            from stableagents.core import get_banner
+            print(get_banner("simple"))
         
         # Set up local or remote provider
         self.use_local_model = use_local
@@ -45,8 +57,11 @@ class UnifiedCLI:
         self.auto_recovery = auto_recovery
         
         # Initialize the agent with self-healing if enabled
+        agent = self._lazy_load_agent()
+        
         if self.self_healing_enabled:
             # Re-create the agent with self-healing enabled
+            from stableagents import StableAgents
             self.agent = StableAgents(enable_self_healing=True)
             
             if self.auto_recovery:
@@ -100,7 +115,8 @@ class UnifiedCLI:
                 break
             except Exception as e:
                 print(f"Error: {e}")
-                logger.error(f"Error in command execution: {e}")
+                log_manager = self._lazy_load_logging()
+                log_manager.logger.error(f"Error in command execution: {e}")
     
     def show_help(self, args):
         """Show help information"""
@@ -136,17 +152,19 @@ class UnifiedCLI:
     
     def ai_command(self, prompt):
         """Generate text using AI"""
+        agent = self._lazy_load_agent()
+        
         # Check if AI provider is configured
-        if not self.use_local_model and not self.agent.get_active_ai_provider():
+        if not self.use_local_model and not agent.get_active_ai_provider():
             print("No active AI provider. Please set one with 'provider set <n> <key>'")
             return
             
         # If this is a chat-style message (not a command prefix), use chat mode
         if " " not in prompt or prompt.split()[0] not in self.commands:
             messages = [{"role": "user", "content": prompt}]
-            result = self.agent.generate_chat(messages)
+            result = agent.generate_chat(messages)
         else:
-            result = self.agent.generate_text(prompt)
+            result = agent.generate_text(prompt)
             
         print(f"AI: {result}")
     
@@ -159,14 +177,16 @@ class UnifiedCLI:
         parts = args.split(maxsplit=3)
         sub_command = parts[0].lower() if parts else ""
         
+        agent = self._lazy_load_agent()
+        
         if sub_command == "add" and len(parts) >= 4:
             mem_type, key, value = parts[1], parts[2], parts[3]
-            self.agent.add_to_memory(mem_type, key, value)
+            agent.add_to_memory(mem_type, key, value)
             print(f"Added to {mem_type} memory: {key} = {value}")
         elif sub_command == "get" and len(parts) >= 2:
             mem_type = parts[1]
             key = parts[2] if len(parts) > 2 else None
-            result = self.agent.get_from_memory(mem_type, key)
+            result = agent.get_from_memory(mem_type, key)
             print(f"Memory ({mem_type}, {key}):", result)
         else:
             print("Usage: memory add <type> <key> <value> or memory get <type> [key]")
@@ -177,7 +197,8 @@ class UnifiedCLI:
             print("Please provide a command after 'control'")
             return
             
-        result = self.agent.control_computer(args)
+        agent = self._lazy_load_agent()
+        result = agent.control_computer(args)
         print(result)
     
     def provider_command(self, args):
@@ -189,8 +210,10 @@ class UnifiedCLI:
         parts = args.split(maxsplit=2)
         sub_command = parts[0].lower() if parts else ""
         
+        agent = self._lazy_load_agent()
+        
         if sub_command == "list":
-            providers = self.agent.list_ai_providers()
+            providers = agent.list_ai_providers()
             print("\nAvailable AI providers:")
             for provider in providers:
                 status = "ACTIVE" if provider["is_active"] else ""
@@ -198,10 +221,10 @@ class UnifiedCLI:
                 print(f"  {provider['name']} {status} [Key: {key_status}]")
         elif sub_command == "set" and len(parts) >= 3:
             provider, key = parts[1], parts[2]
-            success = self.agent.set_api_key(provider, key)
+            success = agent.set_api_key(provider, key)
             if success:
-                self.agent.set_active_ai_provider(provider)
-                print(f"Active provider set to {provider}")
+                agent.set_active_ai_provider(provider)
+                print(f"Set {provider} as active provider")
             else:
                 print(f"Failed to set API key for {provider}")
         else:
