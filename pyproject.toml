@@ -27,6 +27,8 @@ openai = "^1.0.0"
 anthropic = "^0.5.0"
 psutil = "^5.9.0"
 pyppeteer = "^1.0.2"
+fastapi = "^0.104.0"
+uvicorn = {extras = ["standard"], version = "^0.24.0"}
 
 [tool.poetry.extras]
 local = ["llama-cpp-python"]
@@ -34,6 +36,7 @@ all = ["llama-cpp-python"]
 
 [tool.poetry.scripts]
 stableagents = "stableagents.run_cli:main"
+stableagents-api = "stableagents.api:app"
 
 [tool.black]
 line-length = 88

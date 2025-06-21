@@ -17,6 +17,8 @@ if __name__ == "__main__":
             "anthropic>=0.5.0",
             "psutil>=5.9.0",
             "pyppeteer>=1.0.2",
+            "fastapi>=0.104.0",
+            "uvicorn[standard]>=0.24.0",
         ],
         extras_require={
             "local": ["llama-cpp-python"],
