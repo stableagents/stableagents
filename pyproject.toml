@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "stableagents-ai"
 version = "0.2.1"
-description = "A framework for self healing agents that can run locally and minimize hallucinations"
+description = "The standard for capable and reliable agents in production"
 authors = ["Jordan Plows <jordan@plows.ai>"]
 readme = "README.md"
 license = "MIT"
