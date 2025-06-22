@@ -1,0 +1,159 @@
+#!/usr/bin/env python3
+"""
+StableAgents Secure API Key Manager CLI
+"""
+import sys
+import os
+import argparse
+import getpass
+
+# Add the project root to the path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+def main():
+    parser = argparse.ArgumentParser(description='StableAgents Secure API Key Manager')
+    parser.add_argument('command', choices=['status', 'setup', 'clear', 'list'], 
+                       help='Command to run')
+    parser.add_argument('--provider', choices=['openai', 'anthropic', 'google'], 
+                       help='Provider for specific commands')
+    parser.add_argument('--key', help='API key (for setup)')
+    
+    args = parser.parse_args()
+    
+    try:
+        from stableagents.api_key_manager import SecureAPIKeyManager
+        manager = SecureAPIKeyManager()
+        
+        if args.command == 'status':
+            status = manager.check_payment_status()
+            print("🔐 Secure API Key Manager Status")
+            print("=" * 35)
+            print(f"Payment Status: {'✅ Paid' if status.get('paid') else '❌ Not Paid'}")
+            if status.get('payment_date'):
+                print(f"Payment Date: {status['payment_date']}")
+            print(f"API Keys Provided: {len(status.get('api_keys_provided', []))}")
+            
+            if status.get('api_keys_provided'):
+                print("\nAvailable Providers:")
+                for provider in status['api_keys_provided']:
+                    print(f"  ✅ {provider}")
+            else:
+                print("\nNo API keys configured")
+                
+        elif args.command == 'setup':
+            print("🔐 Secure API Key Setup")
+            print("=" * 25)
+            
+            # Show options
+            print("You have three options:")
+            print()
+            print("1. 💳 Pay $20 for managed API keys")
+            print("2. 🔑 Bring your own API keys")
+            print("3. 🏠 Use local models only")
+            print()
+            
+            choice = input("Enter your choice (1-3): ").strip()
+            
+            if choice == "1":
+                # Payment option
+                print("\n💳 Payment Setup")
+                print("=" * 20)
+                if manager.process_payment():
+                    print("✅ Payment successful!")
+                    
+                    # Get password
+                    while True:
+                        password = getpass.getpass("Enter a password to encrypt your API keys: ")
+                        if password:
+                            confirm = getpass.getpass("Confirm password: ")
+                            if password == confirm:
+                                break
+                            else:
+                                print("Passwords don't match. Please try again.")
+                        else:
+                            print("Password cannot be empty.")
+                    
+                    if manager.provide_api_keys_after_payment(password):
+                        print("✅ API keys have been securely stored!")
+                    else:
+                        print("❌ Failed to provide API keys")
+                else:
+                    print("❌ Payment failed")
+                    
+            elif choice == "2":
+                # Custom keys
+                print("\n🔑 Custom API Key Setup")
+                print("=" * 25)
+                
+                # Get password
+                while True:
+                    password = getpass.getpass("Enter a password to encrypt your API keys: ")
+                    if password:
+                        confirm = getpass.getpass("Confirm password: ")
+                        if password == confirm:
+                            break
+                        else:
+                            print("Passwords don't match. Please try again.")
+                    else:
+                        print("Password cannot be empty.")
+                
+                # Reset encryption
+                manager.reset_encryption()
+                
+                # Collect keys
+                providers = ["openai", "anthropic", "google"]
+                keys_set = False
+                
+                for provider in providers:
+                    print(f"\n{provider.capitalize()} API Key (press Enter to skip):")
+                    api_key = getpass.getpass("> ")
+                    
+                    if api_key:
+                        if manager.set_api_key(provider, api_key, password):
+                            print(f"✅ {provider.capitalize()} key stored securely")
+                            keys_set = True
+                        else:
+                            print(f"❌ Failed to store {provider.capitalize()} key")
+                
+                if keys_set:
+                    print("\n✅ API keys have been securely stored!")
+                else:
+                    print("\n⚠️  No API keys were set")
+                    
+            elif choice == "3":
+                print("✅ Local model mode selected")
+                print("💡 To use local models, download GGUF files to ~/.stableagents/models/")
+                
+            else:
+                print("Invalid choice")
+                
+        elif args.command == 'clear':
+            print("🗑️  Clearing all stored API keys...")
+            manager.reset_encryption()
+            print("✅ All API keys have been cleared")
+            
+        elif args.command == 'list':
+            print("📋 Available API Key Providers")
+            print("=" * 30)
+            providers = ["openai", "anthropic", "google"]
+            
+            for provider in providers:
+                print(f"  • {provider.capitalize()}")
+                print(f"    - OpenAI GPT models" if provider == "openai" else 
+                      f"    - Anthropic Claude models" if provider == "anthropic" else
+                      f"    - Google Gemini models")
+            print()
+            print("💡 Use 'stableagents-keys setup' to configure keys")
+            
+    except ImportError:
+        print("❌ Secure API Key Manager not available")
+        print("   Make sure all dependencies are installed")
+        return 1
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        return 1
+    
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main()) 

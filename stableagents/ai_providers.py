@@ -6,6 +6,13 @@ from typing import Dict, Any, Optional, List, Union
 from pathlib import Path
 import importlib.util
 
+# Import the secure API key manager
+try:
+    from .api_key_manager import SecureAPIKeyManager
+    SECURE_MANAGER_AVAILABLE = True
+except ImportError:
+    SECURE_MANAGER_AVAILABLE = False
+
 class AIProviderManager:
     """Manages AI provider integrations and API keys."""
     
@@ -18,6 +25,11 @@ class AIProviderManager:
         self.api_keys = self._load_api_keys()
         self.active_provider = self._get_active_provider()
         self.provider_instances = {}
+        
+        # Initialize secure API key manager if available
+        self.secure_manager = None
+        if SECURE_MANAGER_AVAILABLE:
+            self.secure_manager = SecureAPIKeyManager(config_dir)
         
     def _get_default_config_dir(self) -> str:
         """Get the default configuration directory."""
@@ -50,12 +62,82 @@ class AIProviderManager:
         """Get the currently active provider."""
         return self.api_keys.get("active_provider")
     
-    def set_api_key(self, provider: str, api_key: str) -> bool:
+    def setup_secure_api_keys(self) -> bool:
+        """Set up secure API key management."""
+        if not self.secure_manager:
+            self.logger.error("Secure API key manager not available")
+            return False
+        
+        # Show payment options
+        self.secure_manager.show_payment_options()
+        
+        # Get user choice
+        choice = input("\nEnter your choice (1-3): ").strip()
+        
+        if choice == "1":
+            # Process payment
+            if self.secure_manager.process_payment():
+                password = getpass.getpass("Enter a password to encrypt your API keys: ")
+                if password:
+                    return self.secure_manager.provide_api_keys_after_payment(password)
+                else:
+                    print("❌ Password required for encryption")
+                    return False
+        
+        elif choice == "2":
+            # Custom API keys
+            password = getpass.getpass("Enter a password to encrypt your API keys: ")
+            if password:
+                return self.secure_manager.setup_custom_api_keys(password)
+            else:
+                print("❌ Password required for encryption")
+                return False
+        
+        elif choice == "3":
+            # Local models only
+            print("\n🏠 Local Models Setup")
+            print("=" * 30)
+            print("Great choice! You can use StableAgents with local models.")
+            print("Download GGUF models and place them in ~/.stableagents/models/")
+            print("No API keys or payment required.")
+            return True
+        
+        else:
+            print("❌ Invalid choice")
+            return False
+    
+    def get_api_key(self, provider: Optional[str] = None, password: Optional[str] = None) -> Optional[str]:
+        """Get the API key for a provider."""
+        provider = provider or self.active_provider
+        if not provider:
+            return None
+        
+        # Try secure manager first if password provided
+        if self.secure_manager and password:
+            return self.secure_manager.get_api_key(provider, password)
+        
+        # Fall back to plain text storage
+        return self.api_keys.get(provider)
+        
+    def set_api_key(self, provider: str, api_key: str, password: Optional[str] = None) -> bool:
         """Set an API key for a provider."""
         if provider not in self.SUPPORTED_PROVIDERS:
             self.logger.error(f"Unsupported provider: {provider}")
             return False
-            
+        
+        # Use secure manager if available and password provided
+        if self.secure_manager and password:
+            success = self.secure_manager.set_api_key(provider, api_key, password)
+            if success:
+                # Also update plain text storage for backward compatibility
+                self.api_keys[provider] = api_key
+                if not self.active_provider:
+                    self.api_keys["active_provider"] = provider
+                    self.active_provider = provider
+                self._save_api_keys()
+            return success
+        
+        # Fall back to plain text storage
         self.api_keys[provider] = api_key
         
         # If this is the first provider, set it as active
@@ -66,20 +148,29 @@ class AIProviderManager:
         self._save_api_keys()
         return True
         
-    def get_api_key(self, provider: Optional[str] = None) -> Optional[str]:
-        """Get the API key for a provider."""
-        provider = provider or self.active_provider
-        if not provider:
-            return None
-        return self.api_keys.get(provider)
-        
     def prompt_for_api_key(self, provider: Optional[str] = None) -> Optional[str]:
         """Prompt the user for an API key."""
         provider = provider or "openai"
         if provider not in self.SUPPORTED_PROVIDERS:
             self.logger.error(f"Unsupported provider: {provider}")
             return None
+        
+        # Check if secure manager is available
+        if self.secure_manager:
+            print(f"\n🔐 Secure API Key Setup for {provider.capitalize()}")
+            print("=" * 50)
+            print("StableAgents supports secure API key storage with encryption.")
+            print()
             
+            use_secure = input("Would you like to use secure storage? (y/n): ").strip().lower()
+            
+            if use_secure == 'y':
+                # Set up secure API keys
+                return self.setup_secure_api_keys()
+            else:
+                print("Using plain text storage (less secure)")
+        
+        # Fall back to plain text prompt
         print(f"\nNo API key found for {provider}.")
         print(f"Please enter your {provider.capitalize()} API key:")
         api_key = getpass.getpass("> ")

@@ -29,6 +29,7 @@ psutil = "^5.9.0"
 pyppeteer = "^1.0.2"
 fastapi = "^0.104.0"
 uvicorn = {extras = ["standard"], version = "^0.24.0"}
+cryptography = "^3.4.0"
 
 [tool.poetry.extras]
 local = ["llama-cpp-python"]
@@ -37,6 +38,7 @@ all = ["llama-cpp-python"]
 [tool.poetry.scripts]
 stableagents = "stableagents.run_cli:main"
 stableagents-api = "stableagents.api:app"
+stableagents-keys = "stableagents.cli_key_manager:main"
 
 [tool.black]
 line-length = 88

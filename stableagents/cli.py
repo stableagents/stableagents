@@ -20,8 +20,177 @@ def setup_logging(verbose):
     )
     return logging.getLogger('stableagents-cli')
 
+def check_secure_api_setup():
+    """Check if secure API key management is available and guide user through setup"""
+    try:
+        from stableagents.api_key_manager import SecureAPIKeyManager
+        manager = SecureAPIKeyManager()
+        
+        # Check if user has already paid or set up keys
+        status = manager.check_payment_status()
+        
+        if status.get('paid', False) and status.get('api_keys_provided'):
+            print("✅ Secure API keys are configured")
+            return True
+            
+        # No secure setup found, guide user through the process
+        print("\n🔐 Welcome to StableAgents!")
+        print("=" * 40)
+        print("To use AI features, you need to set up API keys securely.")
+        print()
+        
+        # Show options
+        print("You have three options:")
+        print()
+        print("1. 💳 Pay $20 for managed API keys")
+        print("   - We provide working API keys")
+        print("   - Keys are securely encrypted")
+        print("   - One-time payment, no recurring charges")
+        print()
+        print("2. 🔑 Bring your own API keys")
+        print("   - Use your existing OpenAI, Anthropic, etc. keys")
+        print("   - Keys are securely encrypted")
+        print("   - No additional cost beyond your API usage")
+        print()
+        print("3. 🏠 Use local models only")
+        print("   - Download GGUF models for local inference")
+        print("   - No API keys or payment required")
+        print("   - Works offline, privacy-focused")
+        print()
+        
+        while True:
+            try:
+                choice = input("Enter your choice (1-3): ").strip()
+                
+                if choice == "1":
+                    return setup_payment_option(manager)
+                elif choice == "2":
+                    return setup_custom_keys(manager)
+                elif choice == "3":
+                    print("✅ Local model mode selected")
+                    print("💡 To use local models, download GGUF files to ~/.stableagents/models/")
+                    return True
+                else:
+                    print("Please enter 1, 2, or 3")
+            except KeyboardInterrupt:
+                print("\nSetup cancelled. You can run 'stableagents setup' later.")
+                return False
+                
+    except ImportError:
+        print("⚠️  Secure API key management not available")
+        print("   Using legacy API key management")
+        return False
+
+def setup_payment_option(manager):
+    """Setup payment option for managed API keys"""
+    print("\n💳 Payment Setup")
+    print("=" * 20)
+    print("Processing payment for API key access...")
+    print("Amount: $20.00 USD")
+    print()
+    
+    if manager.process_payment():
+        print("✅ Payment successful!")
+        print()
+        
+        # Get password for encryption
+        while True:
+            password = getpass.getpass("Enter a password to encrypt your API keys: ")
+            if password:
+                confirm = getpass.getpass("Confirm password: ")
+                if password == confirm:
+                    break
+                else:
+                    print("Passwords don't match. Please try again.")
+            else:
+                print("Password cannot be empty.")
+        
+        # Provide API keys
+        if manager.provide_api_keys_after_payment(password):
+            print("✅ API keys have been securely stored and encrypted!")
+            print("🔒 Your keys are protected with your password")
+            print("💡 You can now use AI features in StableAgents")
+            return True
+        else:
+            print("❌ Failed to provide API keys")
+            return False
+    else:
+        print("❌ Payment failed")
+        return False
+
+def setup_custom_keys(manager):
+    """Setup custom API keys"""
+    print("\n🔑 Custom API Key Setup")
+    print("=" * 25)
+    print("Enter your API keys securely. They will be encrypted.")
+    print()
+    
+    # Get password for encryption
+    while True:
+        password = getpass.getpass("Enter a password to encrypt your API keys: ")
+        if password:
+            confirm = getpass.getpass("Confirm password: ")
+            if password == confirm:
+                break
+            else:
+                print("Passwords don't match. Please try again.")
+        else:
+            print("Password cannot be empty.")
+    
+    # Reset encryption
+    manager.reset_encryption()
+    
+    # Collect API keys
+    providers = ["openai", "anthropic", "google"]
+    keys_set = False
+    
+    for provider in providers:
+        print(f"\n{provider.capitalize()} API Key (press Enter to skip):")
+        api_key = getpass.getpass("> ")
+        
+        if api_key:
+            if manager.set_api_key(provider, api_key, password):
+                print(f"✅ {provider.capitalize()} key stored securely")
+                keys_set = True
+            else:
+                print(f"❌ Failed to store {provider.capitalize()} key")
+    
+    if keys_set:
+        print("\n✅ API keys have been securely stored and encrypted!")
+        print("🔒 Your keys are protected with your password")
+        print("💡 You can now use AI features in StableAgents")
+        return True
+    else:
+        print("\n⚠️  No API keys were set")
+        return False
+
 def setup_ai_provider(agent):
     """Interactive setup for AI provider and API key"""
+    # First check if secure API management is available
+    if check_secure_api_setup():
+        # Try to get keys from secure manager
+        try:
+            from stableagents.api_key_manager import SecureAPIKeyManager
+            manager = SecureAPIKeyManager()
+            status = manager.check_payment_status()
+            
+            if status.get('paid', False) and status.get('api_keys_provided'):
+                # User has secure keys, try to use them
+                password = getpass.getpass("Enter your encryption password: ")
+                
+                # Try to get keys for each provider
+                providers = ["openai", "anthropic", "google"]
+                for provider in providers:
+                    key = manager.get_api_key(provider, password)
+                    if key:
+                        agent.set_api_key(provider, key)
+                        agent.set_active_ai_provider(provider)
+                        print(f"✅ Using {provider.capitalize()} from secure storage")
+                        return True
+        except Exception as e:
+            print(f"⚠️  Error accessing secure keys: {e}")
+    
+    # Fallback to legacy setup
     providers = agent.list_ai_providers()
     
     # Get providers with keys
@@ -107,6 +276,7 @@ def interactive_mode(agent, setup_ai=True, banner_style="default"):
                 print("  chat [MESSAGE] - Chat with the AI provider")
                 print("  apikey [PROVIDER] [KEY] - Set API key for a provider")
                 print("  providers - List available AI providers")
+                print("  provider list - Show detailed provider status")
                 print("  provider [PROVIDER] - Set the active AI provider")
                 print("  reset - Reset the agent")
                 print("  exit/quit - Exit the program")
@@ -211,25 +381,50 @@ def interactive_mode(agent, setup_ai=True, banner_style="default"):
                 continue
                 
             if user_input.lower() == 'providers':
+                providers = agent.list_ai_providers()
                 print("\nAvailable AI providers:")
-                print("  openai - OpenAI's GPT models")
-                print("  anthropic - Anthropic's Claude models")
+                for provider in providers:
+                    status = "✅" if provider["has_key"] else "❌"
+                    active = " (active)" if provider["is_active"] else ""
+                    print(f"  {status} {provider['name']}{active}")
                 print("\nTo set up a provider, use: apikey [PROVIDER] [KEY]")
                 print("Example: apikey openai sk-...")
                 continue
                 
             if user_input.startswith('provider '):
-                provider = user_input[9:].strip()
-                if not provider:
-                    print("Please specify a provider")
-                else:
-                    success = agent.set_active_ai_provider(provider)
-                    if success:
-                        print(f"Active provider set to {provider}")
-                    else:
-                        print(f"Failed to set active provider to {provider}")
-                continue
+                parts = user_input.split(' ', 1)
+                if len(parts) < 2:
+                    print("Usage: provider [PROVIDER] or provider list")
+                    continue
+                    
+                subcommand = parts[1].strip()
                 
+                if subcommand.lower() == 'list':
+                    providers = agent.list_ai_providers()
+                    print("\nAI Provider Status:")
+                    print("=" * 30)
+                    for provider in providers:
+                        status = "✅" if provider["has_key"] else "❌"
+                        active = " (ACTIVE)" if provider["is_active"] else ""
+                        print(f"  {status} {provider['name']}{active}")
+                        
+                        if provider["has_key"]:
+                            # Show masked key for security
+                            key = agent.get_api_key(provider["name"])
+                            if key:
+                                masked_key = key[:8] + "****" + key[-4:] if len(key) > 12 else "****"
+                                print(f"      Key: {masked_key}")
+                    print()
+                    continue
+                else:
+                    # Set active provider
+                    success = agent.set_active_ai_provider(subcommand)
+                    if success:
+                        print(f"Active provider set to {subcommand}")
+                    else:
+                        print(f"Failed to set active provider to {subcommand}")
+                    continue
+            
             # Default: display as message
             agent.display_messages(user_input)
             
@@ -344,6 +539,7 @@ def main():
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
     parser.add_argument('--banner', choices=['default', 'simple', 'compact'], default='default', 
                       help='Select ASCII art banner style (default, simple, compact)')
+    parser.add_argument('--start', action='store_true', help='Start StableAgents with secure API setup')
     
     subparsers = parser.add_subparsers(dest='command', help='Command to run')
     
@@ -352,6 +548,9 @@ def main():
     
     # Examples mode
     examples_parser = subparsers.add_parser('examples', help='Run guided AI examples')
+    
+    # Setup mode
+    setup_parser = subparsers.add_parser('setup', help='Setup secure API keys')
     
     # Memory commands
     memory_parser = subparsers.add_parser('memory', help='Memory operations')
@@ -436,9 +635,44 @@ def main():
     agent = StableAgents()
     logger.debug("StableAgents initialized")
     
+    # Handle --start flag
+    if args.start:
+        print("🚀 Starting StableAgents with secure setup...")
+        print()
+        
+        # Run secure setup
+        setup_success = check_secure_api_setup()
+        
+        if setup_success:
+            print("\n" + "="*50)
+            print("🎉 Setup complete! Starting interactive mode...")
+            print("="*50)
+            print()
+            
+            # Start interactive mode
+            interactive_mode(agent, setup_ai=False, banner_style=args.banner)
+            return 0
+        else:
+            print("\n⚠️  Setup incomplete. You can still use StableAgents with limited features.")
+            print("💡 Run 'stableagents setup' to configure API keys later.")
+            print()
+            
+            # Start interactive mode anyway
+            interactive_mode(agent, setup_ai=False, banner_style=args.banner)
+            return 0
+    
     # Process commands
     if args.command == 'interactive' or not args.command:
         interactive_mode(agent, banner_style=args.banner)
+    elif args.command == 'setup':
+        print("🔐 Secure API Key Setup")
+        print("=" * 25)
+        setup_success = check_secure_api_setup()
+        if setup_success:
+            print("\n✅ Setup completed successfully!")
+        else:
+            print("\n⚠️  Setup was not completed.")
+        return 0 if setup_success else 1
     elif args.command == 'examples':
         return run_examples(agent, args.banner)
     elif args.command == 'memory':

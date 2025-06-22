@@ -21,7 +21,8 @@ class UnifiedCLI:
             "provider": self.provider_command,
             "providers": self.providers_command,
             "clear": self.clear_screen,
-            "health": self.health_command
+            "health": self.health_command,
+            "setup": self.setup_command
         }
         self.use_local_model = False
         self.local_model_path = None
@@ -73,6 +74,10 @@ class UnifiedCLI:
             else:
                 print("Self-healing enabled (manual recovery)")
         
+        # Check for secure API setup if not using local models
+        if not use_local and not model and not api_key:
+            self._check_secure_api_setup()
+        
         if use_local:
             print("Using local model")
             if model_path:
@@ -118,6 +123,154 @@ class UnifiedCLI:
                 log_manager = self._lazy_load_logging()
                 log_manager.logger.error(f"Error in command execution: {e}")
     
+    def _check_secure_api_setup(self):
+        """Check if secure API key management is available and guide user through setup"""
+        try:
+            from stableagents.api_key_manager import SecureAPIKeyManager
+            manager = SecureAPIKeyManager()
+            
+            # Check if user has already paid or set up keys
+            status = manager.check_payment_status()
+            
+            if status.get('paid', False) and status.get('api_keys_provided'):
+                print("✅ Secure API keys are configured")
+                return True
+                
+            # No secure setup found, guide user through the process
+            print("\n🔐 Welcome to StableAgents!")
+            print("=" * 40)
+            print("To use AI features, you need to set up API keys securely.")
+            print()
+            
+            # Show options
+            print("You have three options:")
+            print()
+            print("1. 💳 Pay $20 for managed API keys")
+            print("   - We provide working API keys")
+            print("   - Keys are securely encrypted")
+            print("   - One-time payment, no recurring charges")
+            print()
+            print("2. 🔑 Bring your own API keys")
+            print("   - Use your existing OpenAI, Anthropic, etc. keys")
+            print("   - Keys are securely encrypted")
+            print("   - No additional cost beyond your API usage")
+            print()
+            print("3. 🏠 Use local models only")
+            print("   - Download GGUF models for local inference")
+            print("   - No API keys or payment required")
+            print("   - Works offline, privacy-focused")
+            print()
+            
+            while True:
+                try:
+                    choice = input("Enter your choice (1-3): ").strip()
+                    
+                    if choice == "1":
+                        return self._setup_payment_option(manager)
+                    elif choice == "2":
+                        return self._setup_custom_keys(manager)
+                    elif choice == "3":
+                        print("✅ Local model mode selected")
+                        print("💡 To use local models, download GGUF files to ~/.stableagents/models/")
+                        return True
+                    else:
+                        print("Please enter 1, 2, or 3")
+                except KeyboardInterrupt:
+                    print("\nSetup cancelled. You can run 'setup' command later.")
+                    return False
+                    
+        except ImportError:
+            print("⚠️  Secure API key management not available")
+            print("   Using legacy API key management")
+            return False
+    
+    def _setup_payment_option(self, manager):
+        """Setup payment option for managed API keys"""
+        import getpass
+        
+        print("\n💳 Payment Setup")
+        print("=" * 20)
+        print("Processing payment for API key access...")
+        print("Amount: $20.00 USD")
+        print()
+        
+        if manager.process_payment():
+            print("✅ Payment successful!")
+            print()
+            
+            # Get password for encryption
+            while True:
+                password = getpass.getpass("Enter a password to encrypt your API keys: ")
+                if password:
+                    confirm = getpass.getpass("Confirm password: ")
+                    if password == confirm:
+                        break
+                    else:
+                        print("Passwords don't match. Please try again.")
+                else:
+                    print("Password cannot be empty.")
+            
+            # Provide API keys
+            if manager.provide_api_keys_after_payment(password):
+                print("✅ API keys have been securely stored and encrypted!")
+                print("🔒 Your keys are protected with your password")
+                print("💡 You can now use AI features in StableAgents")
+                return True
+            else:
+                print("❌ Failed to provide API keys")
+                return False
+        else:
+            print("❌ Payment failed")
+            return False
+    
+    def _setup_custom_keys(self, manager):
+        """Setup custom API keys"""
+        import getpass
+        
+        print("\n🔑 Custom API Key Setup")
+        print("=" * 25)
+        print("Enter your API keys securely. They will be encrypted.")
+        print()
+        
+        # Get password for encryption
+        while True:
+            password = getpass.getpass("Enter a password to encrypt your API keys: ")
+            if password:
+                confirm = getpass.getpass("Confirm password: ")
+                if password == confirm:
+                    break
+                else:
+                    print("Passwords don't match. Please try again.")
+            else:
+                print("Password cannot be empty.")
+        
+        # Reset encryption
+        manager.reset_encryption()
+        
+        # Collect API keys
+        providers = ["openai", "anthropic", "google"]
+        keys_set = False
+        
+        for provider in providers:
+            print(f"\n{provider.capitalize()} API Key (press Enter to skip):")
+            api_key = getpass.getpass("> ")
+            
+            if api_key:
+                if manager.set_api_key(provider, api_key, password):
+                    print(f"✅ {provider.capitalize()} key stored securely")
+                    keys_set = True
+                else:
+                    print(f"❌ Failed to store {provider.capitalize()} key")
+        
+        if keys_set:
+            print("\n✅ API keys have been securely stored and encrypted!")
+            print("🔒 Your keys are protected with your password")
+            print("💡 You can now use AI features in StableAgents")
+            return True
+        else:
+            print("\n⚠️  No API keys were set")
+            return False
+    
     def show_help(self, args):
         """Show help information"""
         print("\nAvailable commands:")
@@ -127,6 +280,7 @@ class UnifiedCLI:
         print("  control <command> - Control computer with natural language")
         print("  provider list     - List available AI providers")
         print("  provider set <n> <key> - Set provider and API key")
+        print("  setup             - Setup secure API keys")
         print("  health            - Show system health report")
         print("  clear             - Clear the screen")
         print("  help              - Show this help message")
@@ -244,70 +398,113 @@ class UnifiedCLI:
         print(get_banner("simple"))
     
     def health_command(self, args):
-        """Show system health information"""
-        if not self.agent.self_healing_enabled:
-            print("Self-healing is not enabled. Start with --self-healing to enable.")
-            return
+        """Show system health report"""
+        agent = self._lazy_load_agent()
+        
+        print("\n🏥 StableAgents Health Report")
+        print("=" * 30)
+        
+        # Check AI providers
+        providers = agent.list_ai_providers()
+        print("\n🤖 AI Providers:")
+        for provider in providers:
+            status = "✅" if provider["has_key"] else "❌"
+            active = " (active)" if provider["is_active"] else ""
+            print(f"  {status} {provider['name']}{active}")
+        
+        # Check memory
+        print("\n🧠 Memory Status:")
+        try:
+            short_term = agent.get_from_memory("short_term")
+            long_term = agent.get_from_memory("long_term")
+            context = agent.get_from_memory("context")
             
-        health_report = self.agent.get_health_report()
+            print(f"  Short-term: {len(short_term)} items")
+            print(f"  Long-term: {len(long_term)} items")
+            print(f"  Context: {len(context)} items")
+        except Exception as e:
+            print(f"  ❌ Error accessing memory: {e}")
         
-        print("\nSystem Health Report:")
-        print(f"Status: {health_report.get('status', 'unknown')}")
+        # Check self-healing if enabled
+        if self.self_healing_enabled:
+            print("\n🔧 Self-Healing Status:")
+            try:
+                health = agent.self_healing.get_health_status()
+                print(f"  Status: {health.get('status', 'Unknown')}")
+                print(f"  Issues: {health.get('issue_count', 0)}")
+                print(f"  Auto-recovery: {'✅' if self.auto_recovery else '❌'}")
+            except Exception as e:
+                print(f"  ❌ Error checking self-healing: {e}")
         
-        # Show components health
-        if "components" in health_report:
-            print("\nComponents:")
-            for comp_id, comp_data in health_report["components"].items():
-                status = "✓ Healthy" if comp_data.get("healthy", False) else "✗ Unhealthy"
-                print(f"  {comp_id}: {status}")
-                
-                # Show metrics for unhealthy components
-                if not comp_data.get("healthy", False):
-                    for metric in comp_data.get("metrics", []):
-                        if not metric.get("healthy", True):
-                            print(f"    - {metric['name']}: {metric['value']} (unhealthy)")
+        # Check local model if enabled
+        if self.use_local_model:
+            print("\n🏠 Local Model Status:")
+            if self.local_model_path:
+                if os.path.exists(self.local_model_path):
+                    print(f"  ✅ Model file exists: {self.local_model_path}")
+                else:
+                    print(f"  ❌ Model file not found: {self.local_model_path}")
+            else:
+                print("  ⚠️  No specific model path set")
         
-        # Show active issues
-        active_issues = health_report.get("active_issues", [])
-        if active_issues:
-            print(f"\nActive Issues ({len(active_issues)}):")
-            for issue in active_issues:
-                print(f"  - {issue['severity'].upper()}: {issue['component']} - {issue['description']}")
-                
-                # Show recovery plan if available
-                if "recovery_plans" in health_report and issue["id"] in health_report["recovery_plans"]:
-                    plan = health_report["recovery_plans"][issue["id"]]
-                    status = "Succeeded" if plan["success"] else "Failed"
-                    print(f"    Recovery: {status} ({plan['actions_executed']} actions)")
+        print("\n" + "=" * 30)
+    
+    def setup_command(self, args):
+        """Setup secure API keys"""
+        print("🔐 Secure API Key Setup")
+        print("=" * 25)
+        setup_success = self._check_secure_api_setup()
+        if setup_success:
+            print("\n✅ Setup completed successfully!")
         else:
-            print("\nNo active issues detected")
-            
-        # Show recovery status
-        print(f"\nAutomatic Recovery: {'Enabled' if health_report.get('auto_recovery', False) else 'Disabled'}")
-        print(f"Monitoring Interval: {health_report.get('monitoring_interval', 'unknown')} seconds")
+            print("\n⚠️  Setup was not completed.")
+        return setup_success
 
 def main():
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='StableAgents Unified CLI')
-    parser.add_argument('--model', choices=['openai', 'anthropic', 'google', 'custom'], 
-                        help='AI provider model (optional)')
-    parser.add_argument('--key', help='API key for the model (optional)')
-    parser.add_argument('--local', action='store_true', help='Use local model instead of remote')
-    parser.add_argument('--model-path', help='Path to a local model file (optional, used with --local)')
-    parser.add_argument('--self-healing', action='store_true', help='Enable self-healing capabilities')
-    parser.add_argument('--auto-recovery', action='store_true', 
-                      help='Enable automatic recovery (implies --self-healing)')
+    parser.add_argument('--model', help='AI model to use (openai, anthropic, google, etc.)')
+    parser.add_argument('--api-key', help='API key for the model')
+    parser.add_argument('--local', action='store_true', help='Use local model')
+    parser.add_argument('--model-path', help='Path to local model file')
+    parser.add_argument('--self-healing', action='store_true', help='Enable self-healing')
+    parser.add_argument('--auto-recovery', action='store_true', help='Enable automatic recovery')
+    parser.add_argument('--no-banner', action='store_true', help='Hide banner')
+    parser.add_argument('--start', action='store_true', help='Start with secure API setup')
     
     args = parser.parse_args()
     
-    # If auto-recovery is enabled, also enable self-healing
-    enable_self_healing = args.self_healing or args.auto_recovery
+    # Create CLI instance
+    cli = UnifiedCLI()
+    
+    # Handle --start flag
+    if args.start:
+        print("🚀 Starting StableAgents with secure setup...")
+        print()
+        
+        # Run secure setup
+        setup_success = cli._check_secure_api_setup()
+        
+        if setup_success:
+            print("\n" + "="*50)
+            print("🎉 Setup complete! Starting interactive mode...")
+            print("="*50)
+            print()
+        else:
+            print("\n⚠️  Setup incomplete. You can still use StableAgents with limited features.")
+            print("💡 Run 'setup' command to configure API keys later.")
+            print()
     
     # Start the CLI
-    cli = UnifiedCLI()
-    cli.start(args.model, args.key, args.local, args.model_path, enable_self_healing, args.auto_recovery)
-    
-    return 0
+    cli.start(
+        model=args.model,
+        api_key=args.api_key,
+        use_local=args.local,
+        model_path=args.model_path,
+        enable_self_healing=args.self_healing,
+        auto_recovery=args.auto_recovery,
+        show_banner=not args.no_banner
+    )
 
 if __name__ == '__main__':
-    sys.exit(main()) 
+    main() 
