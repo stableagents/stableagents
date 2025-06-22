@@ -26,7 +26,7 @@ if __name__ == "__main__":
         },
         entry_points={
             "console_scripts": [
-                "stableagents=stableagents.run_cli:main",
+                "stableagents=stableagents.cli:main",
             ],
         },
         python_requires=">=3.8",

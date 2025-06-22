@@ -601,7 +601,14 @@ def main():
     
     # Set active provider
     provider_parser = subparsers.add_parser('provider', help='Set active AI provider')
-    provider_parser.add_argument('name', choices=['openai', 'anthropic', 'google', 'custom'], help='Provider name')
+    provider_subparsers = provider_parser.add_subparsers(dest='provider_command', help='Provider command')
+    
+    # List providers
+    list_parser = provider_subparsers.add_parser('list', help='List all providers with status')
+    
+    # Set active provider
+    set_parser = provider_subparsers.add_parser('set', help='Set active AI provider')
+    set_parser.add_argument('name', choices=['openai', 'anthropic', 'google', 'custom'], help='Provider name')
     
     # Desktop automation commands
     desktop_parser = subparsers.add_parser('desktop', help='Desktop automation commands')
@@ -746,11 +753,30 @@ def main():
             active = " (active)" if provider["is_active"] else ""
             print(f"  {status} {provider['name']}{active}")
     elif args.command == 'provider':
-        success = agent.set_active_ai_provider(args.name)
-        if success:
-            print(f"Active provider set to {args.name}")
+        if args.provider_command == 'list':
+            providers = agent.list_ai_providers()
+            print("\nAI Provider Status:")
+            print("=" * 30)
+            for provider in providers:
+                status = "✅" if provider["has_key"] else "❌"
+                active = " (ACTIVE)" if provider["is_active"] else ""
+                print(f"  {status} {provider['name']}{active}")
+                
+                if provider["has_key"]:
+                    # Show masked key for security
+                    key = agent.get_api_key(provider["name"])
+                    if key:
+                        masked_key = key[:8] + "****" + key[-4:] if len(key) > 12 else "****"
+                        print(f"      Key: {masked_key}")
+            print()
+        elif args.provider_command == 'set':
+            success = agent.set_active_ai_provider(args.name)
+            if success:
+                print(f"Active provider set to {args.name}")
+            else:
+                print(f"Failed to set active provider to {args.name}")
         else:
-            print(f"Failed to set active provider to {args.name}")
+            print("Usage: provider list or provider set [PROVIDER]")
     elif args.command == 'desktop':
         desktop = DesktopAutomation()
         try:
