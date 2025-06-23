@@ -160,42 +160,13 @@ class SecureAPIKeyManager:
     
     def process_payment(self) -> bool:
         """Process monthly subscription signup"""
-        # Try Stripe subscription first if available
-        if self.stripe_manager and self.stripe_manager.check_stripe_configured():
+        # Use Stripe API subscription only
+        if self.stripe_manager and self.stripe_manager.stripe_secret_key:
             print("💳 Using Stripe for monthly subscription...")
             if self.stripe_manager.process_monthly_subscription():
                 return True
-        
-        # Fallback to simulated payment
-        print("💳 Monthly Subscription Processing")
-        print("=" * 35)
-        print("Processing monthly subscription signup...")
-        print("Amount: $20.00 USD per month")
-        print()
-        
-        # Simulate subscription processing
-        print("🔒 Connecting to secure payment processor...")
-        time.sleep(1)
-        print("📊 Setting up recurring billing...")
-        time.sleep(1)
-        print("✅ Monthly subscription created successfully!")
-        print()
-        print("🎉 Subscription active! You now have access to API keys.")
-        
-        # Save subscription status
-        status = {
-            'paid': True,  # Keep for backward compatibility
-            'subscribed': True,
-            'payment_date': time.strftime('%Y-%m-%dT%H:%M:%S'),
-            'next_billing_date': time.strftime('%Y-%m-%dT%H:%M:%S', 
-                                              time.localtime(time.time() + 30*24*60*60)),  # 30 days
-            'api_keys_provided': [],
-            'payment_method': 'simulated_subscription',
-            'status': 'active'
-        }
-        self._save_payment_status(status)
-        
-        return True
+        print("❌ Stripe is not configured. Please set STRIPE_SECRET_KEY as an environment variable.")
+        return False
     
     def provide_api_keys_after_payment(self, password: str) -> bool:
         """Provide API keys after successful payment"""
@@ -361,13 +332,6 @@ class SecureAPIKeyManager:
             print("✅ All encrypted data has been reset")
         except Exception as e:
             print(f"Error resetting encryption: {e}")
-    
-    def setup_stripe_keys(self, secret_key: str, publishable_key: str):
-        """Setup Stripe API keys for payment processing"""
-        if self.stripe_manager:
-            self.stripe_manager.setup_stripe_keys(secret_key, publishable_key)
-        else:
-            print("❌ Stripe not available")
     
     def get_stripe_config(self) -> Dict[str, Any]:
         """Get Stripe configuration"""

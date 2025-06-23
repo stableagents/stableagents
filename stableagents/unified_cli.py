@@ -171,9 +171,20 @@ class UnifiedCLI:
         try:
             from stableagents.api_key_manager import SecureAPIKeyManager
             manager = SecureAPIKeyManager()
-            
+
+            # Show example prompts before payment/setup options
+            print("\n💡 Example Prompts:")
+            print("====================")
+            print("• Summarize this document: 'Summarize the following text: ...'")
+            print("• Write code: 'Write a Python function to reverse a string.'")
+            print("• Ask for help: 'How do I use StableAgents with local models?'")
+            print("• Control your computer: 'Open my browser and search for AI news.'")
+            print("• Use memory: 'Remember that my favorite color is blue.'")
+            print("• Self-healing: 'Diagnose and fix issues with my AI setup.'")
+            print()
+
             # Always show the setup options first, regardless of existing data
-            print("\n🔐 Welcome to StableAgents!")
+            print("🔐 Welcome to StableAgents!")
             print("=" * 40)
             print("To use AI features, you need to set up API keys securely.")
             print()
@@ -252,7 +263,7 @@ class UnifiedCLI:
                 print("❌ Failed to provide API keys")
                 return False
         else:
-            print("❌ Payment failed")
+            print("❌ Stripe payment required. Please set up Stripe keys and try again.")
             return False
     
     def _setup_custom_keys(self, manager):
