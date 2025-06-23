@@ -22,7 +22,14 @@ class UnifiedCLI:
             "providers": self.providers_command,
             "clear": self.clear_screen,
             "health": self.health_command,
-            "setup": self.setup_command
+            "setup": self.setup_command,
+            "keys": self.keys_command,
+            "add-key": self.add_key_command,
+            "remove-key": self.remove_key_command,
+            "list-keys": self.list_keys_command,
+            "change-password": self.change_password_command,
+            "switch-provider": self.switch_provider_command,
+            "current-provider": self.current_provider_command
         }
         self.use_local_model = False
         self.local_model_path = None
@@ -285,6 +292,20 @@ class UnifiedCLI:
         print("  clear             - Clear the screen")
         print("  help              - Show this help message")
         print("  exit/quit         - Exit the program")
+        print()
+        print("🔐 API Key Management:")
+        print("  keys              - Show API key management options")
+        print("  list-keys         - List all configured providers")
+        print("  add-key <provider> - Add a new API key")
+        print("  remove-key <provider> - Remove an API key")
+        print("  change-password   - Change encryption password")
+        print()
+        print("🔄 Provider Management:")
+        print("  switch-provider <provider> - Switch to different AI provider")
+        print("  current-provider  - Show current active provider")
+        print("  provider list     - List available AI providers")
+        print()
+        print("💡 Tip: Use 'stableagents-keys --help' for advanced key management")
         
         if self.use_local_model:
             print("\nRunning with local model")
@@ -450,15 +471,325 @@ class UnifiedCLI:
         print("\n" + "=" * 30)
     
     def setup_command(self, args):
-        """Setup secure API keys"""
-        print("🔐 Secure API Key Setup")
-        print("=" * 25)
-        setup_success = self._check_secure_api_setup()
-        if setup_success:
-            print("\n✅ Setup completed successfully!")
-        else:
-            print("\n⚠️  Setup was not completed.")
-        return setup_success
+        """Run the setup wizard"""
+        print("🔧 Running setup wizard...")
+        self._check_secure_api_setup()
+    
+    def keys_command(self, args):
+        """Manage API keys"""
+        try:
+            from stableagents.api_key_manager import SecureAPIKeyManager
+            manager = SecureAPIKeyManager()
+            
+            print("🔐 API Key Management")
+            print("=" * 25)
+            print("Available commands:")
+            print("  list-keys     - List all configured providers")
+            print("  add-key       - Add a new API key")
+            print("  remove-key    - Remove an API key")
+            print("  change-password - Change encryption password")
+            print("  status        - Check payment status")
+            print()
+            print("Or use: stableagents-keys --help for more options")
+            
+        except ImportError:
+            print("❌ Secure API key management not available")
+    
+    def add_key_command(self, args):
+        """Add a new API key"""
+        import getpass
+        
+        try:
+            from stableagents.api_key_manager import SecureAPIKeyManager
+            manager = SecureAPIKeyManager()
+            
+            # Parse provider from args
+            parts = args.split()
+            if not parts:
+                print("Usage: add-key <provider>")
+                print("Providers: openai, anthropic, google")
+                return
+            
+            provider = parts[0].lower()
+            if provider not in ['openai', 'anthropic', 'google']:
+                print("❌ Invalid provider. Use: openai, anthropic, google")
+                return
+            
+            print(f"🔑 Adding {provider.capitalize()} API Key")
+            print("=" * 40)
+            
+            # Get password
+            password = getpass.getpass("Enter your encryption password: ")
+            if not password:
+                print("❌ Password required")
+                return
+            
+            # Get API key
+            api_key = getpass.getpass(f"Enter your {provider.capitalize()} API key: ")
+            if not api_key:
+                print("❌ API key required")
+                return
+            
+            # Store the key
+            if manager.set_api_key(provider, api_key, password):
+                print(f"✅ {provider.capitalize()} API key stored securely")
+                
+                # Ask if user wants to set as active
+                set_active = input(f"Set {provider.capitalize()} as active provider? (y/n): ").strip().lower()
+                if set_active == 'y':
+                    if manager.set_active_provider(provider, password):
+                        print(f"✅ {provider.capitalize()} is now the active provider")
+                    else:
+                        print(f"❌ Failed to set {provider.capitalize()} as active")
+            else:
+                print(f"❌ Failed to store {provider.capitalize()} API key")
+                
+        except ImportError:
+            print("❌ Secure API key management not available")
+        except Exception as e:
+            print(f"❌ Error: {e}")
+    
+    def remove_key_command(self, args):
+        """Remove an API key"""
+        import getpass
+        
+        try:
+            from stableagents.api_key_manager import SecureAPIKeyManager
+            manager = SecureAPIKeyManager()
+            
+            # Parse provider from args
+            parts = args.split()
+            if not parts:
+                print("Usage: remove-key <provider>")
+                print("Providers: openai, anthropic, google")
+                return
+            
+            provider = parts[0].lower()
+            if provider not in ['openai', 'anthropic', 'google']:
+                print("❌ Invalid provider. Use: openai, anthropic, google")
+                return
+            
+            print(f"🗑️  Removing {provider.capitalize()} API Key")
+            print("=" * 40)
+            
+            # Confirm removal
+            confirm = input(f"Are you sure you want to remove {provider.capitalize()} API key? (y/n): ").strip().lower()
+            if confirm != 'y':
+                print("❌ Removal cancelled")
+                return
+            
+            # Get password
+            password = getpass.getpass("Enter your encryption password: ")
+            if not password:
+                print("❌ Password required")
+                return
+            
+            # Remove the key (set to empty string)
+            if manager.set_api_key(provider, "", password):
+                print(f"✅ {provider.capitalize()} API key removed")
+            else:
+                print(f"❌ Failed to remove {provider.capitalize()} API key")
+                
+        except ImportError:
+            print("❌ Secure API key management not available")
+        except Exception as e:
+            print(f"❌ Error: {e}")
+    
+    def list_keys_command(self, args):
+        """List all configured API keys"""
+        import getpass
+        
+        try:
+            from stableagents.api_key_manager import SecureAPIKeyManager
+            manager = SecureAPIKeyManager()
+            
+            print("📡 API Key Status")
+            print("=" * 20)
+            
+            # Get password
+            password = getpass.getpass("Enter your encryption password: ")
+            if not password:
+                print("❌ Password required")
+                return
+            
+            # List providers
+            providers = manager.list_providers(password)
+            
+            if not providers:
+                print("❌ No providers configured")
+                return
+            
+            for provider in providers:
+                status = "✅" if provider['has_key'] else "❌"
+                active = " (active)" if provider['is_active'] else ""
+                print(f"{status} {provider['name'].capitalize()}{active}")
+            
+            # Show payment status
+            print()
+            status = manager.check_payment_status()
+            print("💰 Payment Status:")
+            print(f"   Paid: {'✅ Yes' if status.get('paid') else '❌ No'}")
+            if status.get('payment_date'):
+                print(f"   Date: {status.get('payment_date')}")
+                
+        except ImportError:
+            print("❌ Secure API key management not available")
+        except Exception as e:
+            print(f"❌ Error: {e}")
+    
+    def change_password_command(self, args):
+        """Change the encryption password"""
+        import getpass
+        
+        try:
+            from stableagents.api_key_manager import SecureAPIKeyManager
+            manager = SecureAPIKeyManager()
+            
+            print("🔐 Change Encryption Password")
+            print("=" * 30)
+            
+            # Get current password
+            current_password = getpass.getpass("Enter current password: ")
+            if not current_password:
+                print("❌ Current password required")
+                return
+            
+            # Get new password
+            new_password = getpass.getpass("Enter new password: ")
+            if not new_password:
+                print("❌ New password required")
+                return
+            
+            # Confirm new password
+            confirm_password = getpass.getpass("Confirm new password: ")
+            if new_password != confirm_password:
+                print("❌ Passwords don't match")
+                return
+            
+            # Change password (this would need to be implemented in SecureAPIKeyManager)
+            print("⚠️  Password change functionality not yet implemented")
+            print("   This will be available in a future update")
+            
+        except ImportError:
+            print("❌ Secure API key management not available")
+        except Exception as e:
+            print(f"❌ Error: {e}")
+    
+    def switch_provider_command(self, args):
+        """Switch to a different AI provider"""
+        import getpass
+        
+        try:
+            from stableagents.api_key_manager import SecureAPIKeyManager
+            manager = SecureAPIKeyManager()
+            
+            # Parse provider from args
+            parts = args.split()
+            if not parts:
+                print("Usage: switch-provider <provider>")
+                print("Providers: openai, anthropic, google, local")
+                return
+            
+            provider = parts[0].lower()
+            if provider not in ['openai', 'anthropic', 'google', 'local']:
+                print("❌ Invalid provider. Use: openai, anthropic, google, local")
+                return
+            
+            print(f"🔄 Switching to {provider.capitalize()}")
+            print("=" * 40)
+            
+            if provider == 'local':
+                # Switch to local model
+                self.use_local_model = True
+                self.local_model_path = None
+                print("✅ Switched to local model mode")
+                print("💡 Make sure you have GGUF models in ~/.stableagents/models/")
+                return
+            
+            # For cloud providers, need password to access keys
+            password = getpass.getpass("Enter your encryption password: ")
+            if not password:
+                print("❌ Password required")
+                return
+            
+            # Check if provider has a key configured
+            providers = manager.list_providers(password)
+            provider_info = next((p for p in providers if p['name'] == provider), None)
+            
+            if not provider_info or not provider_info['has_key']:
+                print(f"❌ No API key configured for {provider.capitalize()}")
+                print(f"   Use 'add-key {provider}' to add an API key first")
+                return
+            
+            # Switch to the provider
+            if manager.set_active_provider(provider, password):
+                print(f"✅ Switched to {provider.capitalize()}")
+                print(f"   Active provider: {provider.capitalize()}")
+                
+                # Update the agent's active provider
+                agent = self._lazy_load_agent()
+                agent.set_active_ai_provider(provider)
+                
+            else:
+                print(f"❌ Failed to switch to {provider.capitalize()}")
+                
+        except ImportError:
+            print("❌ Secure API key management not available")
+        except Exception as e:
+            print(f"❌ Error: {e}")
+    
+    def current_provider_command(self, args):
+        """Show the current active AI provider"""
+        try:
+            from stableagents.api_key_manager import SecureAPIKeyManager
+            manager = SecureAPIKeyManager()
+            
+            print("🤖 Current AI Provider")
+            print("=" * 25)
+            
+            if self.use_local_model:
+                print("🏠 Local Model Mode")
+                if self.local_model_path:
+                    print(f"   Model: {self.local_model_path}")
+                else:
+                    print("   Model: Auto-detect from ~/.stableagents/models/")
+                return
+            
+            # Get current provider from agent
+            agent = self._lazy_load_agent()
+            current_provider = agent.get_active_ai_provider()
+            
+            if current_provider:
+                print(f"✅ Active: {current_provider.capitalize()}")
+                
+                # Show provider details
+                try:
+                    import getpass
+                    password = getpass.getpass("Enter password to see provider details: ")
+                    if password:
+                        providers = manager.list_providers(password)
+                        for provider in providers:
+                            if provider['name'] == current_provider:
+                                status = "✅" if provider['has_key'] else "❌"
+                                print(f"   Status: {status} API key configured")
+                                break
+                except:
+                    print("   Status: API key configured")
+            else:
+                print("❌ No active provider")
+                print("   Use 'switch-provider <provider>' to set one")
+            
+            # Show available providers
+            print("\n📡 Available Providers:")
+            print("   openai    - OpenAI GPT models")
+            print("   anthropic - Anthropic Claude models")
+            print("   google    - Google AI models")
+            print("   local     - Local GGUF models")
+            
+        except ImportError:
+            print("❌ Secure API key management not available")
+        except Exception as e:
+            print(f"❌ Error: {e}")
 
 def main():
     # Parse command line arguments

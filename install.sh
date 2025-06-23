@@ -1,83 +1,57 @@
 #!/bin/bash
 
-# Colors for better user experience
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
+# StableAgents AI Installation Script
+# This script installs StableAgents AI globally on your system
 
-echo -e "${BLUE}=== StableAgents Installation ===${NC}"
-echo "This script will install StableAgents globally on your system."
+set -e
+
+echo "🚀 Installing StableAgents AI..."
+echo "================================"
 
 # Check if Python is installed
 if ! command -v python3 &> /dev/null; then
-    echo -e "${RED}Error: Python 3 is not installed. Please install Python 3 first.${NC}"
+    echo "❌ Python 3 is not installed. Please install Python 3.8 or higher."
     exit 1
 fi
+
+# Check Python version
+PYTHON_VERSION=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
+REQUIRED_VERSION="3.8"
+
+if [ "$(printf '%s\n' "$REQUIRED_VERSION" "$PYTHON_VERSION" | sort -V | head -n1)" != "$REQUIRED_VERSION" ]; then
+    echo "❌ Python $PYTHON_VERSION is installed, but Python $REQUIRED_VERSION or higher is required."
+    exit 1
+fi
+
+echo "✅ Python $PYTHON_VERSION detected"
 
 # Check if pip is installed
 if ! command -v pip3 &> /dev/null; then
-    echo -e "${RED}Error: pip3 is not installed. Please install pip3 first.${NC}"
+    echo "❌ pip3 is not installed. Please install pip."
     exit 1
 fi
 
-# Get the current directory
-CURRENT_DIR=$(pwd)
+echo "✅ pip3 detected"
 
-echo -e "\n${BLUE}Installing StableAgents...${NC}"
-
-# First, uninstall any existing installation
-echo "Removing any existing installation..."
-pip3 uninstall -y stableagents-ai
-
-# Install the package globally with pip
-echo "Installing StableAgents..."
-pip3 install --user -e .
-
-# Get the user's bin directory
-USER_BIN="$HOME/.local/bin"
-
-# Add to PATH if not already there
-if [[ ":$PATH:" != *":$USER_BIN:"* ]]; then
-    echo -e "\n${BLUE}Adding $USER_BIN to your PATH...${NC}"
-    
-    # Add to .bashrc if it exists
-    if [ -f "$HOME/.bashrc" ]; then
-        echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
-        echo "Added to .bashrc"
-    fi
-    
-    # Add to .zshrc if it exists
-    if [ -f "$HOME/.zshrc" ]; then
-        echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.zshrc"
-        echo "Added to .zshrc"
-    fi
-    
-    # Add to current session
-    export PATH="$USER_BIN:$PATH"
-fi
+# Install StableAgents AI
+echo "📦 Installing StableAgents AI from GitHub..."
+pip3 install git+https://github.com/jordanplows/stableagents.git
 
 # Verify installation
 if command -v stableagents-ai &> /dev/null; then
-    echo -e "\n${GREEN}Installation successful!${NC}"
-    echo -e "You can now run StableAgents from anywhere using: ${BLUE}stableagents-ai${NC}"
-    echo -e "Try it with: ${BLUE}stableagents-ai start${NC}"
+    echo "✅ StableAgents AI installed successfully!"
+    echo ""
+    echo "🎉 Installation complete!"
+    echo ""
+    echo "To get started:"
+    echo "  stableagents-ai --start"
+    echo ""
+    echo "For help:"
+    echo "  stableagents-ai --help"
+    echo ""
+    echo "Documentation: https://github.com/jordanplows/stableagents"
 else
-    echo -e "\n${RED}Installation completed, but the command is not in your PATH.${NC}"
-    echo "Please run this command to add it to your current session:"
-    echo -e "${BLUE}export PATH=\"\$HOME/.local/bin:\$PATH\"${NC}"
-    echo "Then try running: stableagents-ai start"
-fi
-
-# Verify Python can find the module
-echo -e "\n${BLUE}Verifying Python module installation...${NC}"
-if python3 -c "import stableagents" 2>/dev/null; then
-    echo -e "${GREEN}Python module verification successful!${NC}"
-else
-    echo -e "${RED}Python module verification failed.${NC}"
-    echo "Please try running:"
-    echo -e "${BLUE}pip3 install --user -e .${NC}"
-    echo "Then restart your terminal and try again."
-fi
-
-echo -e "\n${GREEN}Installation complete!${NC}" 
+    echo "❌ Installation failed. Please try installing manually:"
+    echo "  pip3 install git+https://github.com/jordanplows/stableagents.git"
+    exit 1
+fi 

@@ -12,11 +12,13 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 def main():
     parser = argparse.ArgumentParser(description='StableAgents Secure API Key Manager')
-    parser.add_argument('command', choices=['status', 'setup', 'clear', 'list'], 
+    parser.add_argument('command', choices=['status', 'setup', 'clear', 'list', 'stripe-setup', 'cancel'], 
                        help='Command to run')
     parser.add_argument('--provider', choices=['openai', 'anthropic', 'google'], 
                        help='Provider for specific commands')
     parser.add_argument('--key', help='API key (for setup)')
+    parser.add_argument('--stripe-secret', help='Stripe secret key')
+    parser.add_argument('--stripe-publishable', help='Stripe publishable key')
     
     args = parser.parse_args()
     
@@ -28,9 +30,19 @@ def main():
             status = manager.check_payment_status()
             print("🔐 Secure API Key Manager Status")
             print("=" * 35)
-            print(f"Payment Status: {'✅ Paid' if status.get('paid') else '❌ Not Paid'}")
-            if status.get('payment_date'):
-                print(f"Payment Date: {status['payment_date']}")
+            
+            if status.get('subscribed'):
+                print(f"Subscription Status: ✅ Active")
+                print(f"Status: {status.get('status', 'active')}")
+                if status.get('subscription_date'):
+                    print(f"Started: {status['subscription_date']}")
+                if status.get('next_billing_date'):
+                    print(f"Next Billing: {status['next_billing_date']}")
+                if status.get('subscription_id'):
+                    print(f"Subscription ID: {status['subscription_id'][:8]}...")
+            else:
+                print(f"Subscription Status: ❌ Not Subscribed")
+            
             print(f"API Keys Provided: {len(status.get('api_keys_provided', []))}")
             
             if status.get('api_keys_provided'):
@@ -39,6 +51,41 @@ def main():
                     print(f"  ✅ {provider}")
             else:
                 print("\nNo API keys configured")
+            
+            # Show Stripe status
+            stripe_config = manager.get_stripe_config()
+            if stripe_config.get('stripe_available'):
+                print(f"\nStripe Status: {'✅ Configured' if stripe_config.get('stripe_secret_key') else '❌ Not Configured'}")
+            else:
+                print("\nStripe Status: ❌ Not Available")
+                
+        elif args.command == 'cancel':
+            print("🚫 Cancel Subscription")
+            print("=" * 25)
+            
+            if manager.stripe_manager:
+                if manager.stripe_manager.cancel_subscription():
+                    print("✅ Subscription will be canceled at the end of the current period")
+                else:
+                    print("❌ Failed to cancel subscription")
+            else:
+                print("❌ No Stripe manager available")
+                print("💡 You can manually remove the subscription status file:")
+                print("   rm ~/.stableagents/payment_status.json")
+                
+        elif args.command == 'stripe-setup':
+            print("💳 Stripe Configuration")
+            print("=" * 25)
+            
+            if args.stripe_secret and args.stripe_publishable:
+                manager.setup_stripe_keys(args.stripe_secret, args.stripe_publishable)
+            else:
+                print("Please provide Stripe keys:")
+                print("Usage: stableagents-keys stripe-setup --stripe-secret sk_test_... --stripe-publishable pk_test_...")
+                print()
+                print("Or set environment variables:")
+                print("export STRIPE_SECRET_KEY='sk_test_...'")
+                print("export STRIPE_PUBLISHABLE_KEY='pk_test_...'")
                 
         elif args.command == 'setup':
             print("🔐 Secure API Key Setup")
@@ -47,7 +94,7 @@ def main():
             # Show options
             print("You have three options:")
             print()
-            print("1. 💳 Pay $20 for managed API keys")
+            print("1. 💳 Subscribe for $20/month")
             print("2. 🔑 Bring your own API keys")
             print("3. 🏠 Use local models only")
             print()
@@ -56,10 +103,10 @@ def main():
             
             if choice == "1":
                 # Payment option
-                print("\n💳 Payment Setup")
-                print("=" * 20)
+                print("\n💳 Monthly Subscription Setup")
+                print("=" * 30)
                 if manager.process_payment():
-                    print("✅ Payment successful!")
+                    print("✅ Subscription active!")
                     
                     # Get password
                     while True:
@@ -75,10 +122,11 @@ def main():
                     
                     if manager.provide_api_keys_after_payment(password):
                         print("✅ API keys have been securely stored!")
+                        print("📅 Your subscription will renew monthly")
                     else:
                         print("❌ Failed to provide API keys")
                 else:
-                    print("❌ Payment failed")
+                    print("❌ Subscription setup failed")
                     
             elif choice == "2":
                 # Custom keys

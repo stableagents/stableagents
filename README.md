@@ -22,6 +22,66 @@ StableAgents is designed to be the foundation for large-scale AI agent deploymen
 - **Computer Control**: Safe system interaction capabilities
 - **Comprehensive Logging**: Detailed activity tracking and monitoring
 
+## Quick Installation
+
+### Option 1: Install from GitHub (Recommended)
+```bash
+pip install git+https://github.com/jordanplows/stableagents.git
+```
+
+### Option 2: Install with Local Models Support
+```bash
+pip install git+https://github.com/jordanplows/stableagents.git[local]
+```
+
+### Option 3: Development Installation
+```bash
+git clone https://github.com/jordanplows/stableagents.git
+cd stableagents
+pip install -e .
+```
+
+## Quick Start
+
+After installation, start StableAgents:
+
+```bash
+stableagents-ai --start
+```
+
+The CLI will guide you through:
+1. **API Key Setup**: Choose between managed keys ($20) or bring your own
+2. **Provider Selection**: Configure OpenAI, Anthropic, Google, or local models
+3. **Security Setup**: Set up encrypted storage for your credentials
+
+## Basic Usage
+
+### Python API
+
+```python
+from stableagents import StableAgents
+
+# Initialize the agent
+agent = StableAgents()
+
+# Generate text
+response = agent.generate_text("Hello, how can you help me today?")
+print(response)
+```
+
+### Command Line Interface
+
+```bash
+# Start interactive mode
+stableagents-ai
+
+# Run with specific model
+stableagents-ai --model openai --api-key your-key
+
+# Use local models
+stableagents-ai --local --model-path ~/models/llama-2-7b.gguf
+```
+
 ## Access
 
 StableAgents is a private framework available to authorized partners and enterprise customers. For access inquiries:
@@ -80,45 +140,3 @@ agent.self_healing.register_component(
 Proprietary software licensed exclusively to authorized partners and customers.
 
 © 2023-2025 StableAgents. All rights reserved.
-
-## Quick Installation
-
-To install StableAgents globally on your system, run:
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/stableagents.git
-cd stableagents
-
-# Run the installation script
-chmod +x install.sh
-./install.sh
-```
-
-The installation script will:
-1. Check for required dependencies (Python 3 and pip)
-2. Install StableAgents globally
-3. Add the necessary PATH entries to your shell configuration
-4. Verify the installation
-
-After installation, you can run StableAgents from anywhere using:
-```bash
-stableagents-ai start
-```
-
-## Manual Installation
-
-If you prefer to install manually:
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/stableagents.git
-cd stableagents
-
-# Install globally
-pip install --user -e .
-
-# Add to your PATH (if not already done)
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc  # or ~/.zshrc
-source ~/.bashrc  # or source ~/.zshrc
-```

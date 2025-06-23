@@ -36,13 +36,16 @@ Examples:
   # Add a specific API key
   stableagents-keys add openai
 
+  # Switch to a different provider
+  stableagents-keys switch --provider anthropic
+
   # Show payment options
   stableagents-keys options
         """
     )
     
     parser.add_argument('command', choices=[
-        'setup', 'status', 'reset', 'list', 'add', 'options'
+        'setup', 'status', 'reset', 'list', 'add', 'options', 'switch'
     ], help='Command to execute')
     
     parser.add_argument('--provider', choices=['openai', 'anthropic', 'google'],
@@ -180,6 +183,37 @@ Examples:
     elif args.command == 'options':
         # Show payment options
         manager.show_payment_options()
+    
+    elif args.command == 'switch':
+        # Switch active provider
+        if not args.provider:
+            print("❌ Provider required. Use --provider openai|anthropic|google")
+            return 1
+        
+        password = args.password or getpass.getpass("Enter your encryption password: ")
+        if not password:
+            print("❌ Password required")
+            return 1
+        
+        print(f"🔄 Switching to {args.provider.capitalize()}")
+        print("=" * 40)
+        
+        # Check if provider has a key
+        providers = manager.list_providers(password)
+        provider_info = next((p for p in providers if p['name'] == args.provider), None)
+        
+        if not provider_info or not provider_info['has_key']:
+            print(f"❌ No API key configured for {args.provider.capitalize()}")
+            print(f"   Use 'stableagents-keys add {args.provider}' to add an API key first")
+            return 1
+        
+        # Switch to the provider
+        if manager.set_active_provider(args.provider, password):
+            print(f"✅ Switched to {args.provider.capitalize()}")
+            print(f"   Active provider: {args.provider.capitalize()}")
+        else:
+            print(f"❌ Failed to switch to {args.provider.capitalize()}")
+            return 1
     
     return 0
 

@@ -42,10 +42,11 @@ def check_secure_api_setup():
         # Show options
         print("You have three options:")
         print()
-        print("1. 💳 Pay $20 for managed API keys")
+        print("1. 💳 Subscribe for $20/month")
         print("   - We provide working API keys")
         print("   - Keys are securely encrypted")
-        print("   - One-time payment, no recurring charges")
+        print("   - Monthly recurring billing")
+        print("   - Cancel anytime")
         print()
         print("2. 🔑 Bring your own API keys")
         print("   - Use your existing OpenAI, Anthropic, etc. keys")
@@ -82,15 +83,16 @@ def check_secure_api_setup():
         return False
 
 def setup_payment_option(manager):
-    """Setup payment option for managed API keys"""
-    print("\n💳 Payment Setup")
-    print("=" * 20)
-    print("Processing payment for API key access...")
-    print("Amount: $20.00 USD")
+    """Setup monthly subscription option for managed API keys"""
+    print("\n💳 Monthly Subscription Setup")
+    print("=" * 30)
+    print("Setting up monthly subscription for API key access...")
+    print("Amount: $20.00 USD per month")
+    print("Billing: Monthly recurring")
     print()
     
     if manager.process_payment():
-        print("✅ Payment successful!")
+        print("✅ Subscription active!")
         print()
         
         # Get password for encryption
@@ -110,12 +112,13 @@ def setup_payment_option(manager):
             print("✅ API keys have been securely stored and encrypted!")
             print("🔒 Your keys are protected with your password")
             print("💡 You can now use AI features in StableAgents")
+            print("📅 Your subscription will renew monthly")
             return True
         else:
             print("❌ Failed to provide API keys")
             return False
     else:
-        print("❌ Payment failed")
+        print("❌ Subscription setup failed")
         return False
 
 def setup_custom_keys(manager):

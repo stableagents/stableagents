@@ -1,0 +1,28 @@
+#!/bin/bash
+# Global StableAgents launcher script
+
+# Path to the StableAgents virtual environment
+VENV_PATH="$HOME/.stableagents-env"
+# Path to the StableAgents source code
+STABLEAGENTS_PATH="$HOME/Dev/stableagents"
+
+# Check if virtual environment exists
+if [ ! -d "$VENV_PATH" ]; then
+    echo "❌ StableAgents virtual environment not found at $VENV_PATH"
+    echo "Please run: python3 -m venv ~/.stableagents-env && source ~/.stableagents-env/bin/activate && pip install -e /path/to/stableagents"
+    exit 1
+fi
+
+# Check if StableAgents source exists
+if [ ! -d "$STABLEAGENTS_PATH" ]; then
+    echo "❌ StableAgents source not found at $STABLEAGENTS_PATH"
+    echo "Please update the STABLEAGENTS_PATH variable in this script to point to your StableAgents installation"
+    exit 1
+fi
+
+# Activate virtual environment
+source "$VENV_PATH/bin/activate"
+
+# Change to the StableAgents directory and run the CLI
+cd "$STABLEAGENTS_PATH"
+exec python -m stableagents.run_cli "$@" 

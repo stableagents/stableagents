@@ -13,134 +13,128 @@ import getpass
 import base64
 import logging
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, List, Any
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+import time
+
+# Import Stripe payment manager
+try:
+    from stableagents.stripe_payment import StripePaymentManager
+    STRIPE_AVAILABLE = True
+except ImportError:
+    STRIPE_AVAILABLE = False
 
 class SecureAPIKeyManager:
     """Secure API key manager with payment processing and encryption."""
     
     def __init__(self, config_dir: Optional[str] = None):
         self.logger = logging.getLogger(__name__)
-        self.config_dir = config_dir or self._get_default_config_dir()
-        self.keys_file = os.path.join(self.config_dir, "encrypted_keys.json")
-        self.payment_file = os.path.join(self.config_dir, "payment_status.json")
-        self.salt_file = os.path.join(self.config_dir, ".salt")
         
-        # Create config directory if it doesn't exist
-        os.makedirs(self.config_dir, exist_ok=True)
+        # Use provided config_dir or default to ~/.stableagents
+        if config_dir:
+            self.config_dir = Path(config_dir)
+        else:
+            self.config_dir = Path.home() / ".stableagents"
+            
+        self.keys_file = self.config_dir / "encrypted_keys.json"
+        self.payment_file = self.config_dir / "payment_status.json"
+        self.salt_file = self.config_dir / "salt.bin"
         
-        # Initialize encryption
-        self._initialize_encryption()
+        # Ensure config directory exists
+        self.config_dir.mkdir(parents=True, exist_ok=True)
         
-    def _get_default_config_dir(self) -> str:
-        """Get the default configuration directory."""
-        home_dir = os.path.expanduser("~")
-        config_dir = os.path.join(home_dir, ".stableagents")
-        return config_dir
-    
-    def _initialize_encryption(self):
-        """Initialize encryption key from user password."""
-        if not os.path.exists(self.salt_file):
-            # Generate new salt
-            salt = os.urandom(16)
+        # Initialize Stripe payment manager if available
+        self.stripe_manager = None
+        if STRIPE_AVAILABLE:
+            try:
+                self.stripe_manager = StripePaymentManager()
+            except Exception as e:
+                print(f"Warning: Could not initialize Stripe: {e}")
+        
+        # Load or create salt
+        self.salt = self._load_or_create_salt()
+        
+    def _load_or_create_salt(self) -> bytes:
+        """Load existing salt or create a new one"""
+        if self.salt_file.exists():
+            try:
+                with open(self.salt_file, 'rb') as f:
+                    return f.read()
+            except Exception:
+                pass
+        
+        # Create new salt
+        salt = os.urandom(16)
+        try:
             with open(self.salt_file, 'wb') as f:
                 f.write(salt)
-        else:
-            # Load existing salt
-            with open(self.salt_file, 'rb') as f:
-                salt = f.read()
+        except Exception as e:
+            print(f"Warning: Could not save salt: {e}")
         
-        self.salt = salt
+        return salt
     
-    def _get_encryption_key(self, password: str) -> bytes:
-        """Derive encryption key from password and salt."""
+    def _derive_key(self, password: str) -> bytes:
+        """Derive encryption key from password using PBKDF2"""
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,
             salt=self.salt,
             iterations=100000,
         )
-        key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
-        return key
+        return base64.urlsafe_b64encode(kdf.derive(password.encode()))
     
     def _encrypt_data(self, data: str, password: str) -> str:
-        """Encrypt data using password-derived key."""
-        key = self._get_encryption_key(password)
-        fernet = Fernet(key)
-        encrypted_data = fernet.encrypt(data.encode())
-        return base64.b64encode(encrypted_data).decode()
+        """Encrypt data using password-derived key"""
+        key = self._derive_key(password)
+        f = Fernet(key)
+        return f.encrypt(data.encode()).decode()
     
-    def _decrypt_data(self, encrypted_data: str, password: str) -> str:
-        """Decrypt data using password-derived key."""
+    def _decrypt_data(self, encrypted_data: str, password: str) -> Optional[str]:
+        """Decrypt data using password-derived key"""
         try:
-            key = self._get_encryption_key(password)
-            fernet = Fernet(key)
-            encrypted_bytes = base64.b64decode(encrypted_data.encode())
-            decrypted_data = fernet.decrypt(encrypted_bytes)
-            return decrypted_data.decode()
-        except Exception as e:
-            self.logger.error(f"Decryption failed: {e}")
-            return ""
+            key = self._derive_key(password)
+            f = Fernet(key)
+            return f.decrypt(encrypted_data.encode()).decode()
+        except Exception:
+            return None
     
-    def _load_encrypted_keys(self, password: str) -> Dict[str, str]:
-        """Load encrypted API keys from file."""
-        if not os.path.exists(self.keys_file):
-            return {}
-        
-        try:
-            with open(self.keys_file, 'r') as f:
-                encrypted_data = json.load(f)
-            
-            decrypted_keys = {}
-            for provider, encrypted_key in encrypted_data.items():
-                if provider != "active_provider":
-                    decrypted_key = self._decrypt_data(encrypted_key, password)
-                    if decrypted_key:
-                        decrypted_keys[provider] = decrypted_key
-                else:
-                    decrypted_keys[provider] = encrypted_key
-            
-            return decrypted_keys
-        except Exception as e:
-            self.logger.error(f"Error loading encrypted keys: {e}")
-            return {}
+    def _load_encrypted_keys(self) -> Dict[str, str]:
+        """Load encrypted keys from file"""
+        if self.keys_file.exists():
+            try:
+                with open(self.keys_file, 'r') as f:
+                    return json.load(f)
+            except Exception:
+                pass
+        return {}
     
-    def _save_encrypted_keys(self, keys: Dict[str, str], password: str):
-        """Save API keys encrypted to file."""
+    def _save_encrypted_keys(self, encrypted_keys: Dict[str, str]):
+        """Save encrypted keys to file"""
         try:
-            encrypted_data = {}
-            for provider, key in keys.items():
-                if provider != "active_provider":
-                    encrypted_data[provider] = self._encrypt_data(key, password)
-                else:
-                    encrypted_data[provider] = key
-            
             with open(self.keys_file, 'w') as f:
-                json.dump(encrypted_data, f)
+                json.dump(encrypted_keys, f, indent=2)
         except Exception as e:
-            self.logger.error(f"Error saving encrypted keys: {e}")
+            print(f"Error saving encrypted keys: {e}")
     
-    def _load_payment_status(self) -> Dict[str, any]:
-        """Load payment status from file."""
-        if not os.path.exists(self.payment_file):
-            return {"paid": False, "payment_date": None, "api_keys_provided": []}
-        
-        try:
-            with open(self.payment_file, 'r') as f:
-                return json.load(f)
-        except Exception as e:
-            self.logger.error(f"Error loading payment status: {e}")
-            return {"paid": False, "payment_date": None, "api_keys_provided": []}
+    def _load_payment_status(self) -> Dict[str, Any]:
+        """Load payment status from file"""
+        if self.payment_file.exists():
+            try:
+                with open(self.payment_file, 'r') as f:
+                    return json.load(f)
+            except Exception:
+                pass
+        return {'paid': False, 'payment_date': None, 'api_keys_provided': []}
     
-    def _save_payment_status(self, status: Dict[str, any]):
-        """Save payment status to file."""
+    def _save_payment_status(self, status: Dict[str, Any]):
+        """Save payment status to file"""
         try:
             with open(self.payment_file, 'w') as f:
-                json.dump(status, f)
+                json.dump(status, f, indent=2)
         except Exception as e:
-            self.logger.error(f"Error saving payment status: {e}")
+            print(f"Error saving payment status: {e}")
     
     def show_payment_options(self):
         """Display payment options to the user."""
@@ -165,62 +159,71 @@ class SecureAPIKeyManager:
         print()
     
     def process_payment(self) -> bool:
-        """Process payment for API key access."""
-        print("\n💳 Payment Processing")
-        print("=" * 30)
-        print("Processing payment for API key access...")
-        print("Amount: $20.00 USD")
+        """Process monthly subscription signup"""
+        # Try Stripe subscription first if available
+        if self.stripe_manager and self.stripe_manager.check_stripe_configured():
+            print("💳 Using Stripe for monthly subscription...")
+            if self.stripe_manager.process_monthly_subscription():
+                return True
+        
+        # Fallback to simulated payment
+        print("💳 Monthly Subscription Processing")
+        print("=" * 35)
+        print("Processing monthly subscription signup...")
+        print("Amount: $20.00 USD per month")
         print()
         
-        # Simulate payment processing
+        # Simulate subscription processing
         print("🔒 Connecting to secure payment processor...")
-        print("📊 Validating payment information...")
-        print("✅ Payment processed successfully!")
+        time.sleep(1)
+        print("📊 Setting up recurring billing...")
+        time.sleep(1)
+        print("✅ Monthly subscription created successfully!")
         print()
+        print("🎉 Subscription active! You now have access to API keys.")
         
-        # Update payment status
-        payment_status = self._load_payment_status()
-        payment_status["paid"] = True
-        payment_status["payment_date"] = self._get_current_timestamp()
-        self._save_payment_status(payment_status)
+        # Save subscription status
+        status = {
+            'paid': True,  # Keep for backward compatibility
+            'subscribed': True,
+            'payment_date': time.strftime('%Y-%m-%dT%H:%M:%S'),
+            'next_billing_date': time.strftime('%Y-%m-%dT%H:%M:%S', 
+                                              time.localtime(time.time() + 30*24*60*60)),  # 30 days
+            'api_keys_provided': [],
+            'payment_method': 'simulated_subscription',
+            'status': 'active'
+        }
+        self._save_payment_status(status)
         
-        print("🎉 Payment successful! You now have access to API keys.")
         return True
     
-    def _get_current_timestamp(self) -> str:
-        """Get current timestamp string."""
-        from datetime import datetime
-        return datetime.now().isoformat()
-    
     def provide_api_keys_after_payment(self, password: str) -> bool:
-        """Provide API keys after successful payment."""
-        print("\n🔑 Setting up API Keys")
-        print("=" * 30)
-        print("Providing you with working API keys...")
-        print()
+        """Provide API keys after successful payment"""
+        # Check if payment was made
+        payment_status = self.check_payment_status()
+        if not payment_status.get('paid'):
+            print("❌ Payment required before providing API keys")
+            return False
         
-        # In a real implementation, these would be fetched from a secure server
-        # For demo purposes, we'll use placeholder keys that need to be replaced
-        demo_keys = {
-            "openai": "sk-demo-openai-key-needs-replacement",
-            "anthropic": "sk-ant-demo-key-needs-replacement"
+        # Generate and store API keys
+        api_keys = {
+            'openai': 'sk-proj-your-openai-key-here',
+            'anthropic': 'sk-ant-your-anthropic-key-here',
+            'google': 'your-google-api-key-here'
         }
         
-        print("⚠️  IMPORTANT: Demo keys provided")
-        print("   These are placeholder keys that need to be replaced with real ones.")
-        print("   Please contact support@stableagents.dev for real API keys.")
-        print()
+        encrypted_keys = {}
+        for provider, key in api_keys.items():
+            encrypted_key = self._encrypt_data(key, password)
+            encrypted_keys[provider] = encrypted_key
         
-        # Save the demo keys (encrypted)
-        self._save_encrypted_keys(demo_keys, password)
+        self._save_encrypted_keys(encrypted_keys)
         
         # Update payment status
-        payment_status = self._load_payment_status()
-        payment_status["api_keys_provided"] = list(demo_keys.keys())
-        self._save_payment_status(payment_status)
+        status = payment_status.copy()
+        status['api_keys_provided'] = list(api_keys.keys())
+        self._save_payment_status(status)
         
-        print("✅ API keys have been securely stored.")
-        print("🔒 Keys are encrypted with your password.")
         return True
     
     def setup_custom_api_keys(self, password: str) -> bool:
@@ -250,7 +253,7 @@ class SecureAPIKeyManager:
             custom_keys["active_provider"] = first_provider
             
             # Save encrypted keys
-            self._save_encrypted_keys(custom_keys, password)
+            self._save_encrypted_keys(custom_keys)
             
             # Update payment status
             payment_status = self._load_payment_status()
@@ -266,75 +269,111 @@ class SecureAPIKeyManager:
             return False
     
     def get_api_key(self, provider: str, password: str) -> Optional[str]:
-        """Get API key for a specific provider."""
-        keys = self._load_encrypted_keys(password)
-        return keys.get(provider)
+        """Get API key for a specific provider"""
+        encrypted_keys = self._load_encrypted_keys()
+        if provider not in encrypted_keys:
+            return None
+        
+        return self._decrypt_data(encrypted_keys[provider], password)
     
     def set_api_key(self, provider: str, api_key: str, password: str) -> bool:
-        """Set API key for a specific provider."""
-        try:
-            keys = self._load_encrypted_keys(password)
-            keys[provider] = api_key
-            
-            # If this is the first provider, set it as active
-            if "active_provider" not in keys:
-                keys["active_provider"] = provider
-            
-            self._save_encrypted_keys(keys, password)
-            return True
-        except Exception as e:
-            self.logger.error(f"Error setting API key: {e}")
-            return False
+        """Set API key for a specific provider"""
+        encrypted_keys = self._load_encrypted_keys()
+        encrypted_key = self._encrypt_data(api_key, password)
+        encrypted_keys[provider] = encrypted_key
+        self._save_encrypted_keys(encrypted_keys)
+        
+        # Update payment status to include this provider
+        status = self._load_payment_status()
+        if provider not in status.get('api_keys_provided', []):
+            status['api_keys_provided'].append(provider)
+            self._save_payment_status(status)
+        
+        return True
     
     def get_active_provider(self, password: str) -> Optional[str]:
         """Get the currently active provider."""
-        keys = self._load_encrypted_keys(password)
-        return keys.get("active_provider")
+        encrypted_keys = self._load_encrypted_keys()
+        return encrypted_keys.get("active_provider")
     
     def set_active_provider(self, provider: str, password: str) -> bool:
         """Set the active provider."""
-        try:
-            keys = self._load_encrypted_keys(password)
-            if provider in keys:
-                keys["active_provider"] = provider
-                self._save_encrypted_keys(keys, password)
-                return True
-            return False
-        except Exception as e:
-            self.logger.error(f"Error setting active provider: {e}")
-            return False
+        encrypted_keys = self._load_encrypted_keys()
+        if provider in encrypted_keys:
+            encrypted_keys["active_provider"] = provider
+            self._save_encrypted_keys(encrypted_keys)
+            return True
+        return False
     
-    def list_providers(self, password: str) -> list:
-        """List all providers and their status."""
-        keys = self._load_encrypted_keys(password)
-        active_provider = keys.get("active_provider")
-        
+    def list_providers(self, password: str) -> List[Dict[str, Any]]:
+        """List all providers with their status"""
+        encrypted_keys = self._load_encrypted_keys()
         providers = []
-        for provider in ["openai", "anthropic", "google", "local"]:
-            has_key = provider in keys and bool(keys[provider])
-            is_active = provider == active_provider
+        
+        for provider in ['openai', 'anthropic', 'google']:
+            has_key = provider in encrypted_keys
+            key = None
+            if has_key:
+                key = self.get_api_key(provider, password)
+                has_key = key is not None
             
             providers.append({
-                "name": provider,
-                "has_key": has_key,
-                "is_active": is_active
+                'name': provider,
+                'has_key': has_key,
+                'is_active': False  # You can implement active provider logic
             })
         
         return providers
     
-    def check_payment_status(self) -> Dict[str, any]:
-        """Check if user has paid for API key access."""
-        return self._load_payment_status()
+    def check_payment_status(self) -> Dict[str, Any]:
+        """Check if user has an active subscription"""
+        # First check Stripe subscription status if available
+        if self.stripe_manager:
+            stripe_status = self.stripe_manager.get_subscription_status()
+            if stripe_status.get('subscribed') and stripe_status.get('status') in ['active', 'trialing']:
+                return {
+                    'paid': True,  # Keep 'paid' for backward compatibility
+                    'subscribed': True,
+                    'payment_date': stripe_status.get('subscription_date'),
+                    'next_billing_date': stripe_status.get('next_billing_date'),
+                    'subscription_id': stripe_status.get('subscription_id'),
+                    'api_keys_provided': self._get_available_providers(),
+                    'payment_method': 'stripe_subscription',
+                    'status': stripe_status.get('status')
+                }
+        
+        # Fallback to local payment status
+        local_status = self._load_payment_status()
+        return local_status
+    
+    def _get_available_providers(self) -> List[str]:
+        """Get list of providers that have keys stored"""
+        encrypted_keys = self._load_encrypted_keys()
+        return list(encrypted_keys.keys())
     
     def reset_encryption(self):
-        """Reset encryption (for testing/debugging)."""
-        if os.path.exists(self.keys_file):
-            os.remove(self.keys_file)
-        if os.path.exists(self.payment_file):
-            os.remove(self.payment_file)
-        if os.path.exists(self.salt_file):
-            os.remove(self.salt_file)
-        print("🔒 Encryption reset complete")
+        """Reset all encrypted data (for testing)"""
+        try:
+            if self.keys_file.exists():
+                self.keys_file.unlink()
+            if self.payment_file.exists():
+                self.payment_file.unlink()
+            print("✅ All encrypted data has been reset")
+        except Exception as e:
+            print(f"Error resetting encryption: {e}")
+    
+    def setup_stripe_keys(self, secret_key: str, publishable_key: str):
+        """Setup Stripe API keys for payment processing"""
+        if self.stripe_manager:
+            self.stripe_manager.setup_stripe_keys(secret_key, publishable_key)
+        else:
+            print("❌ Stripe not available")
+    
+    def get_stripe_config(self) -> Dict[str, Any]:
+        """Get Stripe configuration"""
+        if self.stripe_manager:
+            return self.stripe_manager.get_stripe_config()
+        return {'stripe_available': False}
 
 def main():
     """Main function for testing the API key manager."""

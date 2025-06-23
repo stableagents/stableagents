@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "stableagents-ai"
-version = "0.2.2"
+version = "0.2.3"
 description = "The standard for capable and reliable agents in production"
 authors = ["Jordan Plows <jordan@plows.ai>"]
 readme = "README.md"
@@ -36,7 +36,7 @@ local = ["llama-cpp-python"]
 all = ["llama-cpp-python"]
 
 [tool.poetry.scripts]
-stableagents = "stableagents.run_cli:main"
+stableagents-ai = "stableagents.run_cli:main"
 stableagents-api = "stableagents.api:app"
 stableagents-keys = "stableagents.cli_key_manager:main"
 
