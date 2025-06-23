@@ -64,7 +64,14 @@ class UnifiedCLI:
         self.self_healing_enabled = enable_self_healing
         self.auto_recovery = auto_recovery
         
-        # Initialize the agent with self-healing if enabled
+        # Check for secure API setup if not using local models
+        if not use_local and not model and not api_key:
+            setup_success = self._check_secure_api_setup()
+            if not setup_success:
+                print("Setup cancelled. You can run 'setup' command later.")
+                return
+        
+        # Initialize the agent after setup is complete
         agent = self._lazy_load_agent()
         
         if self.self_healing_enabled:
@@ -81,9 +88,38 @@ class UnifiedCLI:
             else:
                 print("Self-healing enabled (manual recovery)")
         
-        # Check for secure API setup if not using local models
+        # Configure the agent with the newly set up keys if setup was successful
         if not use_local and not model and not api_key:
-            self._check_secure_api_setup()
+            try:
+                from stableagents.api_key_manager import SecureAPIKeyManager
+                manager = SecureAPIKeyManager()
+                import getpass
+                
+                # Get the active provider and key
+                encrypted_keys = manager._load_encrypted_keys()
+                active_provider = encrypted_keys.get("active_provider")
+                
+                if active_provider and active_provider != "local":
+                    password = getpass.getpass("Enter your encryption password: ")
+                    if password:
+                        api_key = manager.get_api_key(active_provider, password)
+                        if api_key:
+                            success = self.agent.set_api_key(active_provider, api_key)
+                            if success:
+                                self.agent.set_active_ai_provider(active_provider)
+                                print(f"✅ Configured with {active_provider.capitalize()}")
+                            else:
+                                print(f"❌ Failed to configure {active_provider.capitalize()}")
+                        else:
+                            print(f"❌ Could not retrieve API key for {active_provider}")
+                    else:
+                        print("❌ Password required to access API keys")
+                elif active_provider == "local":
+                    print("✅ Using local models")
+                    self.agent.set_active_ai_provider("local")
+            except Exception as e:
+                print(f"⚠️  Warning: Could not configure agent with new keys: {e}")
+                print("   You can use 'setup' command to reconfigure later")
         
         if use_local:
             print("Using local model")
@@ -135,26 +171,8 @@ class UnifiedCLI:
         try:
             from stableagents.api_key_manager import SecureAPIKeyManager
             manager = SecureAPIKeyManager()
-            import getpass
             
-            # Check if user has already paid or set up keys
-            status = manager.check_payment_status()
-            encrypted_keys = manager._load_encrypted_keys()
-            active_provider = encrypted_keys.get("active_provider")
-            provider_key = None
-            password = None
-            
-            if active_provider:
-                # Prompt for password to check if key exists for active provider
-                password = getpass.getpass("Enter your encryption password: ")
-                if password:
-                    provider_key = manager.get_api_key(active_provider, password)
-            
-            if status.get('paid', False) and active_provider and provider_key:
-                print(f"✅ Secure API key is configured for {active_provider.capitalize()}")
-                return True
-            
-            # No secure setup found, guide user through the process
+            # Always show the setup options first, regardless of existing data
             print("\n🔐 Welcome to StableAgents!")
             print("=" * 40)
             print("To use AI features, you need to set up API keys securely.")
@@ -176,6 +194,7 @@ class UnifiedCLI:
             print("   - No API keys or payment required")
             print("   - Works offline, privacy-focused")
             print()
+            
             while True:
                 try:
                     choice = input("Enter your choice (1-3): ").strip()

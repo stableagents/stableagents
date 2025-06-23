@@ -30,7 +30,6 @@ if __name__ == "__main__":
         },
         entry_points={
             "console_scripts": [
-                "stableagents=stableagents.run_cli:main",
                 "stableagents-ai=stableagents.run_cli:main",
                 "stableagents-api=stableagents.api:app",
                 "stableagents-keys=stableagents.cli_key_manager:main",
