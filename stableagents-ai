@@ -1,5 +1,0 @@
-#!/bin/bash
-# StableAgents-AI command-line script
-
-# Pass all arguments to the Python module
-python3 -m stableagents.run_cli "$@" 

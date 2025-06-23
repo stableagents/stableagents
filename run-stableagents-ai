@@ -1,4 +1,0 @@
-#!/bin/bash
-# Simple command to launch StableAgents CLI
-
-python3 -m stableagents.run_cli "$@" 
