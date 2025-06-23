@@ -135,21 +135,30 @@ class UnifiedCLI:
         try:
             from stableagents.api_key_manager import SecureAPIKeyManager
             manager = SecureAPIKeyManager()
+            import getpass
             
             # Check if user has already paid or set up keys
             status = manager.check_payment_status()
+            encrypted_keys = manager._load_encrypted_keys()
+            active_provider = encrypted_keys.get("active_provider")
+            provider_key = None
+            password = None
             
-            if status.get('paid', False) and status.get('api_keys_provided'):
-                print("✅ Secure API keys are configured")
+            if active_provider:
+                # Prompt for password to check if key exists for active provider
+                password = getpass.getpass("Enter your encryption password: ")
+                if password:
+                    provider_key = manager.get_api_key(active_provider, password)
+            
+            if status.get('paid', False) and active_provider and provider_key:
+                print(f"✅ Secure API key is configured for {active_provider.capitalize()}")
                 return True
-                
+            
             # No secure setup found, guide user through the process
             print("\n🔐 Welcome to StableAgents!")
             print("=" * 40)
             print("To use AI features, you need to set up API keys securely.")
             print()
-            
-            # Show options
             print("You have three options:")
             print()
             print("1. 💳 Pay $20 for managed API keys")
@@ -167,11 +176,9 @@ class UnifiedCLI:
             print("   - No API keys or payment required")
             print("   - Works offline, privacy-focused")
             print()
-            
             while True:
                 try:
                     choice = input("Enter your choice (1-3): ").strip()
-                    
                     if choice == "1":
                         return self._setup_payment_option(manager)
                     elif choice == "2":
@@ -185,7 +192,6 @@ class UnifiedCLI:
                 except KeyboardInterrupt:
                     print("\nSetup cancelled. You can run 'setup' command later.")
                     return False
-                    
         except ImportError:
             print("⚠️  Secure API key management not available")
             print("   Using legacy API key management")

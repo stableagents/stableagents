@@ -1,0 +1,8 @@
+#!/bin/bash
+# Wrapper script for stableagents-ai
+
+# Get the directory of this script
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+# Run the CLI using the local Python module
+python3 -m stableagents.run_cli "$@" 
