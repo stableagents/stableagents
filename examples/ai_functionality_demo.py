@@ -75,33 +75,25 @@ def main():
         elif choice == "3":
             print(agent.show_prompts_showcase("computer_control"))
         elif choice == "4":
-            print(agent.show_prompts_showcase("ai_applications"))
+            print(agent.show_prompts_showcase("desktop_applications"))
         elif choice == "5":
-            print(agent.show_prompts_showcase("code_generation"))
-        elif choice == "6":
-            print(agent.show_prompts_showcase("content_creation"))
-        elif choice == "7":
-            print(agent.show_prompts_showcase("data_analysis"))
-        elif choice == "8":
-            print(agent.show_prompts_showcase("productivity"))
-        elif choice == "9":
             print(agent.show_prompts_showcase("quick_start"))
-        elif choice == "10":
+        elif choice == "6":
             print(agent.show_prompts_showcase("help"))
-        elif choice == "11":
+        elif choice == "7":
             capabilities = agent.get_ai_capabilities()
             print("\n🔧 AI Capabilities:")
             for capability, available in capabilities.items():
                 status = "✅ Available" if available else "❌ Not Available"
                 print(f"   {capability}: {status}")
-        elif choice == "12":
+        elif choice == "8":
             difficulty = input("Enter difficulty (beginner/intermediate/advanced): ").strip()
             print(agent.show_prompts_showcase(difficulty))
-        elif choice == "13":
+        elif choice == "9":
             try_sample_prompts(agent)
-        elif choice == "14":
+        elif choice == "10":
             save_custom_prompt(agent)
-        elif choice == "15":
+        elif choice == "11":
             view_custom_prompts(agent)
         else:
             print("❌ Invalid choice. Please try again.")
@@ -161,7 +153,7 @@ def save_custom_prompt(agent):
     print("\n💾 Save Custom Prompt")
     print("=" * 30)
     
-    category = input("Enter category (computer_control/ai_applications/code_generation/content_creation/data_analysis/productivity): ").strip()
+    category = input("Enter category (computer_control/desktop_applications): ").strip()
     name = input("Enter prompt name: ").strip()
     prompt = input("Enter the prompt: ").strip()
     description = input("Enter description (optional): ").strip()

@@ -13,6 +13,7 @@ from pathlib import Path
 
 class StripePaymentManager:
     def __init__(self):
+        """Initialize Stripe payment manager"""
         self.payment_config_file = Path.home() / ".stableagents" / "stripe_config.json"
         self.payment_status_file = Path.home() / ".stableagents" / "payment_status.json"
         
@@ -22,9 +23,8 @@ class StripePaymentManager:
         # Load or create configuration
         self.config = self._load_config()
         self.stripe_secret_key = os.getenv('STRIPE_SECRET_KEY')
-        if not self.stripe_secret_key:
-            print("❌ STRIPE_SECRET_KEY environment variable is not set.")
-        else:
+        # Only set the API key if we have it, don't print warning on initialization
+        if self.stripe_secret_key:
             stripe.api_key = self.stripe_secret_key
     
     def _load_config(self) -> Dict[str, Any]:

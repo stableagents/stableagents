@@ -62,182 +62,38 @@ class PromptsShowcase:
                     }
                 ]
             },
-            "ai_applications": {
-                "title": "AI Application Creation",
-                "description": "Build custom AI applications for specific tasks",
+            "desktop_applications": {
+                "title": "Generate Desktop Applications Using AI",
+                "description": "Create desktop applications and tools using AI assistance",
                 "samples": [
                     {
-                        "name": "Customer Service Chatbot",
-                        "prompt": "Create a chatbot that can answer customer questions about our product pricing and features",
-                        "category": "chatbot",
-                        "difficulty": "intermediate"
-                    },
-                    {
-                        "name": "Document Analyzer",
-                        "prompt": "Build an AI app that can read PDF documents and extract key information like dates, names, and amounts",
-                        "category": "document_processing",
-                        "difficulty": "intermediate"
-                    },
-                    {
-                        "name": "Image Classification Tool",
-                        "prompt": "Create an application that can identify objects in photos and categorize them",
-                        "category": "computer_vision",
-                        "difficulty": "advanced"
-                    },
-                    {
-                        "name": "Voice Assistant",
-                        "prompt": "Build a voice-controlled assistant that can set reminders, play music, and control smart home devices",
-                        "category": "voice_assistant",
-                        "difficulty": "advanced"
-                    },
-                    {
-                        "name": "Data Analysis Bot",
-                        "prompt": "Create an AI that can analyze CSV files and generate insights and visualizations",
-                        "category": "data_analysis",
-                        "difficulty": "advanced"
-                    }
-                ]
-            },
-            "code_generation": {
-                "title": "Code Generation & Programming",
-                "description": "Generate and debug code with AI assistance",
-                "samples": [
-                    {
-                        "name": "Python Function Generator",
-                        "prompt": "Write a Python function that sorts a list of dictionaries by a specific key",
-                        "category": "function_generation",
+                        "name": "File Organizer App",
+                        "prompt": "Create a desktop application that automatically organizes files by type and date",
+                        "category": "file_management",
                         "difficulty": "beginner"
                     },
                     {
-                        "name": "Web Scraper",
-                        "prompt": "Create a web scraper that extracts product information from an e-commerce website",
-                        "category": "web_scraping",
-                        "difficulty": "intermediate"
-                    },
-                    {
-                        "name": "API Integration",
-                        "prompt": "Generate code to integrate with a REST API and handle authentication",
-                        "category": "api_integration",
-                        "difficulty": "intermediate"
-                    },
-                    {
-                        "name": "Database Operations",
-                        "prompt": "Write SQL queries and Python code to manage a database with user authentication",
-                        "category": "database",
-                        "difficulty": "intermediate"
-                    },
-                    {
-                        "name": "Machine Learning Pipeline",
-                        "prompt": "Create a complete ML pipeline for sentiment analysis including data preprocessing and model training",
-                        "category": "machine_learning",
-                        "difficulty": "advanced"
-                    }
-                ]
-            },
-            "content_creation": {
-                "title": "Content Creation & Writing",
-                "description": "Generate various types of content with AI",
-                "samples": [
-                    {
-                        "name": "Blog Post Writer",
-                        "prompt": "Write a 500-word blog post about the benefits of AI in business",
-                        "category": "blog_writing",
-                        "difficulty": "beginner"
-                    },
-                    {
-                        "name": "Email Templates",
-                        "prompt": "Create professional email templates for customer outreach and follow-ups",
-                        "category": "email_templates",
-                        "difficulty": "beginner"
-                    },
-                    {
-                        "name": "Social Media Content",
-                        "prompt": "Generate engaging social media posts for a tech company's product launch",
-                        "category": "social_media",
-                        "difficulty": "intermediate"
-                    },
-                    {
-                        "name": "Technical Documentation",
-                        "prompt": "Write comprehensive documentation for a software API with examples",
-                        "category": "documentation",
-                        "difficulty": "intermediate"
-                    },
-                    {
-                        "name": "Creative Story Writing",
-                        "prompt": "Write a short story with a sci-fi theme and character development",
-                        "category": "creative_writing",
-                        "difficulty": "advanced"
-                    }
-                ]
-            },
-            "data_analysis": {
-                "title": "Data Analysis & Insights",
-                "description": "Analyze data and generate insights with AI",
-                "samples": [
-                    {
-                        "name": "Sales Data Analysis",
-                        "prompt": "Analyze monthly sales data and identify trends, patterns, and recommendations",
-                        "category": "business_analytics",
-                        "difficulty": "intermediate"
-                    },
-                    {
-                        "name": "Customer Feedback Analysis",
-                        "prompt": "Process customer reviews and extract sentiment, common issues, and improvement suggestions",
-                        "category": "sentiment_analysis",
-                        "difficulty": "intermediate"
-                    },
-                    {
-                        "name": "Market Research",
-                        "prompt": "Research competitors and generate a market analysis report with key insights",
-                        "category": "market_research",
-                        "difficulty": "advanced"
-                    },
-                    {
-                        "name": "Financial Data Processing",
-                        "prompt": "Analyze financial statements and generate investment insights and risk assessments",
-                        "category": "financial_analysis",
-                        "difficulty": "advanced"
-                    },
-                    {
-                        "name": "Predictive Analytics",
-                        "prompt": "Build a model to predict customer churn based on usage patterns and demographics",
-                        "category": "predictive_analytics",
-                        "difficulty": "advanced"
-                    }
-                ]
-            },
-            "productivity": {
-                "title": "Productivity & Workflow Automation",
-                "description": "Automate tasks and improve productivity",
-                "samples": [
-                    {
-                        "name": "Email Management",
-                        "prompt": "Automatically categorize emails, set up filters, and draft responses for common inquiries",
-                        "category": "email_automation",
-                        "difficulty": "intermediate"
-                    },
-                    {
-                        "name": "Meeting Scheduler",
-                        "prompt": "Create an AI assistant that can schedule meetings, send invites, and manage calendar conflicts",
-                        "category": "calendar_management",
-                        "difficulty": "intermediate"
-                    },
-                    {
-                        "name": "Task Prioritization",
-                        "prompt": "Build a system that can prioritize tasks based on deadlines, importance, and available time",
+                        "name": "Task Manager Tool",
+                        "prompt": "Build a desktop app for managing daily tasks with reminders and progress tracking",
                         "category": "task_management",
                         "difficulty": "intermediate"
                     },
                     {
-                        "name": "Report Generation",
-                        "prompt": "Automatically generate weekly/monthly reports by collecting data from multiple sources",
-                        "category": "reporting",
+                        "name": "Data Visualization Dashboard",
+                        "prompt": "Create a desktop application that reads CSV files and generates interactive charts and graphs",
+                        "category": "data_visualization",
+                        "difficulty": "intermediate"
+                    },
+                    {
+                        "name": "Code Editor Assistant",
+                        "prompt": "Build a desktop code editor with AI-powered autocomplete and code suggestions",
+                        "category": "code_editor",
                         "difficulty": "advanced"
                     },
                     {
-                        "name": "Workflow Orchestration",
-                        "prompt": "Create a complete workflow that handles customer onboarding from initial contact to account setup",
-                        "category": "workflow_automation",
+                        "name": "System Monitor Dashboard",
+                        "prompt": "Create a desktop application that monitors system performance with real-time graphs and alerts",
+                        "category": "system_monitoring",
                         "difficulty": "advanced"
                     }
                 ]
@@ -390,41 +246,19 @@ class PromptsShowcase:
 
 Discover what you can build with AI-powered computer control and automation:
 
-📁 COMPUTER CONTROL
+📁 COMPUTER CONTROL & AUTOMATION
 • Open applications and automate tasks
 • Manage files and folders intelligently
 • Control web browsers and extract data
 • Monitor system resources
+• Take screenshots and automate workflows
 
-🧠 AI APPLICATIONS
-• Create custom chatbots and assistants
-• Build document processors and analyzers
-• Develop voice-controlled applications
-• Automate complex workflows
-
-💻 CODE GENERATION
-• Generate Python, JavaScript, and other code
-• Debug and optimize existing code
-• Create API integrations and web scrapers
-• Build machine learning pipelines
-
-📝 CONTENT CREATION
-• Write blog posts, emails, and documentation
-• Generate social media content
-• Create technical documentation
-• Write creative stories and scripts
-
-📊 DATA ANALYSIS
-• Analyze business data and generate insights
-• Process customer feedback and reviews
-• Conduct market research and competitor analysis
-• Build predictive models and forecasts
-
-⚡ PRODUCTIVITY
-• Automate email management and scheduling
-• Create task prioritization systems
-• Generate automated reports
-• Orchestrate complex workflows
+🖥️ GENERATE DESKTOP APPLICATIONS USING AI
+• Create file organizer and management tools
+• Build task manager and productivity apps
+• Develop data visualization dashboards
+• Design code editors with AI assistance
+• Build system monitoring applications
 
 Ready to get started? Choose a category to see sample prompts and examples!
         """
@@ -496,17 +330,13 @@ Ready to get started? Choose a category to see sample prompts and examples!
 Choose an option:
 
 1. 📁 Computer Control & Automation
-2. 🧠 AI Application Creation  
-3. 💻 Code Generation & Programming
-4. 📝 Content Creation & Writing
-5. 📊 Data Analysis & Insights
-6. ⚡ Productivity & Workflow Automation
-7. 📚 Examples by Difficulty
-8. 📋 Prompt Templates
-9. 🎯 Quick Start Guide
-10. ❓ Help & Tips
+2. 🖥️ Generate Desktop Applications Using AI
+3. 📚 Examples by Difficulty
+4. 📋 Prompt Templates
+5. 🎯 Quick Start Guide
+6. ❓ Help & Tips
 
-Enter a number (1-10) or type 'all' to see everything:
+Enter a number (1-6) or type 'all' to see everything:
         """
     
     def show_quick_start_guide(self) -> str:
@@ -801,27 +631,7 @@ Need more specific help? Try the interactive menu or explore the examples!
                 'intermediate': 'openai',
                 'advanced': 'anthropic'
             },
-            'ai_applications': {
-                'beginner': 'openai',
-                'intermediate': 'anthropic',
-                'advanced': 'anthropic'
-            },
-            'code_generation': {
-                'beginner': 'openai',
-                'intermediate': 'anthropic',
-                'advanced': 'anthropic'
-            },
-            'content_creation': {
-                'beginner': 'openai',
-                'intermediate': 'openai',
-                'advanced': 'anthropic'
-            },
-            'data_analysis': {
-                'beginner': 'openai',
-                'intermediate': 'anthropic',
-                'advanced': 'anthropic'
-            },
-            'productivity': {
+            'desktop_applications': {
                 'beginner': 'openai',
                 'intermediate': 'anthropic',
                 'advanced': 'anthropic'

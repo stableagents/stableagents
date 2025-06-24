@@ -1232,8 +1232,7 @@ def main():
     # Prompts showcase mode
     showcase_parser = subparsers.add_parser('showcase', help='Show AI functionality examples and prompts')
     showcase_parser.add_argument('category', nargs='?', 
-                                choices=['all', 'computer_control', 'ai_applications', 'code_generation', 
-                                       'content_creation', 'data_analysis', 'productivity', 'quick_start', 
+                                choices=['all', 'computer_control', 'desktop_applications', 'quick_start', 
                                        'help', 'beginner', 'intermediate', 'advanced'],
                                 help='Category to show (default: welcome message)')
     
