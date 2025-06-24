@@ -15,6 +15,8 @@ except ImportError:
 
 from .computer import ComputerControl
 from .ai_providers import AIProviderManager, AIProvider
+from .ai_functionality import AIFunctionality
+from .prompts_showcase import PromptsShowcase
 from .core.self_healing import SelfHealingController
 # from stableagents import * 
 
@@ -48,6 +50,12 @@ class StableAgents:
         self.ai_provider = None
         self.using_local_model = False
         self.local_model = None
+        
+        # Initialize AI functionality
+        self.ai_functionality = AIFunctionality(ai_provider=None, config_dir=config_dir)
+        
+        # Initialize prompts showcase
+        self.prompts_showcase = PromptsShowcase(config_dir)
         
         # Initialize self-healing system
         self.self_healing = SelfHealingController(agent=self)
@@ -335,21 +343,323 @@ class StableAgents:
         Returns:
             str: Result of the command execution
         """
-        if not self.computer_has_imported_computer_api:
-            self.computer = ComputerControl()
-            self.computer_has_imported_computer_api = True
+        return self.computer.execute(command)
+    
+    # AI Functionality Methods
+    def show_prompts_showcase(self, category: str = None) -> str:
+        """
+        Show the prompts showcase to help users understand what they can build.
+        
+        Args:
+            category (str, optional): Specific category to show. If None, shows welcome message.
             
-        result = self.computer.execute(command)
+        Returns:
+            str: Formatted showcase content
+        """
+        if category is None:
+            return self.prompts_showcase.show_welcome_message()
+        elif category == "menu":
+            return self.prompts_showcase.get_interactive_menu()
+        elif category == "quick_start":
+            return self.prompts_showcase.show_quick_start_guide()
+        elif category == "help":
+            return self.prompts_showcase.show_help_and_tips()
+        elif category == "all":
+            return self.prompts_showcase.get_all_prompts_summary()
+        elif category in ["beginner", "intermediate", "advanced"]:
+            return self.prompts_showcase.show_examples_by_difficulty(category)
+        elif category.endswith("_templates"):
+            return self.prompts_showcase.show_templates(category)
+        else:
+            return self.prompts_showcase.show_category_prompts(category)
+    
+    def search_prompts(self, query: str) -> str:
+        """
+        Search for prompts by keyword or category.
         
-        # Add to short-term memory
-        self.add_to_memory("short_term", "computer_command", {
-            "command": command,
-            "result": result,
-            "timestamp": datetime.datetime.now().isoformat()
-        })
+        Args:
+            query (str): Search query
+            
+        Returns:
+            str: Search results
+        """
+        return self.prompts_showcase.search_prompts(query)
+    
+    def get_sample_prompt(self, category: str, prompt_id: int) -> dict:
+        """
+        Get a specific sample prompt by category and ID.
         
-        return result
+        Args:
+            category (str): Prompt category
+            prompt_id (int): Prompt ID (1-based)
+            
+        Returns:
+            dict: Prompt information or None if not found
+        """
+        return self.prompts_showcase.get_prompt_by_id(category, prompt_id)
+    
+    def save_custom_prompt(self, category: str, name: str, prompt: str, 
+                          description: str = "", difficulty: str = "intermediate") -> bool:
+        """
+        Save a custom prompt created by the user.
         
+        Args:
+            category (str): Prompt category
+            name (str): Prompt name
+            prompt (str): The actual prompt text
+            description (str): Optional description
+            difficulty (str): Difficulty level (beginner/intermediate/advanced)
+            
+        Returns:
+            bool: True if saved successfully
+        """
+        return self.prompts_showcase.save_custom_prompt(category, name, prompt, description, difficulty)
+    
+    def get_custom_prompts(self, category: str = None) -> dict:
+        """
+        Get custom prompts created by the user.
+        
+        Args:
+            category (str, optional): Specific category to get. If None, returns all.
+            
+        Returns:
+            dict: Custom prompts
+        """
+        return self.prompts_showcase.get_custom_prompts(category)
+    
+    # AI Functionality Methods
+    def analyze_image(self, image_path: str, task: str = "general") -> dict:
+        """
+        Analyze an image using computer vision.
+        
+        Args:
+            image_path (str): Path to the image file
+            task (str): Analysis task (general, objects, faces, text, colors)
+            
+        Returns:
+            dict: Analysis results
+        """
+        return self.ai_functionality.analyze_image(image_path, task)
+    
+    def analyze_text(self, text: str, task: str = "general") -> dict:
+        """
+        Analyze text using natural language processing.
+        
+        Args:
+            text (str): Text to analyze
+            task (str): Analysis task (general, sentiment, entities, keywords, summary)
+            
+        Returns:
+            dict: Analysis results
+        """
+        return self.ai_functionality.analyze_text(text, task)
+    
+    def listen_for_speech(self, timeout: int = 5) -> dict:
+        """
+        Listen for speech input.
+        
+        Args:
+            timeout (int): Timeout in seconds
+            
+        Returns:
+            dict: Speech recognition results
+        """
+        return self.ai_functionality.listen_for_speech(timeout)
+    
+    def speak_text(self, text: str, voice: str = None) -> bool:
+        """
+        Convert text to speech.
+        
+        Args:
+            text (str): Text to speak
+            voice (str, optional): Voice to use
+            
+        Returns:
+            bool: True if successful
+        """
+        return self.ai_functionality.speak_text(text, voice)
+    
+    def create_ai_application(self, app_type: str, config: dict) -> dict:
+        """
+        Create an AI application.
+        
+        Args:
+            app_type (str): Type of application (chatbot, image_analyzer, text_processor, voice_assistant, automation)
+            config (dict): Application configuration
+            
+        Returns:
+            dict: Application creation results
+        """
+        return self.ai_functionality.create_ai_application(app_type, config)
+    
+    def list_ai_applications(self) -> list:
+        """
+        List all created AI applications.
+        
+        Returns:
+            list: List of applications
+        """
+        return self.ai_functionality.list_applications()
+    
+    def run_ai_application(self, app_id: str, function: str, *args, **kwargs) -> any:
+        """
+        Run a function in an AI application.
+        
+        Args:
+            app_id (str): Application ID
+            function (str): Function name to run
+            *args: Function arguments
+            **kwargs: Function keyword arguments
+            
+        Returns:
+            any: Function result
+        """
+        return self.ai_functionality.run_application(app_id, function, *args, **kwargs)
+    
+    def intelligent_computer_control(self, natural_command: str) -> dict:
+        """
+        Use AI to interpret and execute computer control commands.
+        
+        Args:
+            natural_command (str): Natural language command
+            
+        Returns:
+            dict: Command interpretation and execution results
+        """
+        return self.ai_functionality.intelligent_computer_control(natural_command)
+    
+    def generate_code(self, description: str, language: str = "python") -> str:
+        """
+        Generate code based on description.
+        
+        Args:
+            description (str): Code description
+            language (str): Programming language
+            
+        Returns:
+            str: Generated code
+        """
+        return self.ai_functionality.generate_code(description, language)
+    
+    def debug_code(self, code: str, error_message: str = None) -> str:
+        """
+        Debug code using AI.
+        
+        Args:
+            code (str): Code to debug
+            error_message (str, optional): Error message
+            
+        Returns:
+            str: Corrected code
+        """
+        return self.ai_functionality.debug_code(code, error_message)
+    
+    def create_ai_workflow(self, workflow_description: str) -> dict:
+        """
+        Create an AI workflow.
+        
+        Args:
+            workflow_description (str): Workflow description
+            
+        Returns:
+            dict: Workflow definition
+        """
+        return self.ai_functionality.create_ai_workflow(workflow_description)
+    
+    def execute_ai_workflow(self, workflow: dict, inputs: dict) -> dict:
+        """
+        Execute an AI workflow.
+        
+        Args:
+            workflow (dict): Workflow definition
+            inputs (dict): Input data
+            
+        Returns:
+            dict: Workflow execution results
+        """
+        return self.ai_functionality.execute_ai_workflow(workflow, inputs)
+    
+    def get_ai_capabilities(self) -> dict:
+        """
+        Get available AI capabilities.
+        
+        Returns:
+            dict: Available capabilities
+        """
+        return self.ai_functionality.get_capabilities()
+    
+    def check_ai_dependencies(self) -> dict:
+        """
+        Check if required AI dependencies are available.
+        
+        Returns:
+            dict: Dependency availability status
+        """
+        return self.ai_functionality.check_dependencies()
+    
+    def install_ai_dependencies(self, dependencies: list) -> bool:
+        """
+        Install required AI dependencies.
+        
+        Args:
+            dependencies (list): List of dependencies to install
+            
+        Returns:
+            bool: True if successful
+        """
+        return self.ai_functionality.install_dependencies(dependencies)
+    
+    def setup_ai_functionality(self) -> str:
+        """
+        Interactive setup for AI functionality.
+        
+        Returns:
+            str: Setup results
+        """
+        # Show prompts showcase first
+        print(self.prompts_showcase.show_welcome_message())
+        print("\n" + "="*60)
+        print("🎯 SAMPLE PROMPTS & EXAMPLES")
+        print("="*60)
+        
+        # Show some sample prompts
+        print("\n📁 Computer Control Examples:")
+        print("• 'Open my email application and compose a new message'")
+        print("• 'Create a new folder called Projects and move all PDF files there'")
+        print("• 'Search for Python tutorials on Google and open the first 3 results'")
+        
+        print("\n🧠 AI Application Examples:")
+        print("• 'Create a chatbot that can answer customer questions about our product'")
+        print("• 'Build an AI app that can read PDF documents and extract key information'")
+        print("• 'Create an application that can identify objects in photos'")
+        
+        print("\n💻 Code Generation Examples:")
+        print("• 'Write a Python function that sorts a list of dictionaries by a specific key'")
+        print("• 'Create a web scraper that extracts product information from an e-commerce website'")
+        print("• 'Generate code to integrate with a REST API and handle authentication'")
+        
+        print("\n📝 Content Creation Examples:")
+        print("• 'Write a 500-word blog post about the benefits of AI in business'")
+        print("• 'Create professional email templates for customer outreach'")
+        print("• 'Generate engaging social media posts for a tech company product launch'")
+        
+        print("\n📊 Data Analysis Examples:")
+        print("• 'Analyze monthly sales data and identify trends and recommendations'")
+        print("• 'Process customer reviews and extract sentiment and improvement suggestions'")
+        print("• 'Build a model to predict customer churn based on usage patterns'")
+        
+        print("\n⚡ Productivity Examples:")
+        print("• 'Automatically categorize emails and draft responses for common inquiries'")
+        print("• 'Create an AI assistant that can schedule meetings and manage calendar conflicts'")
+        print("• 'Build a system that can prioritize tasks based on deadlines and importance'")
+        
+        print("\n" + "="*60)
+        print("🚀 READY TO GET STARTED?")
+        print("="*60)
+        print("Now you can proceed to set up your AI provider and start building!")
+        
+        return "AI functionality showcase completed. Ready for provider setup."
+    
     def set_api_key(self, provider: str, api_key: str) -> bool:
         """
         Set an API key for an AI provider.
@@ -394,7 +704,13 @@ class StableAgents:
         Returns:
             bool: True if successful, False otherwise
         """
-        return self.ai_manager.set_active_provider(provider)
+        success = self.ai_manager.set_active_provider(provider)
+        if success:
+            # Update the AI provider in the AI functionality module
+            ai_provider = self.ai_manager.get_provider(provider)
+            if ai_provider:
+                self.ai_functionality.set_ai_provider(ai_provider)
+        return success
     
     def get_active_ai_provider(self) -> str:
         """
@@ -415,7 +731,11 @@ class StableAgents:
         Returns:
             AIProvider: An instance of the AI provider or None if not available
         """
-        return self.ai_manager.get_provider(provider_name)
+        provider = self.ai_manager.get_provider(provider_name)
+        if provider:
+            # Update the AI provider in the AI functionality module
+            self.ai_functionality.set_ai_provider(provider)
+        return provider
     
     def set_local_model(self, model_path: str = None):
         """

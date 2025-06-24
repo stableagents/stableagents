@@ -6,15 +6,33 @@ import logging
 import shutil
 import time
 import re
+import json
+import psutil
+import tempfile
 from typing import List, Dict, Any, Optional, Union
 
+# Try to import advanced automation libraries
+try:
+    import pyautogui
+    PYAUTOGUI_AVAILABLE = True
+except ImportError:
+    PYAUTOGUI_AVAILABLE = False
+
+try:
+    import tkinter as tk
+    from tkinter import ttk, messagebox
+    TKINTER_AVAILABLE = True
+except ImportError:
+    TKINTER_AVAILABLE = False
+
 class ComputerControl:
-    """Module for controlling computer actions based on natural language commands."""
+    """Enhanced module for controlling computer actions and building desktop applications."""
     
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.os_type = platform.system().lower()
         self.registered_actions = {
+            # Basic operations
             "open": self.open_application,
             "browse": self.browse_web,
             "search": self.search_web,
@@ -26,8 +44,26 @@ class ComputerControl:
             "delete": self.delete_file,
             "execute": self.execute_command,
             "type": self.type_text,
-            "screenshot": self.take_screenshot
+            "screenshot": self.take_screenshot,
+            
+            # Advanced operations
+            "click": self.mouse_click,
+            "drag": self.mouse_drag,
+            "scroll": self.mouse_scroll,
+            "key": self.keyboard_input,
+            "window": self.window_control,
+            "monitor": self.system_monitor,
+            "process": self.process_control,
+            "build": self.build_application,
+            "gui": self.gui_automation,
+            "network": self.network_operations,
+            "database": self.database_operations
         }
+        
+        # Initialize pyautogui if available
+        if PYAUTOGUI_AVAILABLE:
+            pyautogui.FAILSAFE = True
+            pyautogui.PAUSE = 0.1
         
     def parse_command(self, command: str) -> Dict[str, Any]:
         """Parse a natural language command into actionable parts."""
@@ -297,4 +333,59 @@ class ComputerControl:
         timestamp = time.strftime("%Y%m%d-%H%M%S")
         filename = f"screenshot-{timestamp}.png"
         
-        return f"Screenshot taken: {filename} (simulated)" 
+        return f"Screenshot taken: {filename} (simulated)"
+
+    def mouse_click(self, params: str) -> str:
+        """Simulate a mouse click."""
+        # This is a stub - actual implementation would depend on OS and available tools
+        return "Mouse click simulated (simulated)"
+
+    def mouse_drag(self, params: str) -> str:
+        """Simulate a mouse drag."""
+        # This is a stub - actual implementation would depend on OS and available tools
+        return "Mouse drag simulated (simulated)"
+
+    def mouse_scroll(self, params: str) -> str:
+        """Simulate a mouse scroll."""
+        # This is a stub - actual implementation would depend on OS and available tools
+        return "Mouse scroll simulated (simulated)"
+
+    def keyboard_input(self, params: str) -> str:
+        """Simulate keyboard input."""
+        # This is a stub - actual implementation would depend on OS and available tools
+        return "Keyboard input simulated (simulated)"
+
+    def window_control(self, params: str) -> str:
+        """Control a window."""
+        # This is a stub - actual implementation would depend on OS and available tools
+        return "Window control simulated (simulated)"
+
+    def system_monitor(self, params: str) -> str:
+        """Monitor system resources."""
+        # This is a stub - actual implementation would depend on OS and available tools
+        return "System monitor simulated (simulated)"
+
+    def process_control(self, params: str) -> str:
+        """Control a process."""
+        # This is a stub - actual implementation would depend on OS and available tools
+        return "Process control simulated (simulated)"
+
+    def build_application(self, params: str) -> str:
+        """Build a desktop application."""
+        # This is a stub - actual implementation would depend on OS and available tools
+        return "Desktop application built (simulated)"
+
+    def gui_automation(self, params: str) -> str:
+        """Automate GUI interactions."""
+        # This is a stub - actual implementation would depend on OS and available tools
+        return "GUI automation simulated (simulated)"
+
+    def network_operations(self, params: str) -> str:
+        """Perform network operations."""
+        # This is a stub - actual implementation would depend on OS and available tools
+        return "Network operations simulated (simulated)"
+
+    def database_operations(self, params: str) -> str:
+        """Perform database operations."""
+        # This is a stub - actual implementation would depend on OS and available tools
+        return "Database operations simulated (simulated)" 

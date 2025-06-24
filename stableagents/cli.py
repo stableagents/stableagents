@@ -555,6 +555,14 @@ def main():
     # Setup mode
     setup_parser = subparsers.add_parser('setup', help='Setup secure API keys')
     
+    # Prompts showcase mode
+    showcase_parser = subparsers.add_parser('showcase', help='Show AI functionality examples and prompts')
+    showcase_parser.add_argument('category', nargs='?', 
+                                choices=['all', 'computer_control', 'ai_applications', 'code_generation', 
+                                       'content_creation', 'data_analysis', 'productivity', 'quick_start', 
+                                       'help', 'beginner', 'intermediate', 'advanced'],
+                                help='Category to show (default: welcome message)')
+    
     # Memory commands
     memory_parser = subparsers.add_parser('memory', help='Memory operations')
     memory_subparsers = memory_parser.add_subparsers(dest='memory_command', help='Memory command')
@@ -685,6 +693,20 @@ def main():
         return 0 if setup_success else 1
     elif args.command == 'examples':
         return run_examples(agent, args.banner)
+    elif args.command == 'showcase':
+        print("🎯 AI Functionality Showcase")
+        print("=" * 40)
+        if args.category:
+            print(agent.show_prompts_showcase(args.category))
+        else:
+            print(agent.show_prompts_showcase())
+        
+        print("\n" + "="*60)
+        print("🚀 Ready to get started?")
+        print("="*60)
+        print("Run 'stableagents setup' to configure your AI provider")
+        print("Run 'stableagents interactive' to start building with AI")
+        return 0
     elif args.command == 'memory':
         if args.memory_command == 'add':
             agent.add_to_memory(args.type, args.key, args.value)
