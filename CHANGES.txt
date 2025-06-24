@@ -1,4 +1,11 @@
-# Stable Agents Changelog
+# stableagents-ai Changelog
+
+## Version 0.0.1
+- Initial release
+- Basic agent functionality
+- Text generation capabilities
+- Memory management
+- API integration support
 
 ## [0.0.1] - 2024-03-20
 ### Added

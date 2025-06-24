@@ -25,7 +25,7 @@ from .core.self_healing import SelfHealingController
 class StableAgents:
     """
     
-    This is the stable agent libraries
+    This is the stableagents-ai libraries
    
     """
     
@@ -331,12 +331,12 @@ class StableAgents:
         
         return None
     
-    def get_stableagents_dir(self):
+    def get_stableagents_directory(self):
         """
-        Get the stable agents directory path from environment or use default
+        Get the stableagents-ai directory path from environment or use default
         
         Returns:
-            str: Path to the stable agents directory
+            str: Path to the stableagents-ai directory
         """
         stableagents_dir = os.environ.get("STABLEAGENTS_DIR", os.path.join(os.path.expanduser("~"), ".stableagents"))
         return stableagents_dir
@@ -1012,4 +1012,4 @@ if __name__ == "__main__":
     print("\nLong-term memory contents:")
     print(json.dumps(long_term, default=str, indent=2))
     
-    print(f"\nStableAgents directory: {agent.get_stableagents_dir()}")
+    print(f"\nStableAgents directory: {agent.get_stableagents_directory()}")

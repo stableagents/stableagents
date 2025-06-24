@@ -928,12 +928,12 @@ Need more specific help? Try the interactive menu or explore the examples!
    • Place it in: ~/.stableagents/models/
 
 2. 🔧 Configure Local Model:
-   • Run: stableagents setup
+   • Run: stableagents-ai setup
    • Choose "Local models only"
    • Point to your downloaded model
 
 3. 🚀 Start Building:
-   • Run: stableagents interactive
+   • Run: stableagents-ai interactive
    • Try your selected prompt
 """
         else:
@@ -944,12 +944,12 @@ Need more specific help? Try the interactive menu or explore the examples!
    • Note: {self._get_provider_cost_info(provider)}
 
 2. 🔧 Configure API Key:
-   • Run: stableagents setup
+   • Run: stableagents-ai setup
    • Choose "Bring your own API keys"
    • Enter your {provider.upper()} API key
 
 3. 🚀 Start Building:
-   • Run: stableagents interactive
+   • Run: stableagents-ai interactive
    • Try your selected prompt
 """
         

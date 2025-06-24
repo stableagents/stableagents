@@ -3,10 +3,11 @@ message: "If you use this software, please cite it as below."
 authors:
   - family-names: "Plows"
     given-names: "Jordan"
-title: "Stable Agents"
-version: 1.0.0
-date-released: 2023-12-01
-repository-code: "https://github.com/plowsai/stableagents"
+title: "stableagents-ai"
+version: 0.0.1
+doi: 10.5281/zenodo.1234567
+date-released: 2024-03-20
+url: "https://github.com/jordanplows/stableagents"
 abstract: "A collection of stable and reliable AI agents for various tasks including web browsing, productivity, and coding assistance."
 keywords:
   - "artificial intelligence"

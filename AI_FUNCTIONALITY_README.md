@@ -1,372 +1,327 @@
-# StableAgents AI Functionality
+# stableagents-ai AI Functionality
 
-StableAgents now includes comprehensive AI functionality for computer control and AI application creation. This guide covers the new features, setup process, and usage examples.
+stableagents-ai now includes comprehensive AI functionality for computer control and AI application creation. This guide covers the new features, setup process, and usage examples.
 
 ## 🎯 New Guided Setup Process
 
-StableAgents now offers a **guided setup process** that helps you pick a prompt and select a provider before setting up API keys. This creates a more purposeful and guided experience.
+stableagents-ai now offers a **guided setup process** that helps you pick a prompt and select a provider before setting up API keys. This creates a more purposeful and guided experience.
 
-### Quick Start with Guided Setup
+### Quick Start Commands
 
 ```bash
-# Start the guided setup process
-stableagents guided-setup
+# Guided setup with prompt selection and provider choice
+stableagents-ai guided-setup
 
-# Or explore prompts first
-stableagents showcase
+# Explore available prompts and examples
+stableagents-ai showcase
 
-# Then start guided setup
-stableagents guided-setup
+# Start guided setup after exploring examples
+stableagents-ai guided-setup
 ```
-
-### What the Guided Setup Includes
-
-1. **📋 Prompt Selection**: Choose from 6 categories with 30+ sample prompts
-2. **🤖 Provider Selection**: Get AI-powered recommendations for the best provider
-3. **📋 Setup Instructions**: Step-by-step instructions for your specific combination
-4. **🔧 API Key Setup**: Seamless integration with secure API key management
-
-### Prompt Categories Available
-
-- **🖥️ Computer Control**: Automate your computer with natural language
-- **🧠 AI Applications**: Build custom AI applications and chatbots
-- **💻 Code Generation**: Generate, debug, and optimize code
-- **📝 Content Creation**: Create articles, emails, and marketing content
-- **📊 Data Analysis**: Analyze data and extract insights
-- **⚡ Productivity**: Automate workflows and boost productivity
-
-### Provider Recommendations
-
-The system provides intelligent recommendations based on your prompt:
-
-- **OpenAI (GPT-4, GPT-3.5)**: Fast, general-purpose, good for prototyping
-- **Anthropic (Claude)**: Excellent reasoning, long context, safety-focused
-- **Google (PaLM, Gemini)**: Competitive pricing, Google ecosystem integration
-- **Local Models (GGUF)**: Privacy-focused, offline, no API costs
 
 ## 🚀 Getting Started
 
-### Option 1: Guided Setup (Recommended)
+### 1. Explore Examples First (Recommended)
 
 ```bash
-# Start the complete guided setup
-stableagents guided-setup
+stableagents-ai showcase
 ```
 
-This will walk you through:
-1. Selecting a prompt from our curated examples
-2. Choosing the best AI provider for your needs
-3. Getting specific setup instructions
-4. Setting up your API keys securely
+This shows you:
+- Available prompt categories
+- Example outputs for each category
+- Provider comparisons
+- Setup instructions
 
-### Option 2: Explore First, Setup Later
+### 2. Guided Setup
 
 ```bash
-# Explore prompts and examples
-stableagents showcase
-
-# Browse specific categories
-stableagents showcase computer_control
-stableagents showcase ai_applications
-stableagents showcase code_generation
-
-# When ready, start guided setup
-stableagents guided-setup
+stableagents-ai guided-setup
 ```
 
-### Option 3: Interactive Mode
+This walks you through:
+- Prompt category selection
+- Provider comparison and selection
+- API key setup
+- Security configuration
+
+### 3. Direct Setup (Advanced Users)
 
 ```bash
-# Start interactive mode with new AI commands
-stableagents interactive
-
-# Available commands:
-# showcase [category] - Show AI functionality examples
-# guided-setup - Start guided setup with prompt selection
-# select-prompt - Select a prompt and provider
-# ai-capabilities - Check available AI capabilities
+stableagents-ai setup
 ```
 
-## 📋 Sample Prompts by Category
+Direct API key setup without the guided flow.
 
-### Computer Control Examples
+## 📋 Available Commands
 
-**Beginner:**
-- "Open my email application and compose a new message"
-- "Create a new folder called Projects and move all PDF files there"
+### Showcase Commands
+```bash
+stableagents-ai showcase                    # Show all categories
+stableagents-ai showcase computer_control   # Computer control examples
+stableagents-ai showcase ai_applications    # AI application examples
+stableagents-ai showcase code_generation    # Code generation examples
+```
 
-**Intermediate:**
-- "Search for Python tutorials on Google and open the first 3 results"
-- "Take a screenshot of my current desktop and save it to my Pictures folder"
+### Setup Commands
+```bash
+stableagents-ai guided-setup               # Guided setup with examples
+stableagents-ai setup                      # Direct API key setup
+```
 
-**Advanced:**
-- "Monitor my system resources and alert me when CPU usage exceeds 80%"
-- "Automatically organize my Downloads folder by file type and date"
-
-### AI Applications Examples
-
-**Beginner:**
-- "Create a simple chatbot that can answer basic questions"
-- "Build an app that can convert text to speech"
-
-**Intermediate:**
-- "Create a chatbot that can answer customer questions about our product"
-- "Build an AI app that can read PDF documents and extract key information"
-
-**Advanced:**
-- "Create an application that can identify objects in photos"
-- "Build a sentiment analysis tool for social media monitoring"
-
-### Code Generation Examples
-
-**Beginner:**
-- "Write a Python function that sorts a list of dictionaries by a specific key"
-- "Create a simple web scraper that extracts titles from a website"
-
-**Intermediate:**
-- "Create a web scraper that extracts product information from an e-commerce website"
-- "Generate code to integrate with a REST API and handle authentication"
-
-**Advanced:**
-- "Build a machine learning pipeline for text classification"
-- "Create a microservice architecture with Docker and Kubernetes"
+### Usage Commands
+```bash
+stableagents-ai interactive                # Start interactive mode
+```
 
 ## 🔧 AI Capabilities
 
-StableAgents includes the following AI capabilities:
+stableagents-ai includes the following AI capabilities:
 
-### Core AI Features
-- ✅ **Text Generation**: Generate text, code, and content
-- ✅ **Chat Interface**: Conversational AI interactions
-- ✅ **Computer Control**: Natural language computer automation
-- ✅ **Memory Management**: Short-term and long-term memory storage
+### 1. Computer Control
+- **File Operations**: Create, read, write, and manage files
+- **Application Control**: Open, close, and interact with applications
+- **Web Automation**: Navigate websites, fill forms, extract data
+- **System Monitoring**: Monitor system resources and performance
+- **Screenshot & Recording**: Capture screenshots and record screen activity
 
-### Advanced AI Features (Optional Dependencies)
-- 🔄 **Computer Vision**: Image analysis and object detection
-- 🔄 **Speech Recognition**: Convert speech to text
-- 🔄 **Speech Synthesis**: Convert text to speech
-- 🔄 **Natural Language Processing**: Advanced text analysis
-- 🔄 **Machine Learning**: Model training and inference
+### 2. AI Application Creation
+- **Chatbots**: Create conversational AI assistants
+- **Document Processing**: Extract information from PDFs, images, and text
+- **Data Analysis**: Analyze datasets and generate insights
+- **Content Generation**: Create blog posts, emails, and social media content
+- **Code Generation**: Generate and debug code in multiple languages
 
-### AI Application Creation
-- ✅ **Custom AI Apps**: Build specialized AI applications
-- ✅ **Workflow Automation**: Automate complex tasks
-- ✅ **Integration APIs**: Connect with external services
-- ✅ **Code Generation**: Generate and debug code
+### 3. Integration Capabilities
+- **API Integration**: Connect with external services and APIs
+- **Database Operations**: Query and manage databases
+- **Cloud Services**: Integrate with AWS, Google Cloud, and Azure
+- **Web Scraping**: Extract data from websites automatically
 
-## 🤖 AI Providers
+## 🛠️ Setup Process
 
-### Supported Providers
-
-1. **OpenAI (GPT-4, GPT-3.5)**
-   - **Best for**: General AI tasks, quick prototyping, content creation
-   - **Pros**: Fast response times, wide model selection, good documentation
-   - **Cons**: Higher cost for GPT-4, rate limits
-   - **Cost**: GPT-3.5: ~$0.002/1K tokens, GPT-4: ~$0.03/1K tokens
-
-2. **Anthropic (Claude)**
-   - **Best for**: Complex reasoning, code generation, analysis tasks
-   - **Pros**: Excellent reasoning, long context windows, safety-focused
-   - **Cons**: Slower response times, higher cost
-   - **Cost**: Claude: ~$0.008/1K tokens
-
-3. **Google (PaLM, Gemini)**
-   - **Best for**: Google ecosystem integration, cost-effective solutions
-   - **Pros**: Good performance, competitive pricing, Google services integration
-   - **Cons**: Limited model selection, newer to market
-   - **Cost**: PaLM: ~$0.001/1K tokens, Gemini: ~$0.002/1K tokens
-
-4. **Local Models (GGUF)**
-   - **Best for**: Privacy-sensitive tasks, offline use, learning/experimentation
-   - **Pros**: Privacy-focused, no API costs, works offline
-   - **Cons**: Limited model quality, requires setup, resource intensive
-   - **Cost**: Free (one-time model download)
-
-### Provider Selection Recommendations
-
-The system automatically recommends the best provider based on your prompt:
-
-- **Computer Control**: OpenAI (beginner/intermediate), Anthropic (advanced)
-- **AI Applications**: OpenAI (beginner), Anthropic (intermediate/advanced)
-- **Code Generation**: OpenAI (beginner), Anthropic (intermediate/advanced)
-- **Content Creation**: OpenAI (beginner/intermediate), Anthropic (advanced)
-- **Data Analysis**: OpenAI (beginner), Anthropic (intermediate/advanced)
-- **Productivity**: OpenAI (beginner), Anthropic (intermediate/advanced)
-
-## 🔐 Secure API Key Management
-
-StableAgents provides secure API key management with three options:
-
-### Option 1: Subscription ($20/month)
-- We provide working API keys
-- Keys are securely encrypted
-- Monthly recurring billing
-- Cancel anytime
-
-### Option 2: Bring Your Own Keys
-- Use your existing API keys
-- Keys are securely encrypted
-- No additional cost beyond your API usage
-
-### Option 3: Local Models Only
-- Download GGUF models for local inference
-- No API keys or payment required
-- Works offline, privacy-focused
-
-## 📚 Usage Examples
-
-### Basic AI Interaction
-
-```python
-from stableagents import StableAgents
-
-# Initialize agent
-agent = StableAgents()
-
-# Generate text
-response = agent.generate_text("Write a Python function to sort a list")
-print(response)
-
-# Chat with AI
-messages = [
-    {"role": "user", "content": "Hello, can you help me with Python?"}
-]
-response = agent.generate_chat(messages)
-print(response)
+### Step 1: Explore Capabilities
+```bash
+stableagents-ai showcase
 ```
+
+### Step 2: Choose Your Provider
+The guided setup helps you choose between:
+- **OpenAI**: Fast, reliable, good for general tasks
+- **Anthropic**: Excellent reasoning, long context windows
+- **Google**: Cost-effective, good integration
+- **Local Models**: Privacy-focused, works offline
+
+### Step 3: Configure API Keys
+```bash
+stableagents-ai setup
+```
+
+Choose from:
+1. **Monthly Subscription** ($20/month) - We provide working API keys
+2. **Bring Your Own Keys** - Use your existing API keys
+3. **Local Models** - Download GGUF models for offline use
+
+### Step 4: Start Building
+```bash
+stableagents-ai interactive
+```
+
+## 📝 Example Prompts
 
 ### Computer Control
-
-```python
-# Control computer with natural language
-result = agent.control_computer("Open my email application")
-print(result)
-
-result = agent.control_computer("Create a new folder called Projects")
-print(result)
-```
-
-### AI Application Creation
-
-```python
-# Create a custom AI application
-app_config = {
-    "name": "Customer Service Bot",
-    "description": "AI chatbot for customer support",
-    "prompts": ["How can I help you today?"],
-    "responses": ["I'm here to assist you with any questions."]
-}
-
-result = agent.create_ai_application(app_config)
-print(result)
-```
-
-## 🛠️ Installation and Setup
-
-### Prerequisites
-
 ```bash
-# Install StableAgents
-pip install stableagents
+# Open applications and manage files
+"Open my email and compose a new message"
+"Create a new folder called 'Projects' and organize my files"
+"Search for Python tutorials and open the first 3 results"
+```
 
-# Or install from source
+### AI Applications
+```bash
+# Create custom AI applications
+"Create a chatbot for customer support"
+"Build an app that reads PDFs and extracts key information"
+"Make an AI assistant that can identify objects in photos"
+```
+
+### Code Generation
+```bash
+# Generate and debug code
+"Write a Python function to sort data"
+"Create a web scraper for e-commerce sites"
+"Generate code to integrate with REST APIs"
+```
+
+## 🔐 Security Features
+
+- **Encrypted API Keys**: All API keys are encrypted with your password
+- **Secure Storage**: Keys stored locally in encrypted format
+- **No Data Collection**: We don't collect or store your data
+- **Privacy-First**: Local models available for complete privacy
+
+## 💡 Tips for Success
+
+1. **Start with Examples**: Use `stableagents-ai showcase` to see what's possible
+2. **Choose the Right Provider**: Consider your use case and budget
+3. **Use Specific Prompts**: Be detailed about what you want to achieve
+4. **Iterate and Improve**: Refine your prompts based on results
+5. **Combine Capabilities**: Mix computer control with AI generation
+
+## 🆘 Troubleshooting
+
+### Common Issues
+
+**API Key Errors**
+- Verify your API key is correct
+- Check your account has sufficient credits
+- Ensure the provider is supported
+
+**Setup Problems**
+- Run `stableagents-ai setup` to reconfigure
+- Check the provider's documentation
+- Verify your internet connection
+
+**Performance Issues**
+- Try a different AI provider
+- Use local models for offline work
+- Check system resources
+
+### Getting Help
+
+- Run `stableagents-ai showcase` for examples
+- Use `stableagents-ai guided-setup` for step-by-step help
+- Check the main README.md for more information
+
+## 🚀 Advanced Usage
+
+### Custom Prompts
+Save your own prompts for reuse:
+```bash
+stableagents-ai showcase
+# Navigate to custom prompts section
+```
+
+### Provider Switching
+Switch between providers as needed:
+```bash
+# In interactive mode
+switch-provider openai
+switch-provider anthropic
+switch-provider local
+```
+
+### Memory Management
+Use memory to maintain context:
+```bash
+# Add to memory
+memory.add short_term "user_preference" "prefers concise responses"
+
+# Retrieve from memory
+memory.get short_term "user_preference"
+```
+
+## 📊 Cost Optimization
+
+### Provider Costs (approximate)
+- **OpenAI GPT-3.5**: ~$0.002/1K tokens
+- **OpenAI GPT-4**: ~$0.03/1K tokens
+- **Anthropic Claude**: ~$0.008/1K tokens
+- **Google PaLM**: ~$0.001/1K tokens
+- **Local Models**: Free (one-time download)
+
+### Tips for Cost Savings
+1. Use GPT-3.5 for simple tasks
+2. Use local models for development/testing
+3. Be specific in prompts to reduce token usage
+4. Monitor usage with provider dashboards
+
+## 🔄 Updates and Maintenance
+
+### Keeping Updated
+```bash
+pip install --upgrade stableagents-ai
+```
+
+### Configuration Files
+- API keys: `~/.stableagents/`
+- Local models: `~/.stableagents/models/`
+- Custom prompts: `~/.stableagents/prompts_showcase/`
+
+## 📞 Support
+
+For issues and questions:
+- Run `stableagents-ai showcase` for examples
+- Use `stableagents-ai guided-setup` for setup help
+- Check the main project documentation
+- Review the troubleshooting section above
+
+---
+
+**Ready to get started?** Run `stableagents-ai guided-setup` to begin your AI journey!
+
+## 🛠️ Installation
+
+### Option 1: Install from GitHub (Recommended)
+```bash
+pip install git+https://github.com/jordanplows/stableagents.git
+```
+
+### Option 2: Install with Local Models Support
+```bash
+pip install git+https://github.com/jordanplows/stableagents.git[local]
+```
+
+### Option 3: Development Installation
+```bash
 git clone https://github.com/your-repo/stableagents.git
 cd stableagents
 pip install -e .
 ```
 
-### Optional Dependencies
+## 🚀 Quick Start Guide
 
-For advanced AI features, install optional dependencies:
-
+### 1. Install stableagents-ai
 ```bash
-# Computer vision and image processing
-pip install opencv-python pillow
-
-# Speech recognition and synthesis
-pip install SpeechRecognition pyttsx3
-
-# Machine learning and data analysis
-pip install numpy pandas scikit-learn
-
-# Deep learning (optional)
-pip install torch tensorflow
+pip install git+https://github.com/jordanplows/stableagents.git
 ```
 
-### Quick Setup
-
+### 2. Explore Examples
 ```bash
-# Start guided setup
-stableagents guided-setup
-
-# Or explore first
-stableagents showcase
-stableagents guided-setup
+stableagents-ai showcase
 ```
 
-## 🎯 Demo Scripts
-
-### Guided Setup Demo
-
+### 3. Run Guided Setup
 ```bash
-# Run the guided setup demo
-python examples/guided_setup_demo.py
+stableagents-ai guided-setup
 ```
 
-This demo shows:
-- Complete guided setup process
-- Prompt selection from categories
-- Provider recommendations
-- Setup instructions generation
-
-### AI Functionality Demo
-
+### 4. Start Building
 ```bash
-# Run the AI functionality demo
-python examples/ai_functionality_demo.py
+stableagents-ai interactive
 ```
 
-This demo shows:
-- All AI capabilities
-- Sample prompts and responses
-- Computer control examples
-- AI application creation
+## 📚 Documentation
 
-## 🔍 Troubleshooting
+- **Main Documentation**: [stableagents.dev](https://stableagents.dev)
+- **API Reference**: [docs.stableagents.dev](https://docs.stableagents.dev)
+- **Examples**: Run `stableagents-ai showcase` to see examples
+- **Guides**: Run `stableagents-ai guided-setup` for step-by-step setup
 
-### Common Issues
+## 🔧 Configuration
 
-1. **No AI Provider Configured**
-   ```bash
-   # Set up AI provider
-   stableagents guided-setup
-   ```
+### Environment Variables
+```bash
+export STABLEAGENTS_API_KEY="your-api-key"
+export STABLEAGENTS_PROVIDER="openai"
+export STABLEAGENTS_MODEL="gpt-4"
+```
 
-2. **API Key Issues**
-   ```bash
-   # Check API key status
-   stableagents setup
-   ```
+### Configuration File
+```bash
+# Create config directory
+mkdir -p ~/.stableagents
 
-3. **Missing Dependencies**
-   ```bash
-   # Install optional dependencies
-   pip install -r requirements.txt
-   ```
-
-### Getting Help
-
-- Run `stableagents showcase` to explore examples
-- Use `stableagents guided-setup` for step-by-step setup
-- Check the interactive mode with `stableagents interactive`
-- Review the demo scripts in the `examples/` directory
-
-## 🚀 Next Steps
-
-1. **Start with Guided Setup**: `stableagents guided-setup`
-2. **Explore Examples**: `stableagents showcase`
-3. **Try Interactive Mode**: `stableagents interactive`
-4. **Build Your First AI App**: Follow the prompts and examples
-5. **Customize and Extend**: Create your own prompts and applications
-
-The guided setup process makes it easy to get started with a specific goal in mind, ensuring you have the right prompt and provider for your needs before setting up API keys. 
+# Edit configuration
+nano ~/.stableagents/config.json
+``` 

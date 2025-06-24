@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+stableagents-ai CLI - Command Line Interface for stableagents-ai
+"""
+
 import argparse
 import sys
 import logging
@@ -18,9 +22,151 @@ def setup_logging(verbose):
         level=log_level,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
-    return logging.getLogger('stableagents-cli')
+    return logging.getLogger('stableagents-ai-cli')
 
-def check_secure_api_setup():
+def show_preview_prompts_and_select_provider():
+    """Show preview prompts and help user select a model provider before API setup"""
+    print("\n🎯 WELCOME TO stableagents-ai!")
+    print("=" * 50)
+    print("Let's start by exploring what you can build with AI, then choose your provider.")
+    print()
+    
+    # Create agent instance for prompt showcase
+    agent = StableAgents()
+    
+    # Step 1: Show preview prompts
+    print("📋 STEP 1: EXPLORE WHAT YOU CAN BUILD")
+    print("=" * 50)
+    print("Here are some examples of what you can create with stableagents-ai:")
+    print()
+    
+    # Show quick preview of capabilities
+    print("🖥️  Computer Control Examples:")
+    print("   • 'Open my email and compose a new message'")
+    print("   • 'Create a new folder and organize my files'")
+    print("   • 'Search for Python tutorials and open the first 3 results'")
+    print()
+    
+    print("🧠 AI Applications Examples:")
+    print("   • 'Create a chatbot for customer support'")
+    print("   • 'Build an app that reads PDFs and extracts key info'")
+    print("   • 'Make an AI assistant that can identify objects in photos'")
+    print()
+    
+    print("💻 Code Generation Examples:")
+    print("   • 'Write a Python function to sort data'")
+    print("   • 'Create a web scraper for e-commerce sites'")
+    print("   • 'Generate code to integrate with REST APIs'")
+    print()
+    
+    print("📝 Content Creation Examples:")
+    print("   • 'Write a 500-word blog post about AI trends'")
+    print("   • 'Create professional email templates'")
+    print("   • 'Generate engaging social media posts'")
+    print()
+    
+    print("📊 Data Analysis Examples:")
+    print("   • 'Analyze monthly sales data and identify trends'")
+    print("   • 'Process customer reviews and extract sentiment'")
+    print("   • 'Build a model to predict customer churn'")
+    print()
+    
+    print("⚡ Productivity Examples:")
+    print("   • 'Automatically categorize emails and draft responses'")
+    print("   • 'Create an AI assistant for meeting scheduling'")
+    print("   • 'Build a system to prioritize tasks'")
+    print()
+    
+    # Ask if they want to see more detailed examples
+    try:
+        see_more = input("\nWould you like to see more detailed examples? (y/n): ").strip().lower()
+        if see_more in ['y', 'yes']:
+            print("\n" + "="*60)
+            print("📋 DETAILED PROMPT EXAMPLES")
+            print("="*60)
+            print(agent.show_prompts_showcase())
+    except (KeyboardInterrupt, EOFError):
+        print("\n👋 Setup cancelled.")
+        return None, None
+    
+    # Step 2: Provider selection
+    print("\n" + "="*60)
+    print("🤖 STEP 2: CHOOSE YOUR AI PROVIDER")
+    print("="*60)
+    print("Now let's help you choose the best AI provider for your needs:")
+    print()
+    
+    providers = {
+        'openai': {
+            'name': 'OpenAI (GPT-4, GPT-3.5)',
+            'pros': ['Fast response times', 'Good for general tasks', 'Wide model selection'],
+            'cons': ['Higher cost for GPT-4', 'Rate limits'],
+            'best_for': ['General AI tasks', 'Quick prototyping', 'Content creation'],
+            'cost': 'GPT-3.5: ~$0.002/1K tokens, GPT-4: ~$0.03/1K tokens'
+        },
+        'anthropic': {
+            'name': 'Anthropic (Claude)',
+            'pros': ['Excellent reasoning', 'Long context windows', 'Safety-focused'],
+            'cons': ['Slower response times', 'Higher cost'],
+            'best_for': ['Complex reasoning', 'Code generation', 'Analysis tasks'],
+            'cost': 'Claude: ~$0.008/1K tokens'
+        },
+        'google': {
+            'name': 'Google (PaLM, Gemini)',
+            'pros': ['Good performance', 'Competitive pricing', 'Integration with Google services'],
+            'cons': ['Limited model selection', 'Newer to market'],
+            'best_for': ['Google ecosystem integration', 'Cost-effective solutions'],
+            'cost': 'PaLM: ~$0.001/1K tokens, Gemini: ~$0.002/1K tokens'
+        },
+        'local': {
+            'name': 'Local Models (GGUF)',
+            'pros': ['Privacy-focused', 'No API costs', 'Works offline'],
+            'cons': ['Limited model quality', 'Requires setup', 'Resource intensive'],
+            'best_for': ['Privacy-sensitive tasks', 'Offline use', 'Learning/experimentation'],
+            'cost': 'Free (one-time model download)'
+        }
+    }
+    
+    print("Available AI Providers:")
+    print()
+    
+    for i, (provider_id, provider_info) in enumerate(providers.items(), 1):
+        print(f"{i}. {provider_info['name']}")
+        print(f"   ✅ Pros: {', '.join(provider_info['pros'])}")
+        print(f"   ⚠️  Cons: {', '.join(provider_info['cons'])}")
+        print(f"   🎯 Best for: {', '.join(provider_info['best_for'])}")
+        print(f"   💰 Cost: {provider_info['cost']}")
+        print()
+    
+    # Get provider choice
+    try:
+        while True:
+            choice = input(f"Select your preferred provider (1-{len(providers)}): ").strip()
+            
+            # Handle exit commands
+            if choice.lower() in ['exit', 'quit', 'q']:
+                print("\n👋 Setup cancelled.")
+                return None, None
+            
+            try:
+                provider_index = int(choice) - 1
+                if 0 <= provider_index < len(providers):
+                    selected_provider = list(providers.keys())[provider_index]
+                    break
+                else:
+                    print(f"Please enter a number between 1 and {len(providers)}")
+            except ValueError:
+                print("Please enter a valid number")
+    except (KeyboardInterrupt, EOFError):
+        print("\n👋 Setup cancelled.")
+        return None, None
+    
+    print(f"\n✅ Selected Provider: {providers[selected_provider]['name']}")
+    
+    # Return the selected provider for the next step
+    return selected_provider, providers[selected_provider]
+
+def check_secure_api_setup(selected_provider=None, provider_info=None):
     """Check if secure API key management is available and guide user through setup"""
     try:
         from stableagents.api_key_manager import SecureAPIKeyManager
@@ -34,10 +180,13 @@ def check_secure_api_setup():
             return True
             
         # No secure setup found, guide user through the process
-        print("\n🔐 Welcome to StableAgents!")
+        print("\n🔐 API KEY SETUP")
         print("=" * 40)
-        print("To use AI features, you need to set up API keys securely.")
-        print()
+        
+        if selected_provider and provider_info:
+            print(f"Setting up API keys for: {provider_info['name']}")
+            print(f"Cost: {provider_info['cost']}")
+            print()
         
         # Show options
         print("You have three options:")
@@ -65,7 +214,7 @@ def check_secure_api_setup():
                 
                 # Handle exit commands
                 if choice.lower() in ['exit', 'quit', 'q']:
-                    print("\n👋 Setup cancelled. You can run 'stableagents setup' later.")
+                    print("\n👋 Setup cancelled. You can run 'stableagents-ai setup' later.")
                     return False
                 
                 if choice == "1":
@@ -79,10 +228,10 @@ def check_secure_api_setup():
                 else:
                     print("Please enter 1, 2, or 3 (or 'exit' to cancel)")
             except KeyboardInterrupt:
-                print("\n👋 Setup cancelled. You can run 'stableagents setup' later.")
+                print("\n👋 Setup cancelled. You can run 'stableagents-ai setup' later.")
                 return False
             except EOFError:
-                print("\n👋 Setup cancelled. You can run 'stableagents setup' later.")
+                print("\n👋 Setup cancelled. You can run 'stableagents-ai setup' later.")
                 return False
                 
     except ImportError:
@@ -123,7 +272,7 @@ def setup_payment_option(manager):
         if manager.provide_api_keys_after_payment(password):
             print("✅ API keys have been securely stored and encrypted!")
             print("🔒 Your keys are protected with your password")
-            print("💡 You can now use AI features in StableAgents")
+            print("💡 You can now use AI features in stableagents-ai")
             print("📅 Your subscription will renew monthly")
             return True
         else:
@@ -181,7 +330,7 @@ def setup_custom_keys(manager):
     if keys_set:
         print("\n✅ API keys have been securely stored and encrypted!")
         print("🔒 Your keys are protected with your password")
-        print("💡 You can now use AI features in StableAgents")
+        print("💡 You can now use AI features in stableagents-ai")
         return True
     else:
         print("\n⚠️  No API keys were set")
@@ -284,7 +433,7 @@ def interactive_mode(agent, setup_ai=True, banner_style="default"):
     # Display ASCII art banner
     print(get_banner(banner_style))
     
-    print("Starting interactive StableAgents session. Type 'exit' or 'quit' to end.")
+    print("Starting interactive stableagents-ai session. Type 'exit' or 'quit' to end.")
     print("Commands: memory.add TYPE KEY VALUE, memory.get TYPE [KEY], control [COMMAND], ai [PROMPT], apikey [PROVIDER] [KEY], help")
     print("New AI Commands: showcase, guided-setup, select-prompt, ai-capabilities")
     
@@ -319,6 +468,14 @@ def interactive_mode(agent, setup_ai=True, banner_style="default"):
                 print("  guided-setup - Start guided setup with prompt selection")
                 print("  select-prompt - Select a prompt and provider")
                 print("  ai-capabilities - Check available AI capabilities")
+                print("  health - Show system health report")
+                print("  keys - Show API key management options")
+                print("  add-key [PROVIDER] - Add a new API key")
+                print("  remove-key [PROVIDER] - Remove an API key")
+                print("  list-keys - List all configured providers")
+                print("  change-password - Change encryption password")
+                print("  switch-provider [PROVIDER] - Switch to a different AI provider")
+                print("  current-provider - Show the current active AI provider")
                 print("  reset - Reset the agent")
                 print("  exit/quit - Exit the program")
                 continue
@@ -353,6 +510,197 @@ def interactive_mode(agent, setup_ai=True, banner_style="default"):
                 for capability, available in capabilities.items():
                     status = "✅ Available" if available else "❌ Not Available"
                     print(f"   {capability}: {status}")
+                continue
+                
+            if user_input.lower() == 'health':
+                print("\n🏥 stableagents-ai Health Report")
+                print("=" * 30)
+                
+                # Check AI providers
+                providers = agent.list_ai_providers()
+                print("\n🤖 AI Providers:")
+                for provider in providers:
+                    status = "✅" if provider["has_key"] else "❌"
+                    active = " (active)" if provider["is_active"] else ""
+                    print(f"  {status} {provider['name']}{active}")
+                
+                # Check memory
+                print("\n🧠 Memory Status:")
+                try:
+                    short_term = agent.get_from_memory("short_term")
+                    long_term = agent.get_from_memory("long_term")
+                    context = agent.get_from_memory("context")
+                    
+                    print(f"  Short-term: {len(short_term)} items")
+                    print(f"  Long-term: {len(long_term)} items")
+                    print(f"  Context: {len(context)} items")
+                except Exception as e:
+                    print(f"  ❌ Error accessing memory: {e}")
+                
+                # Check self-healing if available
+                try:
+                    if hasattr(agent, 'self_healing') and agent.self_healing:
+                        print("\n🔧 Self-Healing Status:")
+                        health = agent.self_healing.get_health_status()
+                        print(f"  Status: {health.get('status', 'Unknown')}")
+                        print(f"  Issues: {health.get('issue_count', 0)}")
+                except Exception as e:
+                    pass  # Self-healing not available
+                
+                print("\n" + "=" * 30)
+                continue
+                
+            if user_input.lower() == 'keys':
+                print("🔐 API Key Management")
+                print("=" * 25)
+                print("Available commands:")
+                print("  list-keys     - List all configured providers")
+                print("  add-key       - Add a new API key")
+                print("  remove-key    - Remove an API key")
+                print("  change-password - Change encryption password")
+                print("  status        - Check payment status")
+                print()
+                print("Or use: stableagents-keys --help for more options")
+                continue
+                
+            if user_input.startswith('add-key '):
+                parts = user_input.split(' ', 1)
+                if len(parts) < 2:
+                    print("Usage: add-key <provider>")
+                    print("Providers: openai, anthropic, google")
+                    continue
+                
+                provider = parts[1].lower()
+                if provider not in ['openai', 'anthropic', 'google']:
+                    print("❌ Invalid provider. Use: openai, anthropic, google")
+                    continue
+                
+                print(f"🔑 Adding {provider.capitalize()} API Key")
+                print("=" * 40)
+                
+                try:
+                    import getpass
+                    api_key = getpass.getpass(f"Enter your {provider.capitalize()} API key: ")
+                    if api_key:
+                        if agent.set_api_key(provider, api_key):
+                            print(f"✅ {provider.capitalize()} API key stored")
+                            
+                            # Ask if user wants to set as active
+                            set_active = input(f"Set {provider.capitalize()} as active provider? (y/n): ").strip().lower()
+                            if set_active == 'y':
+                                agent.set_active_ai_provider(provider)
+                                print(f"✅ {provider.capitalize()} is now the active provider")
+                        else:
+                            print(f"❌ Failed to store {provider.capitalize()} API key")
+                    else:
+                        print("❌ API key required")
+                except Exception as e:
+                    print(f"❌ Error: {e}")
+                continue
+                
+            if user_input.startswith('remove-key '):
+                parts = user_input.split(' ', 1)
+                if len(parts) < 2:
+                    print("Usage: remove-key <provider>")
+                    print("Providers: openai, anthropic, google")
+                    continue
+                
+                provider = parts[1].lower()
+                if provider not in ['openai', 'anthropic', 'google']:
+                    print("❌ Invalid provider. Use: openai, anthropic, google")
+                    continue
+                
+                print(f"🗑️  Removing {provider.capitalize()} API Key")
+                print("=" * 40)
+                
+                # Confirm removal
+                confirm = input(f"Are you sure you want to remove {provider.capitalize()} API key? (y/n): ").strip().lower()
+                if confirm == 'y':
+                    if agent.set_api_key(provider, ""):
+                        print(f"✅ {provider.capitalize()} API key removed")
+                    else:
+                        print(f"❌ Failed to remove {provider.capitalize()} API key")
+                else:
+                    print("❌ Removal cancelled")
+                continue
+                
+            if user_input.lower() == 'list-keys':
+                print("📡 API Key Status")
+                print("=" * 20)
+                
+                providers = agent.list_ai_providers()
+                for provider in providers:
+                    status = "✅" if provider["has_key"] else "❌"
+                    active = " (active)" if provider["is_active"] else ""
+                    print(f"  {status} {provider['name']}{active}")
+                continue
+                
+            if user_input.lower() == 'change-password':
+                print("🔐 Change Encryption Password")
+                print("=" * 30)
+                print("⚠️  Password change functionality not yet implemented")
+                print("   This will be available in a future update")
+                continue
+                
+            if user_input.startswith('switch-provider '):
+                parts = user_input.split(' ', 1)
+                if len(parts) < 2:
+                    print("Usage: switch-provider <provider>")
+                    print("Providers: openai, anthropic, google, local")
+                    continue
+                
+                provider = parts[1].lower()
+                if provider not in ['openai', 'anthropic', 'google', 'local']:
+                    print("❌ Invalid provider. Use: openai, anthropic, google, local")
+                    continue
+                
+                print(f"🔄 Switching to {provider.capitalize()}")
+                print("=" * 40)
+                
+                if provider == 'local':
+                    print("✅ Switched to local model mode")
+                    print("💡 Make sure you have GGUF models in ~/.stableagents/models/")
+                    agent.set_active_ai_provider("local")
+                else:
+                    # Check if provider has a key configured
+                    providers = agent.list_ai_providers()
+                    provider_info = next((p for p in providers if p['name'] == provider), None)
+                    
+                    if not provider_info or not provider_info['has_key']:
+                        print(f"❌ No API key configured for {provider.capitalize()}")
+                        print(f"   Use 'add-key {provider}' to add an API key first")
+                    else:
+                        if agent.set_active_ai_provider(provider):
+                            print(f"✅ Switched to {provider.capitalize()}")
+                        else:
+                            print(f"❌ Failed to switch to {provider.capitalize()}")
+                continue
+                
+            if user_input.lower() == 'current-provider':
+                print("🤖 Current AI Provider")
+                print("=" * 25)
+                
+                current_provider = agent.get_active_ai_provider()
+                if current_provider:
+                    print(f"✅ Active: {current_provider.capitalize()}")
+                    
+                    # Show provider details
+                    providers = agent.list_ai_providers()
+                    for provider in providers:
+                        if provider['name'] == current_provider:
+                            status = "✅" if provider['has_key'] else "❌"
+                            print(f"   Status: {status} API key configured")
+                            break
+                else:
+                    print("❌ No active provider")
+                    print("   Use 'switch-provider <provider>' to set one")
+                
+                # Show available providers
+                print("\n📡 Available Providers:")
+                print("   openai    - OpenAI GPT models")
+                print("   anthropic - Anthropic Claude models")
+                print("   google    - Google AI models")
+                print("   local     - Local GGUF models")
                 continue
                 
             if user_input.lower() == 'reset':
@@ -517,7 +865,7 @@ def run_examples(agent, banner_style="default"):
     # Display ASCII art banner for examples
     print(get_banner(banner_style))
     
-    print("\nStableAgents AI Integration Example")
+    print("\nstableagents-ai AI Integration Example")
     print("====================================")
     
     # Setup AI provider
@@ -617,39 +965,110 @@ def guided_setup_with_prompt_selection():
     print("\n🎯 GUIDED SETUP WITH PROMPT SELECTION")
     print("=" * 50)
     print("This enhanced setup will help you:")
-    print("1. 📋 Pick a specific prompt to work with")
-    print("2. 🤖 Choose the best AI provider for your needs")
+    print("1. 📋 Explore what you can build with AI")
+    print("2. 🤖 Choose your preferred AI provider")
     print("3. 🔧 Get step-by-step setup instructions")
     print("4. 🚀 Start building immediately")
     print()
     
-    # Create agent instance for prompt selection
-    agent = StableAgents()
+    # Step 1: Show preview prompts and select provider
+    selected_provider, provider_info = show_preview_prompts_and_select_provider()
     
-    # Show guided setup
-    setup_result = agent.show_guided_setup()
-    print(f"\nSetup Status: {setup_result}")
+    if not selected_provider:
+        return False
     
-    if "Selection completed successfully" in setup_result or "Using existing selection" in setup_result:
-        print("\n" + "="*60)
-        print("🔧 READY FOR API KEY SETUP")
-        print("="*60)
-        print("Now that you've selected your prompt and provider,")
-        print("let's set up your API keys to start building!")
-        print()
-        
-        # Proceed with API key setup
-        return check_secure_api_setup()
+    # Step 2: Show setup instructions
+    print("\n" + "="*60)
+    print("🔧 STEP 3: SETUP INSTRUCTIONS")
+    print("="*60)
+    
+    if selected_provider == 'local':
+        instructions = f"""
+🎯 Setup Instructions for Local Models
+🤖 Provider: {provider_info['name']}
+
+📋 NEXT STEPS:
+
+1. 📥 Download GGUF Models:
+   • Visit https://huggingface.co/TheBloke
+   • Download a model like: llama-2-7b-chat.Q4_K_M.gguf
+   • Place it in: ~/.stableagents/models/
+
+2. 🔧 Configure Local Model:
+   • Run: stableagents-ai setup
+   • Choose "Local models only"
+   • Point to your downloaded model
+
+3. 🚀 Start Building:
+   • Run: stableagents-ai interactive
+   • Try your first AI prompt!
+"""
     else:
-        print("\n⚠️  Setup incomplete. You can try again later.")
+        instructions = f"""
+🎯 Setup Instructions for {provider_info['name']}
+🤖 Provider: {selected_provider.upper()}
+
+📋 NEXT STEPS:
+
+1. 🔑 Get API Key:
+   • Visit: {get_provider_url(selected_provider)}
+   • Create account and get API key
+   • Note: {provider_info['cost']}
+
+2. 🔧 Configure API Key:
+   • Run: stableagents-ai setup
+   • Choose "Bring your own API keys"
+   • Enter your {selected_provider.upper()} API key
+
+3. 🚀 Start Building:
+   • Run: stableagents-ai interactive
+   • Try your first AI prompt!
+"""
+    
+    print(instructions)
+    
+    # Step 3: Ask if they want to proceed with setup
+    try:
+        proceed = input("\nWould you like to proceed with the setup now? (y/n): ").strip().lower()
+        if proceed in ['y', 'yes']:
+            print("\n" + "="*60)
+            print("🔧 READY FOR API KEY SETUP")
+            print("="*60)
+            print("Now let's set up your API keys to start building!")
+            print()
+            
+            # Proceed with API key setup using the selected provider
+            return check_secure_api_setup(selected_provider, provider_info)
+        else:
+            print("\n✅ Perfect! You now know what you can build and which provider to use.")
+            print("💡 When you're ready, run 'stableagents-ai setup' to configure your API keys.")
+            return True
+    except (KeyboardInterrupt, EOFError):
+        print("\n👋 Setup cancelled.")
         return False
 
+def get_provider_url(provider: str) -> str:
+    """Get signup URL for provider."""
+    urls = {
+        'openai': 'https://platform.openai.com/signup',
+        'anthropic': 'https://console.anthropic.com/',
+        'google': 'https://makersuite.google.com/app/apikey'
+    }
+    return urls.get(provider, 'https://example.com')
+
 def main():
-    parser = argparse.ArgumentParser(description='StableAgents CLI')
+    parser = argparse.ArgumentParser(description='stableagents-ai CLI')
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
     parser.add_argument('--banner', choices=['default', 'simple', 'compact'], default='default', 
                       help='Select ASCII art banner style (default, simple, compact)')
-    parser.add_argument('--start', action='store_true', help='Start StableAgents with secure API setup')
+    parser.add_argument('--start', action='store_true', help='Start stableagents-ai with secure API setup')
+    parser.add_argument('--model', help='AI model to use (openai, anthropic, google, etc.)')
+    parser.add_argument('--api-key', help='API key for the model')
+    parser.add_argument('--local', action='store_true', help='Use local model')
+    parser.add_argument('--model-path', help='Path to local model file')
+    parser.add_argument('--self-healing', action='store_true', help='Enable self-healing')
+    parser.add_argument('--auto-recovery', action='store_true', help='Enable automatic recovery')
+    parser.add_argument('--no-banner', action='store_true', help='Hide banner')
     
     subparsers = parser.add_subparsers(dest='command', help='Command to run')
     
@@ -755,21 +1174,27 @@ def main():
     args = parser.parse_args()
     logger = setup_logging(args.verbose)
     
-    # Display banner for all commands
-    if args.command != 'interactive':  # Skip here as interactive mode already shows the banner
+    # Display banner for all commands (unless --no-banner is specified)
+    if args.command != 'interactive' and not args.no_banner:  # Skip here as interactive mode already shows the banner
         print(get_banner(args.banner))
     
     # Create agent instance
     agent = StableAgents()
-    logger.debug("StableAgents initialized")
+    logger.debug("stableagents-ai initialized")
     
     # Handle --start flag
     if args.start:
-        print("🚀 Starting StableAgents with secure setup...")
+        print("🚀 Starting stableagents-ai with secure setup...")
         print()
         
-        # Run secure setup
-        setup_success = check_secure_api_setup()
+        # Run the new guided setup flow
+        selected_provider, provider_info = show_preview_prompts_and_select_provider()
+        
+        if selected_provider:
+            # Proceed with API key setup using the selected provider
+            setup_success = check_secure_api_setup(selected_provider, provider_info)
+        else:
+            setup_success = False
         
         if setup_success:
             print("\n" + "="*50)
@@ -781,17 +1206,87 @@ def main():
             interactive_mode(agent, setup_ai=False, banner_style=args.banner)
             return 0
         else:
-            print("\n⚠️  Setup incomplete. You can still use StableAgents with limited features.")
-            print("💡 Run 'stableagents setup' to configure API keys later.")
+            print("\n⚠️  Setup incomplete. You can still use stableagents-ai with limited features.")
+            print("💡 Run 'stableagents-ai setup' to configure API keys later.")
             print()
             
             # Start interactive mode anyway
             interactive_mode(agent, setup_ai=False, banner_style=args.banner)
             return 0
     
+    # Handle direct model/API key arguments
+    if args.model and args.api_key:
+        success = agent.set_api_key(args.model, args.api_key)
+        if success:
+            agent.set_active_ai_provider(args.model)
+            print(f"✅ Configured with {args.model.capitalize()}")
+        else:
+            print(f"❌ Failed to configure {args.model.capitalize()}")
+    
+    if args.local:
+        print("🏠 Using local model mode")
+        if args.model_path:
+            print(f"Model path: {args.model_path}")
+            agent.set_local_model(args.model_path)
+        else:
+            agent.set_local_model()
+    
+    if args.self_healing:
+        agent.enable_self_healing(args.auto_recovery)
+        if args.auto_recovery:
+            print("🔧 Self-healing enabled with automatic recovery")
+        else:
+            print("🔧 Self-healing enabled (manual recovery)")
+    
     # Process commands
     if args.command == 'interactive' or not args.command:
-        interactive_mode(agent, banner_style=args.banner)
+        # If no command specified, offer guided setup first
+        if not args.command:
+            print("🎯 Welcome to stableagents-ai!")
+            print("=" * 40)
+            print("Would you like to:")
+            print("1. 🎯 Start guided setup (recommended for new users)")
+            print("2. 🚀 Go directly to interactive mode")
+            print("3. 📋 Explore examples and prompts")
+            print()
+            
+            try:
+                choice = input("Enter your choice (1-3): ").strip()
+                
+                # Handle exit commands
+                if choice.lower() in ['exit', 'quit', 'q']:
+                    print("👋 Goodbye!")
+                    return 0
+                
+                if choice == "1":
+                    print("\n🎯 Starting guided setup...")
+                    setup_success = guided_setup_with_prompt_selection()
+                    if setup_success:
+                        print("\n✅ Guided setup completed successfully!")
+                        print("🚀 You're ready to start building with AI!")
+                    else:
+                        print("\n⚠️  Guided setup was not completed.")
+                    return 0 if setup_success else 1
+                elif choice == "2":
+                    print("\n🚀 Starting interactive mode...")
+                    interactive_mode(agent, banner_style=args.banner)
+                elif choice == "3":
+                    print("\n📋 Exploring examples and prompts...")
+                    print(agent.show_prompts_showcase())
+                    print("\n" + "="*60)
+                    print("🚀 Ready to get started?")
+                    print("="*60)
+                    print("Run 'stableagents-ai guided-setup' for step-by-step setup")
+                    print("Run 'stableagents-ai interactive' to start building with AI")
+                    return 0
+                else:
+                    print("Invalid choice. Starting interactive mode...")
+                    interactive_mode(agent, banner_style=args.banner)
+            except (KeyboardInterrupt, EOFError):
+                print("\n👋 Goodbye!")
+                return 0
+        else:
+            interactive_mode(agent, banner_style=args.banner)
     elif args.command == 'setup':
         print("🔐 Secure API Key Setup")
         print("=" * 25)
@@ -824,8 +1319,10 @@ def main():
         print("\n" + "="*60)
         print("🚀 Ready to get started?")
         print("="*60)
-        print("Run 'stableagents setup' to configure your AI provider")
-        print("Run 'stableagents interactive' to start building with AI")
+        print("🎯 For new users: Run 'stableagents-ai guided-setup' for step-by-step setup")
+        print("🔧 For setup: Run 'stableagents-ai setup' to configure your AI provider")
+        print("🚀 For building: Run 'stableagents-ai interactive' to start building with AI")
+        print("💡 For examples: Run 'stableagents-ai examples' to see AI in action")
         return 0
     elif args.command == 'memory':
         if args.memory_command == 'add':

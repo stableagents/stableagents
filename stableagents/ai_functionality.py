@@ -1,3 +1,19 @@
+"""
+Advanced AI functionality for stableagents-ai including:
+
+1. Computer Control - Safe system interaction capabilities
+2. AI Application Creation - Tools for building AI-powered applications
+3. Enhanced Prompt Management - Advanced prompt handling and optimization
+4. Multi-Provider Support - Seamless integration with various AI providers
+5. Local Model Integration - Offline model support
+6. Self-Healing System - Automatic issue detection and recovery
+7. Memory Management - Efficient context and persistent storage
+8. Comprehensive Logging - Detailed activity tracking
+
+This module provides enterprise-grade AI capabilities for building
+reliable, scalable, and secure AI agent systems.
+"""
+
 import os
 import json
 import logging
@@ -9,6 +25,10 @@ import sys
 from typing import Dict, Any, List, Optional, Union, Callable
 from pathlib import Path
 import importlib.util
+import platform
+import asyncio
+import aiofiles
+from datetime import datetime
 
 # Try to import optional dependencies
 try:
@@ -55,7 +75,7 @@ except ImportError:
 
 class AIFunctionality:
     """
-    Advanced AI functionality for stable agents including:
+    Advanced AI functionality for stableagents-ai including:
     - Computer vision and image processing
     - Natural language processing
     - Speech recognition and synthesis
@@ -102,7 +122,7 @@ class AIFunctionality:
     def _get_default_config_dir(self) -> str:
         """Get the default configuration directory."""
         home_dir = os.path.expanduser("~")
-        config_dir = os.path.join(home_dir, ".stableagents", "ai_functionality")
+        config_dir = os.path.join(home_dir, ".stableagents-ai", "ai_functionality")
         os.makedirs(config_dir, exist_ok=True)
         return config_dir
     

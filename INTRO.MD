@@ -1,4 +1,4 @@
-# Stable Agents - Version 0.0.1
+# stableagents-ai - Version 0.0.1
 
 This project is in early experimental stages and is NOT ready for production use. Please be aware:
 
@@ -17,29 +17,32 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 
 ## Future 
 
-<p> In the future you will be able to hire and employee a Stable Agent for a wide range of tasks. Similar to how companies now use retool to cut time on internal tools, you will use Stable Agents to cut down on the time it takes to complete task without unncessarily hiring. The future billion/trillion dollar companies will be small robust teams, not large organizations</p>
+<p> stableagents-ai is a Text2Agent SDK that allows you to create agents that can perform complex tasks using natural language. </p>
 
-<br>
+<p> The goal of stableagents-ai is to make it easy for developers to create and deploy AI agents that can perform complex tasks with minimal supervision. </p>
 
-<p> Organizations will be interested in powering everything with an LLM and to make this possible we will allow organizations that apply to use Stable Agents to generate revenue. Instead of charging a monthly fee or a yearly contract, we will put a cap on the amount of revenue/value a Stable Agent can add to an organization before revenue share is implemented </p>
+<p> stableagents-ai is designed to be the foundation for large-scale AI agent deployments with a focus on reliability, scalability, security, and extensibility. </p>
 
-<p> If you are one of these companies interested in revenue sharing, consider joining our [Discord](https://discord.gg/STrYnEDu9U) and type the name of your company in channel <i> #revenue-generating-agnets</i>
+<p> In the future you will be able to hire and employee a stableagents-ai for a wide range of tasks. Similar to how companies now use retool to cut time on internal tools, you will use stableagents-ai to cut down on the time it takes to complete task without unncessarily hiring. The future billion/trillion dollar companies will be small robust teams, not large organizations</p>
 
-## Stable Agents
-<p> Stable Agents are agents which are highly capable at complex reasoning. Eventually Stable Agents will be able to complete tasks with little to no supervision. Stable Agents will also be able to add LLM capabilites any non-intelligent software</p>
+<p> We are building a platform that will allow organizations that apply to use stableagents-ai to generate revenue. Instead of charging a monthly fee or a yearly contract, we will put a cap on the amount of revenue/value a stableagents-ai can add to an organization before revenue share is implemented </p>
+
+## stableagents-ai
+
+<p> stableagents-ai are agents which are highly capable at complex reasoning. Eventually stableagents-ai will be able to complete tasks with little to no supervision. stableagents-ai will also be able to add LLM capabilites any non-intelligent software</p>
 
 ### Media Based Agents
-- [X] Autoclick "Skip Intro" on a browser based streaming service without having to click it manually. ** Note this could be handled by a selenium script but the idea is to have a Stable Agent handle it. ** 
+- [X] Autoclick "Skip Intro" on a browser based streaming service without having to click it manually. ** Note this could be handled by a selenium script but the idea is to have a stableagents-ai handle it. ** 
 
 
 ### Productivity Agents
 - [ ] Create a routine for tasks to be completed autoregressively
 
-- [ ] Assign a task you would normally assign or hire for on a platform like UPWORK. <i>We rate the complexity of the task before initiation to set proper expectations, Stable Agents is evovling and can't complete all tasks just yet</i>
+- [ ] Assign a task you would normally assign or hire for on a platform like UPWORK. <i>Please note that this is still in early initiation to set proper expectations, stableagents-ai is evovling and can't complete all tasks just yet</i>
 
 ### Coding Agents
 
-- [ ] Init Stable Agents in your terminal to avoid dealing with boilerplate code [ 🚧 Not yet available]
+- [ ] Init stableagents-ai in your terminal to avoid dealing with boilerplate code [ �� Not yet available]
 
 <hr>
 
@@ -67,7 +70,7 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 - [?] Updating an expired discord link for my webapp, copy and pasting the new link to my codebase on github and redeploy my webapp
 - [X] Shop for house and accurately find one baesd on my description
 - [X] Create a Spotify Playlist
-- [?] Opening Google Docs and drafting that CBER/CDRH jurisdictional clarification letter I’ve been dragging my feet on sending to FDA.
+- [?] Opening Google Docs and drafting that CBER/CDRH jurisdictional clarification letter I've been dragging my feet on sending to FDA.
 - [X] Reading the fact that there are a bunch of job offers to go out off of my Asana inbox, and opening tabs with the DocuSign offers I need to sign.
 - [X] Generating a pull request to fix some bugs or maybe pick off an Asana task in one of the web app projects <a href="https://codegen.com"> See Codegen </a>.
 - [X] Order on Doordash
@@ -75,5 +78,12 @@ Contributions to this list are welcome. Before submitting your suggestions, plea
 - [X] Open a Youtube Video and fast forward to the 10:00 mark
 - [?] Run Payroll
 - [?] Adjust a time on my calendar and send a "I'm running late" email
+
+## Roadmap
+
+- [ ] Add more AI providers
+- [ ] Improve memory management
+- [ ] Add more agent types
+- [ ] Init stableagents-ai in your terminal to avoid dealing with boilerplate code [ 🚧 Not yet available]
 
 
