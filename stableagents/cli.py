@@ -1408,10 +1408,17 @@ def main():
                     setup_success = guided_setup_with_prompt_selection()
                     if setup_success:
                         print("\n✅ Guided setup completed successfully!")
-                        print("🚀 You're ready to start building with AI!")
+                        print("🚀 Starting interactive mode...")
+                        print("=" * 50)
+                        print()
+                        interactive_mode(agent, setup_ai=False, banner_style=args.banner)
                     else:
                         print("\n⚠️  Guided setup was not completed.")
-                    return 0 if setup_success else 1
+                        print("🚀 Starting interactive mode anyway...")
+                        print("=" * 50)
+                        print()
+                        interactive_mode(agent, setup_ai=False, banner_style=args.banner)
+                    return 0
                 elif choice == "2":
                     print("\n🚀 Starting interactive mode...")
                     interactive_mode(agent, banner_style=args.banner)
@@ -1441,19 +1448,34 @@ def main():
         setup_success = check_secure_api_setup()
         if setup_success:
             print("\n✅ Setup completed successfully!")
+            print("🚀 Starting interactive mode...")
+            print("=" * 50)
+            print()
+            interactive_mode(agent, setup_ai=False, banner_style=args.banner)
         else:
             print("\n⚠️  Setup was not completed.")
-        return 0 if setup_success else 1
+            print("🚀 Starting interactive mode anyway...")
+            print("=" * 50)
+            print()
+            interactive_mode(agent, setup_ai=False, banner_style=args.banner)
+        return 0
     elif args.command == 'guided-setup':
         print("🎯 Guided Setup with Prompt Selection")
         print("=" * 40)
         setup_success = guided_setup_with_prompt_selection()
         if setup_success:
             print("\n✅ Guided setup completed successfully!")
-            print("🚀 You're ready to start building with your selected prompt!")
+            print("🚀 Starting interactive mode...")
+            print("=" * 50)
+            print()
+            interactive_mode(agent, setup_ai=False, banner_style=args.banner)
         else:
             print("\n⚠️  Guided setup was not completed.")
-        return 0 if setup_success else 1
+            print("🚀 Starting interactive mode anyway...")
+            print("=" * 50)
+            print()
+            interactive_mode(agent, setup_ai=False, banner_style=args.banner)
+        return 0
     elif args.command == 'examples':
         return run_examples(agent, args.banner)
     elif args.command == 'showcase':

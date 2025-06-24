@@ -323,69 +323,613 @@ class ComputerControl:
             return f"Failed to execute '{command}': {str(e)}"
     
     def type_text(self, text: str) -> str:
-        """Simulate typing text."""
-        # This is a stub - actual implementation would depend on OS and available tools
-        return f"Typed: {text} (simulated)"
+        """Simulate typing text using pyautogui."""
+        if not PYAUTOGUI_AVAILABLE:
+            return "PyAutoGUI not available. Install with: pip install pyautogui"
+        
+        try:
+            # Give user time to focus on the target window
+            time.sleep(2)
+            pyautogui.typewrite(text)
+            return f"Typed: {text}"
+        except Exception as e:
+            return f"Failed to type text: {str(e)}"
     
     def take_screenshot(self, params: str = "") -> str:
-        """Take a screenshot."""
-        # This is a stub - actual implementation would depend on OS and available tools
-        timestamp = time.strftime("%Y%m%d-%H%M%S")
-        filename = f"screenshot-{timestamp}.png"
+        """Take a screenshot using pyautogui."""
+        if not PYAUTOGUI_AVAILABLE:
+            return "PyAutoGUI not available. Install with: pip install pyautogui"
         
-        return f"Screenshot taken: {filename} (simulated)"
+        try:
+            timestamp = time.strftime("%Y%m%d-%H%M%S")
+            filename = f"screenshot-{timestamp}.png"
+            
+            # Create screenshots directory if it doesn't exist
+            screenshots_dir = os.path.join(os.path.expanduser("~"), ".stableagents", "screenshots")
+            os.makedirs(screenshots_dir, exist_ok=True)
+            
+            filepath = os.path.join(screenshots_dir, filename)
+            screenshot = pyautogui.screenshot()
+            screenshot.save(filepath)
+            
+            return f"Screenshot saved: {filepath}"
+        except Exception as e:
+            return f"Failed to take screenshot: {str(e)}"
 
     def mouse_click(self, params: str) -> str:
-        """Simulate a mouse click."""
-        # This is a stub - actual implementation would depend on OS and available tools
-        return "Mouse click simulated (simulated)"
+        """Simulate a mouse click using pyautogui."""
+        if not PYAUTOGUI_AVAILABLE:
+            return "PyAutoGUI not available. Install with: pip install pyautogui"
+        
+        try:
+            # Parse coordinates or use current position
+            if params.strip():
+                # Try to parse coordinates like "100,200" or "x=100 y=200"
+                coords = self._parse_coordinates(params)
+                if coords:
+                    x, y = coords
+                    pyautogui.click(x, y)
+                    return f"Clicked at position ({x}, {y})"
+                else:
+                    # Try to click on text or element
+                    return self._click_on_text(params)
+            else:
+                # Click at current mouse position
+                x, y = pyautogui.position()
+                pyautogui.click()
+                return f"Clicked at current position ({x}, {y})"
+        except Exception as e:
+            return f"Failed to click: {str(e)}"
 
     def mouse_drag(self, params: str) -> str:
-        """Simulate a mouse drag."""
-        # This is a stub - actual implementation would depend on OS and available tools
-        return "Mouse drag simulated (simulated)"
+        """Simulate a mouse drag using pyautogui."""
+        if not PYAUTOGUI_AVAILABLE:
+            return "PyAutoGUI not available. Install with: pip install pyautogui"
+        
+        try:
+            # Parse drag parameters: "from x1,y1 to x2,y2"
+            if "from" in params and "to" in params:
+                parts = params.split("to")
+                from_part = parts[0].replace("from", "").strip()
+                to_part = parts[1].strip()
+                
+                start_coords = self._parse_coordinates(from_part)
+                end_coords = self._parse_coordinates(to_part)
+                
+                if start_coords and end_coords:
+                    x1, y1 = start_coords
+                    x2, y2 = end_coords
+                    pyautogui.drag(x2 - x1, y2 - y1, duration=0.5)
+                    return f"Dragged from ({x1}, {y1}) to ({x2}, {y2})"
+            
+            return "Usage: drag from x1,y1 to x2,y2"
+        except Exception as e:
+            return f"Failed to drag: {str(e)}"
 
     def mouse_scroll(self, params: str) -> str:
-        """Simulate a mouse scroll."""
-        # This is a stub - actual implementation would depend on OS and available tools
-        return "Mouse scroll simulated (simulated)"
+        """Simulate a mouse scroll using pyautogui."""
+        if not PYAUTOGUI_AVAILABLE:
+            return "PyAutoGUI not available. Install with: pip install pyautogui"
+        
+        try:
+            # Parse scroll parameters: "up 3" or "down 5"
+            parts = params.strip().split()
+            if len(parts) >= 2:
+                direction = parts[0].lower()
+                amount = int(parts[1])
+                
+                if direction == "up":
+                    pyautogui.scroll(amount)
+                    return f"Scrolled up {amount} units"
+                elif direction == "down":
+                    pyautogui.scroll(-amount)
+                    return f"Scrolled down {amount} units"
+            
+            return "Usage: scroll up/down [amount]"
+        except Exception as e:
+            return f"Failed to scroll: {str(e)}"
 
     def keyboard_input(self, params: str) -> str:
-        """Simulate keyboard input."""
-        # This is a stub - actual implementation would depend on OS and available tools
-        return "Keyboard input simulated (simulated)"
+        """Simulate keyboard input using pyautogui."""
+        if not PYAUTOGUI_AVAILABLE:
+            return "PyAutoGUI not available. Install with: pip install pyautogui"
+        
+        try:
+            # Parse special keys or text
+            if params.strip().startswith("key "):
+                key = params.replace("key ", "").strip()
+                pyautogui.press(key)
+                return f"Pressed key: {key}"
+            else:
+                # Type text
+                pyautogui.typewrite(params)
+                return f"Typed: {params}"
+        except Exception as e:
+            return f"Failed keyboard input: {str(e)}"
 
     def window_control(self, params: str) -> str:
-        """Control a window."""
-        # This is a stub - actual implementation would depend on OS and available tools
-        return "Window control simulated (simulated)"
+        """Control windows using platform-specific methods."""
+        try:
+            parts = params.strip().split()
+            if not parts:
+                return "Usage: window [action] [target]"
+            
+            action = parts[0].lower()
+            target = " ".join(parts[1:]) if len(parts) > 1 else ""
+            
+            if self.os_type == "darwin":  # macOS
+                return self._macos_window_control(action, target)
+            elif self.os_type == "windows":
+                return self._windows_window_control(action, target)
+            elif self.os_type == "linux":
+                return self._linux_window_control(action, target)
+            else:
+                return f"Window control not supported on {self.os_type}"
+        except Exception as e:
+            return f"Failed window control: {str(e)}"
 
     def system_monitor(self, params: str) -> str:
-        """Monitor system resources."""
-        # This is a stub - actual implementation would depend on OS and available tools
-        return "System monitor simulated (simulated)"
+        """Monitor system resources using psutil."""
+        try:
+            if not params.strip():
+                # Return comprehensive system info
+                return self._get_system_info()
+            
+            # Parse specific monitoring request
+            parts = params.strip().split()
+            metric = parts[0].lower()
+            
+            if metric == "cpu":
+                return self._get_cpu_info()
+            elif metric == "memory":
+                return self._get_memory_info()
+            elif metric == "disk":
+                return self._get_disk_info()
+            elif metric == "network":
+                return self._get_network_info()
+            elif metric == "processes":
+                return self._get_processes_info()
+            else:
+                return f"Unknown metric: {metric}. Available: cpu, memory, disk, network, processes"
+        except Exception as e:
+            return f"Failed system monitoring: {str(e)}"
 
     def process_control(self, params: str) -> str:
-        """Control a process."""
-        # This is a stub - actual implementation would depend on OS and available tools
-        return "Process control simulated (simulated)"
+        """Control processes using psutil."""
+        try:
+            parts = params.strip().split()
+            if not parts:
+                return "Usage: process [action] [target]"
+            
+            action = parts[0].lower()
+            target = " ".join(parts[1:]) if len(parts) > 1 else ""
+            
+            if action == "list":
+                return self._list_processes()
+            elif action == "kill":
+                return self._kill_process(target)
+            elif action == "start":
+                return self._start_process(target)
+            elif action == "info":
+                return self._get_process_info(target)
+            else:
+                return f"Unknown action: {action}. Available: list, kill, start, info"
+        except Exception as e:
+            return f"Failed process control: {str(e)}"
 
     def build_application(self, params: str) -> str:
-        """Build a desktop application."""
-        # This is a stub - actual implementation would depend on OS and available tools
-        return "Desktop application built (simulated)"
+        """Build a desktop application using tkinter."""
+        if not TKINTER_AVAILABLE:
+            return "Tkinter not available for GUI building"
+        
+        try:
+            # Parse application parameters
+            parts = params.strip().split()
+            if not parts:
+                return "Usage: build [app_type] [name] [options]"
+            
+            app_type = parts[0].lower()
+            app_name = parts[1] if len(parts) > 1 else "App"
+            
+            if app_type == "calculator":
+                return self._build_calculator(app_name)
+            elif app_type == "notepad":
+                return self._build_notepad(app_name)
+            elif app_type == "file_manager":
+                return self._build_file_manager(app_name)
+            else:
+                return f"Unknown app type: {app_type}. Available: calculator, notepad, file_manager"
+        except Exception as e:
+            return f"Failed to build application: {str(e)}"
 
     def gui_automation(self, params: str) -> str:
-        """Automate GUI interactions."""
-        # This is a stub - actual implementation would depend on OS and available tools
-        return "GUI automation simulated (simulated)"
+        """Automate GUI interactions using pyautogui."""
+        if not PYAUTOGUI_AVAILABLE:
+            return "PyAutoGUI not available. Install with: pip install pyautogui"
+        
+        try:
+            parts = params.strip().split()
+            if not parts:
+                return "Usage: gui [action] [target]"
+            
+            action = parts[0].lower()
+            target = " ".join(parts[1:]) if len(parts) > 1 else ""
+            
+            if action == "find":
+                return self._find_and_click(target)
+            elif action == "fill":
+                return self._fill_form(target)
+            elif action == "navigate":
+                return self._navigate_ui(target)
+            else:
+                return f"Unknown GUI action: {action}. Available: find, fill, navigate"
+        except Exception as e:
+            return f"Failed GUI automation: {str(e)}"
 
     def network_operations(self, params: str) -> str:
         """Perform network operations."""
-        # This is a stub - actual implementation would depend on OS and available tools
-        return "Network operations simulated (simulated)"
+        try:
+            parts = params.strip().split()
+            if not parts:
+                return "Usage: network [action] [target]"
+            
+            action = parts[0].lower()
+            target = " ".join(parts[1:]) if len(parts) > 1 else ""
+            
+            if action == "ping":
+                return self._ping_host(target)
+            elif action == "download":
+                return self._download_file(target)
+            elif action == "upload":
+                return self._upload_file(target)
+            else:
+                return f"Unknown network action: {action}. Available: ping, download, upload"
+        except Exception as e:
+            return f"Failed network operation: {str(e)}"
 
     def database_operations(self, params: str) -> str:
         """Perform database operations."""
-        # This is a stub - actual implementation would depend on OS and available tools
-        return "Database operations simulated (simulated)" 
+        try:
+            parts = params.strip().split()
+            if not parts:
+                return "Usage: database [action] [target]"
+            
+            action = parts[0].lower()
+            target = " ".join(parts[1:]) if len(parts) > 1 else ""
+            
+            if action == "connect":
+                return self._connect_database(target)
+            elif action == "query":
+                return self._query_database(target)
+            elif action == "backup":
+                return self._backup_database(target)
+            else:
+                return f"Unknown database action: {action}. Available: connect, query, backup"
+        except Exception as e:
+            return f"Failed database operation: {str(e)}"
+
+    # Helper methods for the above functions
+    def _parse_coordinates(self, coord_str: str) -> Optional[tuple]:
+        """Parse coordinate string into (x, y) tuple."""
+        try:
+            # Handle formats like "100,200" or "x=100 y=200"
+            if "," in coord_str:
+                x, y = map(int, coord_str.split(","))
+                return (x, y)
+            elif "x=" in coord_str and "y=" in coord_str:
+                x = int(coord_str.split("x=")[1].split()[0])
+                y = int(coord_str.split("y=")[1].split()[0])
+                return (x, y)
+        except:
+            pass
+        return None
+
+    def _click_on_text(self, text: str) -> str:
+        """Click on text using image recognition (basic implementation)."""
+        # This is a simplified implementation
+        # In a real scenario, you'd use OCR or image recognition
+        return f"Would click on text: {text} (requires OCR implementation)"
+
+    def _macos_window_control(self, action: str, target: str) -> str:
+        """Control windows on macOS using AppleScript."""
+        try:
+            if action == "minimize":
+                script = f'tell application "System Events" to set visible of process "{target}" to false'
+            elif action == "maximize":
+                script = f'tell application "{target}" to activate'
+            elif action == "close":
+                script = f'tell application "{target}" to quit'
+            else:
+                return f"Unknown action: {action}"
+            
+            subprocess.run(["osascript", "-e", script])
+            return f"Window {action} for {target}"
+        except Exception as e:
+            return f"Failed macOS window control: {str(e)}"
+
+    def _windows_window_control(self, action: str, target: str) -> str:
+        """Control windows on Windows."""
+        # Windows implementation would use win32api or similar
+        return f"Windows window control not yet implemented for {action} {target}"
+
+    def _linux_window_control(self, action: str, target: str) -> str:
+        """Control windows on Linux."""
+        # Linux implementation would use wmctrl or similar
+        return f"Linux window control not yet implemented for {action} {target}"
+
+    def _get_system_info(self) -> str:
+        """Get comprehensive system information."""
+        info = []
+        info.append("=== SYSTEM INFORMATION ===")
+        info.append(f"OS: {platform.system()} {platform.release()}")
+        info.append(f"Architecture: {platform.machine()}")
+        info.append(f"Python: {platform.python_version()}")
+        info.append("")
+        
+        # CPU info
+        cpu_info = self._get_cpu_info()
+        info.append(cpu_info)
+        info.append("")
+        
+        # Memory info
+        memory_info = self._get_memory_info()
+        info.append(memory_info)
+        info.append("")
+        
+        # Disk info
+        disk_info = self._get_disk_info()
+        info.append(disk_info)
+        
+        return "\n".join(info)
+
+    def _get_cpu_info(self) -> str:
+        """Get CPU information."""
+        try:
+            cpu_percent = psutil.cpu_percent(interval=1)
+            cpu_count = psutil.cpu_count()
+            cpu_freq = psutil.cpu_freq()
+            
+            info = ["=== CPU INFORMATION ==="]
+            info.append(f"CPU Usage: {cpu_percent}%")
+            info.append(f"CPU Cores: {cpu_count}")
+            if cpu_freq:
+                info.append(f"CPU Frequency: {cpu_freq.current:.1f} MHz")
+            
+            return "\n".join(info)
+        except Exception as e:
+            return f"Failed to get CPU info: {str(e)}"
+
+    def _get_memory_info(self) -> str:
+        """Get memory information."""
+        try:
+            memory = psutil.virtual_memory()
+            
+            info = ["=== MEMORY INFORMATION ==="]
+            info.append(f"Total Memory: {memory.total / (1024**3):.1f} GB")
+            info.append(f"Available Memory: {memory.available / (1024**3):.1f} GB")
+            info.append(f"Memory Usage: {memory.percent}%")
+            info.append(f"Used Memory: {memory.used / (1024**3):.1f} GB")
+            
+            return "\n".join(info)
+        except Exception as e:
+            return f"Failed to get memory info: {str(e)}"
+
+    def _get_disk_info(self) -> str:
+        """Get disk information."""
+        try:
+            info = ["=== DISK INFORMATION ==="]
+            
+            for partition in psutil.disk_partitions():
+                try:
+                    usage = psutil.disk_usage(partition.mountpoint)
+                    info.append(f"Drive {partition.device}:")
+                    info.append(f"  Total: {usage.total / (1024**3):.1f} GB")
+                    info.append(f"  Used: {usage.used / (1024**3):.1f} GB")
+                    info.append(f"  Free: {usage.free / (1024**3):.1f} GB")
+                    info.append(f"  Usage: {usage.percent}%")
+                except:
+                    continue
+            
+            return "\n".join(info)
+        except Exception as e:
+            return f"Failed to get disk info: {str(e)}"
+
+    def _get_network_info(self) -> str:
+        """Get network information."""
+        try:
+            info = ["=== NETWORK INFORMATION ==="]
+            
+            # Network interfaces
+            for interface, addresses in psutil.net_if_addrs().items():
+                info.append(f"Interface: {interface}")
+                for addr in addresses:
+                    if addr.family == psutil.AF_INET:
+                        info.append(f"  IPv4: {addr.address}")
+                    elif addr.family == psutil.AF_INET6:
+                        info.append(f"  IPv6: {addr.address}")
+            
+            return "\n".join(info)
+        except Exception as e:
+            return f"Failed to get network info: {str(e)}"
+
+    def _get_processes_info(self) -> str:
+        """Get information about running processes."""
+        try:
+            info = ["=== PROCESSES INFORMATION ==="]
+            
+            # Get top 10 processes by CPU usage
+            processes = []
+            for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent']):
+                try:
+                    processes.append(proc.info)
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    pass
+            
+            # Sort by CPU usage
+            processes.sort(key=lambda x: x['cpu_percent'], reverse=True)
+            
+            info.append("Top 10 processes by CPU usage:")
+            for i, proc in enumerate(processes[:10]):
+                info.append(f"{i+1}. {proc['name']} (PID: {proc['pid']}) - CPU: {proc['cpu_percent']:.1f}%")
+            
+            return "\n".join(info)
+        except Exception as e:
+            return f"Failed to get processes info: {str(e)}"
+
+    def _list_processes(self) -> str:
+        """List running processes."""
+        try:
+            info = ["=== RUNNING PROCESSES ==="]
+            
+            for proc in psutil.process_iter(['pid', 'name', 'status']):
+                try:
+                    info.append(f"{proc.info['pid']}: {proc.info['name']} ({proc.info['status']})")
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    pass
+            
+            return "\n".join(info[:50])  # Limit to first 50 processes
+        except Exception as e:
+            return f"Failed to list processes: {str(e)}"
+
+    def _kill_process(self, target: str) -> str:
+        """Kill a process by name or PID."""
+        try:
+            if target.isdigit():
+                # Kill by PID
+                pid = int(target)
+                proc = psutil.Process(pid)
+                proc.terminate()
+                return f"Terminated process with PID {pid}"
+            else:
+                # Kill by name
+                killed = 0
+                for proc in psutil.process_iter(['pid', 'name']):
+                    try:
+                        if proc.info['name'].lower() == target.lower():
+                            proc.terminate()
+                            killed += 1
+                    except (psutil.NoSuchProcess, psutil.AccessDenied):
+                        pass
+                
+                if killed > 0:
+                    return f"Terminated {killed} process(es) named '{target}'"
+                else:
+                    return f"No processes found with name '{target}'"
+        except Exception as e:
+            return f"Failed to kill process: {str(e)}"
+
+    def _start_process(self, target: str) -> str:
+        """Start a process."""
+        try:
+            subprocess.Popen(target, shell=True)
+            return f"Started process: {target}"
+        except Exception as e:
+            return f"Failed to start process: {str(e)}"
+
+    def _get_process_info(self, target: str) -> str:
+        """Get detailed information about a process."""
+        try:
+            if target.isdigit():
+                proc = psutil.Process(int(target))
+            else:
+                # Find process by name
+                for p in psutil.process_iter(['pid', 'name']):
+                    if p.info['name'].lower() == target.lower():
+                        proc = p
+                        break
+                else:
+                    return f"Process '{target}' not found"
+            
+            info = [f"=== PROCESS INFO: {proc.name()} ==="]
+            info.append(f"PID: {proc.pid}")
+            info.append(f"Status: {proc.status()}")
+            info.append(f"CPU Percent: {proc.cpu_percent()}")
+            info.append(f"Memory Percent: {proc.memory_percent():.1f}%")
+            info.append(f"Memory RSS: {proc.memory_info().rss / (1024**2):.1f} MB")
+            info.append(f"Create Time: {time.ctime(proc.create_time())}")
+            
+            return "\n".join(info)
+        except Exception as e:
+            return f"Failed to get process info: {str(e)}"
+
+    def _build_calculator(self, name: str) -> str:
+        """Build a simple calculator application."""
+        try:
+            # This would create a tkinter calculator
+            # For now, return a placeholder
+            return f"Calculator '{name}' would be built (tkinter implementation needed)"
+        except Exception as e:
+            return f"Failed to build calculator: {str(e)}"
+
+    def _build_notepad(self, name: str) -> str:
+        """Build a simple notepad application."""
+        try:
+            # This would create a tkinter notepad
+            # For now, return a placeholder
+            return f"Notepad '{name}' would be built (tkinter implementation needed)"
+        except Exception as e:
+            return f"Failed to build notepad: {str(e)}"
+
+    def _build_file_manager(self, name: str) -> str:
+        """Build a simple file manager application."""
+        try:
+            # This would create a tkinter file manager
+            # For now, return a placeholder
+            return f"File Manager '{name}' would be built (tkinter implementation needed)"
+        except Exception as e:
+            return f"Failed to build file manager: {str(e)}"
+
+    def _find_and_click(self, target: str) -> str:
+        """Find and click on an element in the GUI."""
+        # This would use image recognition or OCR
+        return f"Would find and click on '{target}' (image recognition needed)"
+
+    def _fill_form(self, target: str) -> str:
+        """Fill a form in the GUI."""
+        # This would automate form filling
+        return f"Would fill form '{target}' (form automation needed)"
+
+    def _navigate_ui(self, target: str) -> str:
+        """Navigate through UI elements."""
+        # This would navigate through UI
+        return f"Would navigate to '{target}' (UI navigation needed)"
+
+    def _ping_host(self, host: str) -> str:
+        """Ping a host."""
+        try:
+            result = subprocess.run(['ping', '-c', '4', host], capture_output=True, text=True)
+            return f"Ping result for {host}:\n{result.stdout}"
+        except Exception as e:
+            return f"Failed to ping {host}: {str(e)}"
+
+    def _download_file(self, url: str) -> str:
+        """Download a file from URL."""
+        try:
+            import requests
+            response = requests.get(url)
+            filename = url.split('/')[-1]
+            with open(filename, 'wb') as f:
+                f.write(response.content)
+            return f"Downloaded {filename}"
+        except Exception as e:
+            return f"Failed to download {url}: {str(e)}"
+
+    def _upload_file(self, target: str) -> str:
+        """Upload a file."""
+        # This would implement file upload
+        return f"Would upload file to '{target}' (upload implementation needed)"
+
+    def _connect_database(self, connection_string: str) -> str:
+        """Connect to a database."""
+        # This would implement database connection
+        return f"Would connect to database '{connection_string}' (database implementation needed)"
+
+    def _query_database(self, query: str) -> str:
+        """Query a database."""
+        # This would implement database querying
+        return f"Would execute query '{query}' (database implementation needed)"
+
+    def _backup_database(self, target: str) -> str:
+        """Backup a database."""
+        # This would implement database backup
+        return f"Would backup database '{target}' (database implementation needed)" 
