@@ -269,6 +269,7 @@ def interactive_mode(agent, setup_ai=True, banner_style="default"):
             user_input = input("\n> ").strip()
             
             if user_input.lower() in ['exit', 'quit']:
+                print("👋 Goodbye!")
                 break
                 
             if user_input.lower() == 'help':
@@ -469,10 +470,15 @@ def interactive_mode(agent, setup_ai=True, banner_style="default"):
             agent.display_messages(user_input)
             
         except KeyboardInterrupt:
-            print("\nExiting...")
+            print("\n👋 Goodbye! (Interrupted)")
+            break
+        except EOFError:
+            print("\n👋 Goodbye! (EOF)")
             break
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"❌ Error: {e}")
+            print("💡 Type 'help' for available commands or 'exit' to quit")
+            continue
 
 def run_examples(agent, banner_style="default"):
     """Run a guided example of AI capabilities"""

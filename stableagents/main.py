@@ -265,14 +265,21 @@ class StableAgents:
         self.tf_model = None
     
     def display_messages(self, markdown):
+        """Display messages to the user. Falls back to plain text if markdown display is not available."""
         if self.plain_text_display:
             print(markdown)
         else: 
-            # Assuming display_markdown_message is defined elsewhere
+            # Try to use markdown display if available
             try:
-                display_markdown_message(markdown)
-            except NameError:
-                self.logger.error("display_markdown_message function not defined")
+                # Check if display_markdown_message is available
+                if 'display_markdown_message' in globals():
+                    display_markdown_message(markdown)
+                else:
+                    # Fall back to plain text
+                    print(markdown)
+            except Exception as e:
+                # Log the error but don't crash
+                self.logger.debug(f"Markdown display failed, falling back to plain text: {e}")
                 print(markdown)
     
     def add_to_memory(self, memory_type, key, value):
@@ -671,35 +678,42 @@ class StableAgents:
         print("\n🎯 Let's get you started with a specific prompt!")
         print("=" * 60)
         
-        # Select a prompt
-        selected_prompt = self.prompts_showcase.select_prompt_interactive()
-        if not selected_prompt:
-            print("❌ Prompt selection cancelled.")
+        try:
+            # Select a prompt
+            selected_prompt = self.prompts_showcase.select_prompt_interactive()
+            if not selected_prompt:
+                print("❌ Prompt selection cancelled.")
+                return None
+            
+            print(f"\n✅ Selected: {selected_prompt['name']}")
+            print(f"📋 Prompt: {selected_prompt['prompt']}")
+            
+            # Select a provider
+            selected_provider = self.prompts_showcase.select_provider_interactive(selected_prompt)
+            if not selected_provider:
+                print("❌ Provider selection cancelled.")
+                return None
+            
+            print(f"\n✅ Selected Provider: {selected_provider.upper()}")
+            
+            # Save the selection
+            self.prompts_showcase.save_user_selection(selected_prompt, selected_provider)
+            
+            # Show setup instructions
+            instructions = self.prompts_showcase.get_setup_instructions(selected_prompt, selected_provider)
+            print(instructions)
+            
+            return {
+                "prompt": selected_prompt,
+                "provider": selected_provider,
+                "instructions": instructions
+            }
+        except (KeyboardInterrupt, EOFError):
+            print("\n👋 Selection cancelled.")
             return None
-        
-        print(f"\n✅ Selected: {selected_prompt['name']}")
-        print(f"📋 Prompt: {selected_prompt['prompt']}")
-        
-        # Select a provider
-        selected_provider = self.prompts_showcase.select_provider_interactive(selected_prompt)
-        if not selected_provider:
-            print("❌ Provider selection cancelled.")
+        except Exception as e:
+            print(f"\n❌ Error during selection: {e}")
             return None
-        
-        print(f"\n✅ Selected Provider: {selected_provider.upper()}")
-        
-        # Save the selection
-        self.prompts_showcase.save_user_selection(selected_prompt, selected_provider)
-        
-        # Show setup instructions
-        instructions = self.prompts_showcase.get_setup_instructions(selected_prompt, selected_provider)
-        print(instructions)
-        
-        return {
-            "prompt": selected_prompt,
-            "provider": selected_provider,
-            "instructions": instructions
-        }
     
     def get_user_selection(self) -> Optional[Dict[str, Any]]:
         """
@@ -741,21 +755,35 @@ class StableAgents:
             print(f"   Prompt: {existing_selection['prompt']['name']}")
             print(f"   Provider: {existing_selection['provider'].upper()}")
             
-            use_existing = input("\nUse this selection? (y/n): ").strip().lower()
-            if use_existing == 'y':
-                instructions = self.prompts_showcase.get_setup_instructions(
-                    existing_selection['prompt'], 
-                    existing_selection['provider']
-                )
-                print(instructions)
-                return "Using existing selection"
+            try:
+                use_existing = input("\nUse this selection? (y/n): ").strip().lower()
+                if use_existing == 'y':
+                    instructions = self.prompts_showcase.get_setup_instructions(
+                        existing_selection['prompt'], 
+                        existing_selection['provider']
+                    )
+                    print(instructions)
+                    return "Using existing selection"
+            except (KeyboardInterrupt, EOFError):
+                print("\n👋 Setup cancelled.")
+                return "Setup was cancelled"
+            except Exception as e:
+                print(f"\n❌ Error: {e}")
+                return "Setup encountered an error"
         
         # Start new selection process
-        result = self.select_prompt_and_provider()
-        if result:
-            return "Selection completed successfully"
-        else:
-            return "Selection was cancelled"
+        try:
+            result = self.select_prompt_and_provider()
+            if result:
+                return "Selection completed successfully"
+            else:
+                return "Selection was cancelled"
+        except (KeyboardInterrupt, EOFError):
+            print("\n👋 Setup cancelled.")
+            return "Setup was cancelled"
+        except Exception as e:
+            print(f"\n❌ Error during setup: {e}")
+            return "Setup encountered an error"
     
     def set_api_key(self, provider: str, api_key: str) -> bool:
         """
