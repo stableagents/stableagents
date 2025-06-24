@@ -63,6 +63,11 @@ def check_secure_api_setup():
             try:
                 choice = input("Enter your choice (1-3): ").strip()
                 
+                # Handle exit commands
+                if choice.lower() in ['exit', 'quit', 'q']:
+                    print("\n👋 Setup cancelled. You can run 'stableagents setup' later.")
+                    return False
+                
                 if choice == "1":
                     return setup_payment_option(manager)
                 elif choice == "2":
@@ -72,9 +77,12 @@ def check_secure_api_setup():
                     print("💡 To use local models, download GGUF files to ~/.stableagents/models/")
                     return True
                 else:
-                    print("Please enter 1, 2, or 3")
+                    print("Please enter 1, 2, or 3 (or 'exit' to cancel)")
             except KeyboardInterrupt:
-                print("\nSetup cancelled. You can run 'stableagents setup' later.")
+                print("\n👋 Setup cancelled. You can run 'stableagents setup' later.")
+                return False
+            except EOFError:
+                print("\n👋 Setup cancelled. You can run 'stableagents setup' later.")
                 return False
                 
     except ImportError:
@@ -97,15 +105,19 @@ def setup_payment_option(manager):
         
         # Get password for encryption
         while True:
-            password = getpass.getpass("Enter a password to encrypt your API keys: ")
-            if password:
-                confirm = getpass.getpass("Confirm password: ")
-                if password == confirm:
-                    break
+            try:
+                password = getpass.getpass("Enter a password to encrypt your API keys: ")
+                if password:
+                    confirm = getpass.getpass("Confirm password: ")
+                    if password == confirm:
+                        break
+                    else:
+                        print("Passwords don't match. Please try again.")
                 else:
-                    print("Passwords don't match. Please try again.")
-            else:
-                print("Password cannot be empty.")
+                    print("Password cannot be empty.")
+            except (KeyboardInterrupt, EOFError):
+                print("\n👋 Setup cancelled.")
+                return False
         
         # Provide API keys
         if manager.provide_api_keys_after_payment(password):
@@ -130,15 +142,19 @@ def setup_custom_keys(manager):
     
     # Get password for encryption
     while True:
-        password = getpass.getpass("Enter a password to encrypt your API keys: ")
-        if password:
-            confirm = getpass.getpass("Confirm password: ")
-            if password == confirm:
-                break
+        try:
+            password = getpass.getpass("Enter a password to encrypt your API keys: ")
+            if password:
+                confirm = getpass.getpass("Confirm password: ")
+                if password == confirm:
+                    break
+                else:
+                    print("Passwords don't match. Please try again.")
             else:
-                print("Passwords don't match. Please try again.")
-        else:
-            print("Password cannot be empty.")
+                print("Password cannot be empty.")
+        except (KeyboardInterrupt, EOFError):
+            print("\n👋 Setup cancelled.")
+            return False
     
     # Reset encryption
     manager.reset_encryption()
@@ -148,15 +164,19 @@ def setup_custom_keys(manager):
     keys_set = False
     
     for provider in providers:
-        print(f"\n{provider.capitalize()} API Key (press Enter to skip):")
-        api_key = getpass.getpass("> ")
-        
-        if api_key:
-            if manager.set_api_key(provider, api_key, password):
-                print(f"✅ {provider.capitalize()} key stored securely")
-                keys_set = True
-            else:
-                print(f"❌ Failed to store {provider.capitalize()} key")
+        try:
+            print(f"\n{provider.capitalize()} API Key (press Enter to skip):")
+            api_key = getpass.getpass("> ")
+            
+            if api_key:
+                if manager.set_api_key(provider, api_key, password):
+                    print(f"✅ {provider.capitalize()} key stored securely")
+                    keys_set = True
+                else:
+                    print(f"❌ Failed to store {provider.capitalize()} key")
+        except (KeyboardInterrupt, EOFError):
+            print(f"\n👋 Setup cancelled.")
+            return False
     
     if keys_set:
         print("\n✅ API keys have been securely stored and encrypted!")
@@ -223,6 +243,11 @@ def setup_ai_provider(agent):
             print("AI setup skipped.")
             return False
             
+        # Handle exit commands
+        if choice.lower() in ['exit', 'quit', 'q']:
+            print("👋 AI setup cancelled.")
+            return False
+            
         choice = int(choice)
         if choice < 1 or choice > len(providers):
             print("Invalid choice. AI setup skipped.")
@@ -232,19 +257,26 @@ def setup_ai_provider(agent):
         
         # Ask for API key
         print(f"\nPlease enter your {provider_name.capitalize()} API key:")
-        api_key = getpass.getpass("> ")
-        
-        if api_key:
-            agent.set_api_key(provider_name, api_key)
-            agent.set_active_ai_provider(provider_name)
-            print(f"AI provider {provider_name} configured successfully.")
-            return True
-        else:
-            print("No API key provided. AI setup skipped.")
+        try:
+            api_key = getpass.getpass("> ")
+            
+            if api_key:
+                agent.set_api_key(provider_name, api_key)
+                agent.set_active_ai_provider(provider_name)
+                print(f"AI provider {provider_name} configured successfully.")
+                return True
+            else:
+                print("No API key provided. AI setup skipped.")
+                return False
+        except (KeyboardInterrupt, EOFError):
+            print("\n👋 AI setup cancelled.")
             return False
             
     except (ValueError, IndexError):
         print("Invalid input. AI setup skipped.")
+        return False
+    except (KeyboardInterrupt, EOFError):
+        print("\n👋 AI setup cancelled.")
         return False
 
 def interactive_mode(agent, setup_ai=True, banner_style="default"):

@@ -208,15 +208,19 @@ class SecureAPIKeyManager:
         providers = ["openai", "anthropic"]
         
         for provider in providers:
-            print(f"📡 {provider.capitalize()} API Key:")
-            print(f"   Get your key from: https://platform.{provider}.com/account/api-keys")
-            api_key = getpass.getpass(f"   Enter your {provider.capitalize()} API key (or press Enter to skip): ")
-            
-            if api_key:
-                custom_keys[provider] = api_key
-                print(f"   ✅ {provider.capitalize()} key stored securely")
-            else:
-                print(f"   ⏭️  Skipped {provider.capitalize()}")
+            try:
+                print(f"📡 {provider.capitalize()} API Key:")
+                print(f"   Get your key from: https://platform.{provider}.com/account/api-keys")
+                api_key = getpass.getpass(f"   Enter your {provider.capitalize()} API key (or press Enter to skip): ")
+                
+                if api_key:
+                    custom_keys[provider] = api_key
+                    print(f"   ✅ {provider.capitalize()} key stored securely")
+                else:
+                    print(f"   ⏭️  Skipped {provider.capitalize()}")
+            except (KeyboardInterrupt, EOFError):
+                print(f"\n👋 Setup cancelled.")
+                return False
         
         if custom_keys:
             # Set the first provider as active
@@ -364,38 +368,54 @@ def main():
     manager.show_payment_options()
     
     # Get user choice
-    choice = input("\nEnter your choice (1-3): ").strip()
-    
-    if choice == "1":
-        # Process payment
-        if manager.process_payment():
-            password = getpass.getpass("Enter a password to encrypt your API keys: ")
-            if password:
-                manager.provide_api_keys_after_payment(password)
-            else:
-                print("❌ Password required for encryption")
-    
-    elif choice == "2":
-        # Custom API keys
-        password = getpass.getpass("Enter a password to encrypt your API keys: ")
-        if password:
-            manager.setup_custom_api_keys(password)
+    try:
+        choice = input("\nEnter your choice (1-3): ").strip()
+        
+        # Handle exit commands
+        if choice.lower() in ['exit', 'quit', 'q']:
+            print("\n👋 Setup cancelled.")
+            return 0
+        
+        if choice == "1":
+            # Process payment
+            if manager.process_payment():
+                try:
+                    password = getpass.getpass("Enter a password to encrypt your API keys: ")
+                    if password:
+                        manager.provide_api_keys_after_payment(password)
+                    else:
+                        print("❌ Password required for encryption")
+                except (KeyboardInterrupt, EOFError):
+                    print("\n👋 Setup cancelled.")
+                    return 0
+        
+        elif choice == "2":
+            # Custom API keys
+            try:
+                password = getpass.getpass("Enter a password to encrypt your API keys: ")
+                if password:
+                    manager.setup_custom_api_keys(password)
+                else:
+                    print("❌ Password required for encryption")
+            except (KeyboardInterrupt, EOFError):
+                print("\n👋 Setup cancelled.")
+                return 0
+        
+        elif choice == "3":
+            # Local models only
+            print("\n🏠 Local Models Setup")
+            print("=" * 30)
+            print("Great choice! You can use StableAgents with local models.")
+            print("Download GGUF models and place them in ~/.stableagents/models/")
+            print("No API keys or payment required.")
+        
         else:
-            print("❌ Password required for encryption")
+            print("❌ Invalid choice")
+            return 1
     
-    elif choice == "3":
-        # Local models only
-        print("\n🏠 Local Models Setup")
-        print("=" * 30)
-        print("Great choice! You can use StableAgents with local models.")
-        print("Download GGUF models and place them in ~/.stableagents/models/")
-        print("No API keys or payment required.")
-    
-    else:
-        print("❌ Invalid choice")
-        return 1
-    
-    return 0
+    except (KeyboardInterrupt, EOFError):
+        print("\n👋 Setup cancelled.")
+        return 0
 
 if __name__ == "__main__":
     exit(main()) 
