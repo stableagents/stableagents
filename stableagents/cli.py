@@ -520,6 +520,7 @@ def interactive_mode(agent, setup_ai=True, banner_style="default"):
                 print("  memory.add TYPE KEY VALUE - Add to memory (TYPE: short_term, long_term, context)")
                 print("  memory.get TYPE [KEY] - Get from memory")
                 print("  control [COMMAND] - Control computer with natural language")
+                print("  ai-control [NATURAL COMMAND] - Use AI to interpret and execute complex commands")
                 print("  ai [PROMPT] - Generate text using the active AI provider")
                 print("  chat [MESSAGE] - Chat with the AI provider")
                 print("  apikey [PROVIDER] [KEY] - Set API key for a provider")
@@ -540,6 +541,12 @@ def interactive_mode(agent, setup_ai=True, banner_style="default"):
                 print("  current-provider - Show the current active AI provider")
                 print("  reset - Reset the agent")
                 print("  exit/quit/q - Exit the program")
+                print()
+                print("💡 AI Control Examples:")
+                print("  ai-control open youtube and play the latest bruno mars song")
+                print("  ai-control search for python tutorials and open the first result")
+                print("  ai-control take a screenshot and save it to desktop")
+                print("  ai-control check system performance and show memory usage")
                 print()
                 print("💡 Type 'exit', 'quit', or 'q' to exit the program")
                 continue
@@ -798,6 +805,18 @@ def interactive_mode(agent, setup_ai=True, banner_style="default"):
                     print("Please provide a command after 'control'")
                 else:
                     result = agent.control_computer(command)
+                    print(result)
+                continue
+                
+            if user_input.startswith('ai-control '):
+                command = user_input[11:].strip()
+                if not command:
+                    print("Please provide a natural language command after 'ai-control'")
+                    print("Example: ai-control open youtube and play the latest bruno mars song")
+                else:
+                    print(f"🤖 Using AI to interpret: '{command}'")
+                    print("⏳ Processing...")
+                    result = agent.ai_control_computer(command)
                     print(result)
                 continue
                 
@@ -1255,6 +1274,10 @@ def main():
     control_parser = subparsers.add_parser('control', help='Control computer with natural language')
     control_parser.add_argument('command', nargs='+', help='Natural language command')
     
+    # AI-powered computer control
+    ai_control_parser = subparsers.add_parser('ai-control', help='Use AI to interpret and execute complex computer commands')
+    ai_control_parser.add_argument('command', nargs='+', help='Natural language command for AI interpretation')
+    
     # AI commands
     ai_parser = subparsers.add_parser('ai', help='AI text generation')
     ai_parser.add_argument('prompt', nargs='+', help='Text prompt')
@@ -1507,7 +1530,7 @@ def main():
         command = ' '.join(args.command)
         result = agent.control_computer(command)
         print(result)
-    elif args.command == 'ai':
+    elif args.command == 'ai-control':
         # Check if we have an active provider with key
         if not agent.get_active_ai_provider():
             print("No active AI provider. Setting up now...")
@@ -1515,6 +1538,12 @@ def main():
                 print("AI setup failed. Exiting.")
                 return 1
         
+        command = ' '.join(args.command)
+        print(f"🤖 Using AI to interpret: '{command}'")
+        print("⏳ Processing...")
+        result = agent.ai_control_computer(command)
+        print(result)
+    elif args.command == 'ai':
         prompt = ' '.join(args.prompt)
         kwargs = {}
         if args.model:

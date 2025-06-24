@@ -7,6 +7,7 @@ fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
 cryptography>=3.4.0
 stripe>=7.0.0
+pyautogui>=0.9.54
 
 # AI Functionality Dependencies (Optional)
 opencv-python>=4.8.0

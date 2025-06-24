@@ -353,6 +353,120 @@ class StableAgents:
         """
         return self.computer.execute(command)
     
+    def ai_control_computer(self, natural_command: str) -> str:
+        """
+        Use AI to intelligently interpret and execute natural language computer commands.
+        
+        Args:
+            natural_command (str): Natural language command like "open youtube and play the latest bruno mars song"
+            
+        Returns:
+            str: Result of the AI interpretation and command execution
+        """
+        if not self.ai_provider:
+            return "❌ AI provider not available. Please configure an AI provider first."
+        
+        try:
+            # Step 1: Use AI to interpret the natural language command
+            interpretation_prompt = f"""
+            You are an AI assistant that converts natural language commands into specific computer actions.
+            
+            User command: "{natural_command}"
+            
+            Available computer actions:
+            - open [application]: Open an application (e.g., "open youtube", "open spotify")
+            - browse [url]: Open a website (e.g., "browse youtube.com")
+            - search [query]: Search the web (e.g., "search bruno mars latest song")
+            - execute [command]: Run a terminal command
+            - click [coordinates]: Click at specific coordinates
+            - type [text]: Type text
+            - screenshot: Take a screenshot
+            - monitor [type]: Get system information
+            - process [action]: Control processes
+            
+            Convert the user's natural language command into a JSON object with:
+            {{
+                "actions": [
+                    {{
+                        "action": "action_name",
+                        "parameters": "action_parameters",
+                        "description": "what this action does"
+                    }}
+                ],
+                "reasoning": "explanation of how you interpreted the command",
+                "confidence": 0.95
+            }}
+            
+            For complex commands, break them down into multiple sequential actions.
+            Be specific and actionable. Return only valid JSON.
+            """
+            
+            # Get AI interpretation
+            interpretation_response = self.ai_provider.generate_text(interpretation_prompt)
+            
+            # Parse the JSON response
+            try:
+                import json
+                interpretation = json.loads(interpretation_response)
+            except json.JSONDecodeError:
+                # Fallback to simple parsing
+                return f"❌ Failed to parse AI interpretation. Raw response: {interpretation_response}"
+            
+            # Step 2: Execute the interpreted actions
+            results = []
+            actions = interpretation.get("actions", [])
+            reasoning = interpretation.get("reasoning", "No reasoning provided")
+            
+            if not actions:
+                return f"❌ AI couldn't interpret the command: {natural_command}"
+            
+            results.append(f"🤖 AI Interpretation: {reasoning}")
+            results.append(f"📋 Planned Actions: {len(actions)}")
+            
+            # Execute each action
+            for i, action_info in enumerate(actions, 1):
+                action = action_info.get("action", "")
+                parameters = action_info.get("parameters", "")
+                description = action_info.get("description", "")
+                
+                results.append(f"\n🔧 Action {i}: {description}")
+                
+                # Execute the action using the computer control module
+                try:
+                    if action == "open":
+                        result = self.computer.open_application(parameters)
+                    elif action == "browse":
+                        result = self.computer.browse_web(parameters)
+                    elif action == "search":
+                        result = self.computer.search_web(parameters)
+                    elif action == "execute":
+                        result = self.computer.execute_command(parameters)
+                    elif action == "click":
+                        result = self.computer.mouse_click(parameters)
+                    elif action == "type":
+                        result = self.computer.type_text(parameters)
+                    elif action == "screenshot":
+                        result = self.computer.take_screenshot(parameters)
+                    elif action == "monitor":
+                        result = self.computer.system_monitor(parameters)
+                    elif action == "process":
+                        result = self.computer.process_control(parameters)
+                    else:
+                        result = f"❌ Unknown action: {action}"
+                    
+                    results.append(f"   ✅ Result: {result}")
+                    
+                except Exception as e:
+                    results.append(f"   ❌ Error: {str(e)}")
+            
+            # Step 3: Provide a summary
+            results.append(f"\n🎯 Summary: Successfully executed {len(actions)} actions for '{natural_command}'")
+            
+            return "\n".join(results)
+            
+        except Exception as e:
+            return f"❌ Error in AI computer control: {str(e)}"
+    
     # AI Functionality Methods
     def show_prompts_showcase(self, category: str = None) -> str:
         """
