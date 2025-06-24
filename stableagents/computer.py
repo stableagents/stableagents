@@ -608,6 +608,59 @@ class ComputerControl:
         except Exception as e:
             return f"Failed database operation: {str(e)}"
 
+    def open_media_service(self, service: str, action: str = "") -> str:
+        """Open media services like YouTube, Spotify, etc."""
+        service = service.lower().strip()
+        action = action.strip()
+        
+        service_urls = {
+            "youtube": "https://www.youtube.com",
+            "spotify": "https://open.spotify.com",
+            "netflix": "https://www.netflix.com",
+            "amazon": "https://www.amazon.com",
+            "apple music": "https://music.apple.com",
+            "soundcloud": "https://soundcloud.com",
+            "vimeo": "https://vimeo.com",
+            "twitch": "https://www.twitch.tv"
+        }
+        
+        if service in service_urls:
+            url = service_urls[service]
+            if action:
+                # Add search parameters for specific actions
+                if "search" in action or "play" in action:
+                    search_query = action.replace("search", "").replace("play", "").strip()
+                    if search_query:
+                        if service == "youtube":
+                            url = f"https://www.youtube.com/results?search_query={search_query.replace(' ', '+')}"
+                        elif service == "spotify":
+                            url = f"https://open.spotify.com/search/{search_query.replace(' ', '%20')}"
+            
+            try:
+                webbrowser.open(url)
+                return f"Opened {service} - {action if action else 'main page'}"
+            except Exception as e:
+                return f"Failed to open {service}: {str(e)}"
+        else:
+            return f"Unknown media service: {service}"
+    
+    def search_and_play_media(self, query: str, service: str = "youtube") -> str:
+        """Search for and play media content."""
+        service = service.lower().strip()
+        
+        if service == "youtube":
+            search_url = f"https://www.youtube.com/results?search_query={query.replace(' ', '+')}"
+        elif service == "spotify":
+            search_url = f"https://open.spotify.com/search/{query.replace(' ', '%20')}"
+        else:
+            return f"Unsupported service for media search: {service}"
+        
+        try:
+            webbrowser.open(search_url)
+            return f"Searched for '{query}' on {service}"
+        except Exception as e:
+            return f"Failed to search {service} for '{query}': {str(e)}"
+
     # Helper methods for the above functions
     def _parse_coordinates(self, coord_str: str) -> Optional[tuple]:
         """Parse coordinate string into (x, y) tuple."""

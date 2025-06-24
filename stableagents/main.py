@@ -377,12 +377,15 @@ class StableAgents:
             - open [application]: Open an application (e.g., "open youtube", "open spotify")
             - browse [url]: Open a website (e.g., "browse youtube.com")
             - search [query]: Search the web (e.g., "search bruno mars latest song")
+            - open_media_service [service] [action]: Open media services (e.g., "open_media_service youtube search bruno mars")
+            - search_and_play_media [query] [service]: Search and play media (e.g., "search_and_play_media bruno mars latest song youtube")
             - execute [command]: Run a terminal command
             - click [coordinates]: Click at specific coordinates
             - type [text]: Type text
             - screenshot: Take a screenshot
             - monitor [type]: Get system information
             - process [action]: Control processes
+            - create [type] [path]: Create files/folders (e.g., "create folder ai_demo")
             
             Convert the user's natural language command into a JSON object with:
             {{
@@ -399,6 +402,12 @@ class StableAgents:
             
             For complex commands, break them down into multiple sequential actions.
             Be specific and actionable. Return only valid JSON.
+            
+            Examples:
+            - "open youtube and play the latest bruno mars song" → open_media_service youtube search bruno mars latest song
+            - "search for python tutorials and open the first result" → search python tutorials
+            - "take a screenshot and save it to desktop" → screenshot
+            - "check system performance and show memory usage" → monitor memory
             """
             
             # Get AI interpretation
@@ -439,6 +448,18 @@ class StableAgents:
                         result = self.computer.browse_web(parameters)
                     elif action == "search":
                         result = self.computer.search_web(parameters)
+                    elif action == "open_media_service":
+                        # Parse service and action from parameters
+                        parts = parameters.split(' ', 1)
+                        service = parts[0] if parts else ""
+                        action_param = parts[1] if len(parts) > 1 else ""
+                        result = self.computer.open_media_service(service, action_param)
+                    elif action == "search_and_play_media":
+                        # Parse query and service from parameters
+                        parts = parameters.split(' ', 1)
+                        query = parts[0] if parts else ""
+                        service = parts[1] if len(parts) > 1 else "youtube"
+                        result = self.computer.search_and_play_media(query, service)
                     elif action == "execute":
                         result = self.computer.execute_command(parameters)
                     elif action == "click":
@@ -451,6 +472,8 @@ class StableAgents:
                         result = self.computer.system_monitor(parameters)
                     elif action == "process":
                         result = self.computer.process_control(parameters)
+                    elif action == "create":
+                        result = self.computer.create_file_or_folder(parameters)
                     else:
                         result = f"❌ Unknown action: {action}"
                     
@@ -1098,6 +1121,113 @@ class StableAgents:
             return "No AI provider available. Please set an API key first."
         
         return provider.transcribe_audio(audio_file, **kwargs)
+    
+    def reconfigure_ai_provider(self) -> bool:
+        """
+        Reconfigure the AI provider by prompting the user to set up API keys.
+        
+        Returns:
+            bool: True if configuration was successful, False otherwise
+        """
+        try:
+            print("\n🔧 AI Provider Reconfiguration")
+            print("=" * 40)
+            print("Let's set up your AI provider to use AI-powered features.")
+            print()
+            
+            # List available providers
+            providers = self.list_ai_providers()
+            print("Available AI providers:")
+            for i, provider in enumerate(providers, 1):
+                status = "✅" if provider["has_key"] else "❌"
+                print(f"  {i}. {status} {provider['name']}")
+            
+            print()
+            print("Choose a provider to configure:")
+            
+            while True:
+                try:
+                    choice = input("Enter provider number or 'exit' to cancel: ").strip()
+                    
+                    if choice.lower() in ['exit', 'quit', 'q']:
+                        print("Configuration cancelled.")
+                        return False
+                    
+                    choice_num = int(choice)
+                    if 1 <= choice_num <= len(providers):
+                        selected_provider = providers[choice_num - 1]["name"]
+                        break
+                    else:
+                        print(f"Please enter a number between 1 and {len(providers)}")
+                except ValueError:
+                    print("Please enter a valid number")
+                except (KeyboardInterrupt, EOFError):
+                    print("\nConfiguration cancelled.")
+                    return False
+            
+            # Get API key
+            print(f"\n🔑 {selected_provider.capitalize()} API Key Setup")
+            print("=" * 40)
+            print("Get your API key from:")
+            
+            if selected_provider == "openai":
+                print("   https://platform.openai.com/api-keys")
+            elif selected_provider == "anthropic":
+                print("   https://console.anthropic.com/")
+            elif selected_provider == "google":
+                print("   https://makersuite.google.com/app/apikey")
+            else:
+                print(f"   {selected_provider} provider website")
+            
+            print("\nEnter your API key (or 'exit' to cancel):")
+            
+            import getpass
+            api_key = getpass.getpass("> ")
+            
+            if api_key.lower() in ['exit', 'quit', 'q']:
+                print("Configuration cancelled.")
+                return False
+            
+            if not api_key.strip():
+                print("❌ API key cannot be empty.")
+                return False
+            
+            # Set the API key
+            if self.set_api_key(selected_provider, api_key):
+                # Set as active provider
+                if self.set_active_ai_provider(selected_provider):
+                    print(f"✅ {selected_provider.capitalize()} configured successfully!")
+                    print(f"✅ {selected_provider.capitalize()} is now the active AI provider.")
+                    return True
+                else:
+                    print(f"❌ Failed to set {selected_provider.capitalize()} as active provider.")
+                    return False
+            else:
+                print(f"❌ Failed to configure {selected_provider.capitalize()} API key.")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error during configuration: {e}")
+            return False
+    
+    def check_ai_provider_ready(self) -> bool:
+        """
+        Check if the AI provider is properly configured and ready to use.
+        
+        Returns:
+            bool: True if AI provider is ready, False otherwise
+        """
+        active_provider = self.get_active_ai_provider()
+        if not active_provider:
+            return False
+        
+        # Check if the provider has a valid API key
+        providers = self.list_ai_providers()
+        for provider in providers:
+            if provider["name"] == active_provider and provider["has_key"]:
+                return True
+        
+        return False
 
 
 # For testing in terminal
