@@ -24,11 +24,23 @@ def setup_logging(verbose):
     )
     return logging.getLogger('stableagents-ai-cli')
 
+def exit_cli(message="👋 Goodbye! Thanks for using stableagents-ai!"):
+    """Clean exit function for the CLI"""
+    print(f"\n{message}")
+    sys.exit(0)
+
+def check_exit_command(user_input):
+    """Check if user input is an exit command"""
+    if user_input.lower() in ['exit', 'quit', 'q']:
+        return True
+    return False
+
 def show_preview_prompts_and_select_provider():
     """Show preview prompts and help user select a model provider before API setup"""
     print("\n🎯 WELCOME TO stableagents-ai!")
     print("=" * 50)
     print("Let's start by exploring what you can build with AI, then choose your provider.")
+    print("💡 Type 'exit', 'quit', or 'q' at any time to cancel")
     print()
     
     # Create agent instance for prompt showcase
@@ -80,14 +92,15 @@ def show_preview_prompts_and_select_provider():
     # Ask if they want to see more detailed examples
     try:
         see_more = input("\nWould you like to see more detailed examples? (y/n): ").strip().lower()
+        if check_exit_command(see_more):
+            exit_cli("👋 Setup cancelled.")
         if see_more in ['y', 'yes']:
             print("\n" + "="*60)
             print("📋 DETAILED PROMPT EXAMPLES")
             print("="*60)
             print(agent.show_prompts_showcase())
     except (KeyboardInterrupt, EOFError):
-        print("\n👋 Setup cancelled.")
-        return None, None
+        exit_cli("👋 Setup cancelled.")
     
     # Step 2: Interactive prompt selection
     print("\n" + "="*60)
@@ -153,8 +166,7 @@ def show_preview_prompts_and_select_provider():
         return selected_provider, provider_info
         
     except (KeyboardInterrupt, EOFError):
-        print("\n👋 Setup cancelled.")
-        return None, None
+        exit_cli("👋 Setup cancelled.")
     except Exception as e:
         print(f"\n❌ Error during prompt selection: {e}")
         return None, None
@@ -195,13 +207,13 @@ def check_secure_api_setup(selected_provider=None, provider_info=None):
         print("   - Use your existing OpenAI, Anthropic, etc. keys")
         print("   - Keys are securely encrypted")
         print("   - No additional cost beyond your API usage")
-        print("   - Full control over your providers")
         print()
         print("3. 🏠 Use local models only")
         print("   - Download GGUF models for local inference")
         print("   - No API keys or payment required")
         print("   - Works offline, privacy-focused")
-        print("   - Limited model quality")
+        print()
+        print("💡 Type 'exit', 'quit', or 'q' at any time to cancel setup")
         print()
         
         while True:
@@ -209,9 +221,8 @@ def check_secure_api_setup(selected_provider=None, provider_info=None):
                 choice = input("Enter your choice (1-3): ").strip()
                 
                 # Handle exit commands
-                if choice.lower() in ['exit', 'quit', 'q']:
-                    print("\n👋 Setup cancelled. You can run 'stableagents-ai setup' later.")
-                    return False
+                if check_exit_command(choice):
+                    exit_cli("👋 Setup cancelled. You can run 'stableagents-ai setup' later.")
                 
                 if choice == "1":
                     return setup_payment_option(manager)
@@ -224,11 +235,9 @@ def check_secure_api_setup(selected_provider=None, provider_info=None):
                 else:
                     print("Please enter 1, 2, or 3 (or 'exit' to cancel)")
             except KeyboardInterrupt:
-                print("\n👋 Setup cancelled. You can run 'stableagents-ai setup' later.")
-                return False
+                exit_cli("👋 Setup cancelled. You can run 'stableagents-ai setup' later.")
             except EOFError:
-                print("\n👋 Setup cancelled. You can run 'stableagents-ai setup' later.")
-                return False
+                exit_cli("👋 Setup cancelled. You can run 'stableagents-ai setup' later.")
                 
     except ImportError:
         print("⚠️  Secure API key management not available")
@@ -257,14 +266,12 @@ def setup_payment_option(manager):
         while True:
             try:
                 password = getpass.getpass("Enter a password to encrypt your API keys (or type 'exit'): ")
-                if password.lower() in ['exit', 'quit', 'q']:
-                    print("👋 Setup cancelled.")
-                    return False
+                if check_exit_command(password):
+                    exit_cli("👋 Setup cancelled.")
                 if password:
                     confirm = getpass.getpass("Confirm password (or type 'exit'): ")
-                    if confirm.lower() in ['exit', 'quit', 'q']:
-                        print("👋 Setup cancelled.")
-                        return False
+                    if check_exit_command(confirm):
+                        exit_cli("👋 Setup cancelled.")
                     if password == confirm:
                         break
                     else:
@@ -272,8 +279,7 @@ def setup_payment_option(manager):
                 else:
                     print("Password cannot be empty.")
             except (KeyboardInterrupt, EOFError):
-                print("\n👋 Setup cancelled.")
-                return False
+                exit_cli("👋 Setup cancelled.")
         
         # Provide API keys
         if manager.provide_api_keys_after_payment(password):
@@ -303,14 +309,12 @@ def setup_custom_keys(manager):
     while True:
         try:
             password = getpass.getpass("Enter a password to encrypt your API keys (or type 'exit'): ")
-            if password.lower() in ['exit', 'quit', 'q']:
-                print("👋 Setup cancelled.")
-                return False
+            if check_exit_command(password):
+                exit_cli("👋 Setup cancelled.")
             if password:
                 confirm = getpass.getpass("Confirm password (or type 'exit'): ")
-                if confirm.lower() in ['exit', 'quit', 'q']:
-                    print("👋 Setup cancelled.")
-                    return False
+                if check_exit_command(confirm):
+                    exit_cli("👋 Setup cancelled.")
                 if password == confirm:
                     break
                 else:
@@ -318,7 +322,7 @@ def setup_custom_keys(manager):
             else:
                 print("Password cannot be empty.")
         except (KeyboardInterrupt, EOFError):
-            print("\n👋 Setup cancelled.")
+            exit_cli("👋 Setup cancelled.")
             return False
     
     # Reset encryption
@@ -344,9 +348,8 @@ def setup_custom_keys(manager):
             api_key = getpass.getpass("> ")
             
             # Check for exit command
-            if api_key.lower() in ['exit', 'quit', 'q']:
-                print("👋 Setup cancelled.")
-                return False
+            if check_exit_command(api_key):
+                exit_cli("👋 Setup cancelled.")
             
             if api_key and api_key.strip():
                 if manager.set_api_key(provider, api_key, password):
@@ -383,9 +386,8 @@ def setup_ai_provider(agent):
             if status.get('paid', False) and status.get('api_keys_provided'):
                 # User has secure keys, try to use them
                 password = getpass.getpass("Enter your encryption password (or type 'exit' to quit): ")
-                if password.lower() in ['exit', 'quit', 'q']:
-                    print("👋 Setup cancelled.")
-                    return False
+                if check_exit_command(password):
+                    exit_cli("👋 Setup cancelled.")
                 
                 # Try to get keys for each provider
                 providers = ["openai", "anthropic", "google"]
@@ -426,82 +428,77 @@ def setup_ai_provider(agent):
     for i, provider in enumerate(providers, 1):
         print(f"  {i}. {provider['name']}")
     
-    try:
-        while True:
-            choice = input(f"\nSelect a provider (1-{len(providers)}) or type 'exit': ").strip()
-            
-            # Handle exit commands
-            if choice.lower() in ['exit', 'quit', 'q']:
-                print("👋 Setup cancelled.")
-                return False
-            
-            try:
-                choice_num = int(choice)
-                if choice_num < 1 or choice_num > len(providers):
-                    print(f"Please enter a number between 1 and {len(providers)} or type 'exit'")
-                    continue
-                    
-                provider_name = providers[choice_num-1]["name"]
-                break
-            except ValueError:
-                print("Please enter a valid number or type 'exit'")
+    while True:
+        choice = input(f"\nSelect a provider (1-{len(providers)}) or type 'exit': ").strip()
+        
+        # Handle exit commands
+        if check_exit_command(choice):
+            exit_cli("👋 Setup cancelled.")
+        
+        try:
+            choice_num = int(choice)
+            if choice_num < 1 or choice_num > len(providers):
+                print(f"Please enter a number between 1 and {len(providers)} or type 'exit'")
                 continue
-        
-        # Ask for API key - REQUIRED, no skipping allowed
-        print(f"\n🔑 {provider_name.capitalize()} API Key Required")
-        print("=" * 40)
-        print("You must provide an API key to continue.")
-        print("Get your API key from:")
-        
-        if provider_name == "openai":
-            print("   https://platform.openai.com/api-keys")
-        elif provider_name == "anthropic":
-            print("   https://console.anthropic.com/")
-        elif provider_name == "google":
-            print("   https://makersuite.google.com/app/apikey")
-        else:
-            print(f"   {provider_name} provider website")
-        
-        print("\nType 'exit' at any time to quit the setup.")
-        print()
-        
-        while True:
-            try:
-                api_key = getpass.getpass(f"Enter your {provider_name.capitalize()} API key (or type 'exit'): ")
                 
-                # Check for exit command
-                if api_key.lower() in ['exit', 'quit', 'q']:
-                    print("👋 Setup cancelled.")
-                    return False
-                
-                if api_key and api_key.strip():
-                    if agent.set_api_key(provider_name, api_key):
-                        agent.set_active_ai_provider(provider_name)
-                        print(f"✅ {provider_name.capitalize()} API key configured successfully.")
-                        return True
-                    else:
-                        print(f"❌ Failed to configure {provider_name.capitalize()} API key.")
-                        print("Please check your API key and try again.")
-                        continue
-                else:
-                    print("❌ API key is required. Please enter a valid API key or type 'exit'.")
-                    continue
-            except (KeyboardInterrupt, EOFError):
-                print("\n👋 Setup cancelled.")
-                return False
+            provider_name = providers[choice_num-1]["name"]
+            break
+        except ValueError:
+            print("Please enter a valid number or type 'exit'")
+            continue
+    
+    # Ask for API key - REQUIRED, no skipping allowed
+    print(f"\n🔑 {provider_name.capitalize()} API Key Required")
+    print("=" * 40)
+    print("You must provide an API key to continue.")
+    print("Get your API key from:")
+    
+    if provider_name == "openai":
+        print("   https://platform.openai.com/api-keys")
+    elif provider_name == "anthropic":
+        print("   https://console.anthropic.com/")
+    elif provider_name == "google":
+        print("   https://makersuite.google.com/app/apikey")
+    else:
+        print(f"   {provider_name} provider website")
+    
+    print("\nType 'exit' at any time to quit the setup.")
+    print()
+    
+    while True:
+        try:
+            api_key = getpass.getpass(f"Enter your {provider_name.capitalize()} API key (or type 'exit'): ")
             
-    except (KeyboardInterrupt, EOFError):
-        print("\n👋 Setup cancelled.")
-        return False
+            # Check for exit command
+            if check_exit_command(api_key):
+                exit_cli("👋 Setup cancelled.")
+            
+            if api_key and api_key.strip():
+                if agent.set_api_key(provider_name, api_key):
+                    agent.set_active_ai_provider(provider_name)
+                    print(f"✅ {provider_name.capitalize()} API key configured successfully.")
+                    return True
+                else:
+                    print(f"❌ Failed to configure {provider_name.capitalize()} API key.")
+                    print("Please check your API key and try again.")
+                    continue
+            else:
+                print("❌ API key is required. Please enter a valid API key or type 'exit'.")
+            continue
+        except (KeyboardInterrupt, EOFError):
+            exit_cli("👋 Setup cancelled.")
+            
+    return False
 
 def interactive_mode(agent, setup_ai=True, banner_style="default"):
     """Run an interactive session with the agent"""
     # Display ASCII art banner
     print(get_banner(banner_style))
     
-    print("Starting interactive stableagents-ai session. Type 'exit' or 'quit' to end.")
+    print("Starting interactive stableagents-ai session.")
     print("Commands: memory.add TYPE KEY VALUE, memory.get TYPE [KEY], control [COMMAND], ai [PROMPT], apikey [PROVIDER] [KEY], help")
     print("New AI Commands: showcase, guided-setup, select-prompt, ai-capabilities")
+    print("💡 Type 'exit', 'quit', or 'q' to exit the program")
     
     # Setup AI provider if requested
     if setup_ai:
@@ -515,9 +512,8 @@ def interactive_mode(agent, setup_ai=True, banner_style="default"):
         try:
             user_input = input("\n> ").strip()
             
-            if user_input.lower() in ['exit', 'quit']:
-                print("👋 Goodbye!")
-                break
+            if check_exit_command(user_input):
+                exit_cli("👋 Goodbye! Thanks for using stableagents-ai!")
                 
             if user_input.lower() == 'help':
                 print("\nAvailable commands:")
@@ -543,7 +539,9 @@ def interactive_mode(agent, setup_ai=True, banner_style="default"):
                 print("  switch-provider [PROVIDER] - Switch to a different AI provider")
                 print("  current-provider - Show the current active AI provider")
                 print("  reset - Reset the agent")
-                print("  exit/quit - Exit the program")
+                print("  exit/quit/q - Exit the program")
+                print()
+                print("💡 Type 'exit', 'quit', or 'q' to exit the program")
                 continue
                 
             if user_input.lower() == 'showcase':
@@ -916,11 +914,9 @@ def interactive_mode(agent, setup_ai=True, banner_style="default"):
             agent.display_messages(user_input)
             
         except KeyboardInterrupt:
-            print("\n👋 Goodbye! (Interrupted)")
-            break
+            exit_cli("👋 Goodbye! Thanks for using stableagents-ai!")
         except EOFError:
-            print("\n👋 Goodbye! (EOF)")
-            break
+            exit_cli("👋 Goodbye! Thanks for using stableagents-ai!")
         except Exception as e:
             print(f"❌ Error: {e}")
             print("💡 Type 'help' for available commands or 'exit' to quit")
@@ -1031,6 +1027,7 @@ def interactive_prompt_selection():
     print("\n🎯 INTERACTIVE PROMPT SELECTION")
     print("=" * 50)
     print("Let's pick a specific prompt to work with:")
+    print("💡 Type 'exit', 'quit', or 'q' at any time to cancel")
     print()
     
     # Create agent instance
@@ -1109,6 +1106,8 @@ def guided_setup_with_prompt_selection():
     print("3. 🔧 Get step-by-step setup instructions")
     print("4. 🚀 Start building immediately")
     print()
+    print("💡 Type 'exit', 'quit', or 'q' at any time to cancel setup")
+    print()
     
     # Step 1: Show preview prompts and select provider
     selected_provider, provider_info, prompt_info = interactive_prompt_selection()
@@ -1168,7 +1167,12 @@ def guided_setup_with_prompt_selection():
     
     # Step 3: Ask if they want to proceed with setup
     try:
+        print("💡 Type 'exit', 'quit', or 'q' to cancel, or 'y' to continue")
         proceed = input("\nWould you like to proceed with the setup now? (y/n): ").strip().lower()
+        
+        if check_exit_command(proceed):
+            exit_cli("👋 Setup cancelled.")
+        
         if proceed in ['y', 'yes']:
             print("\n" + "="*60)
             print("🔧 READY FOR API KEY SETUP")
@@ -1183,8 +1187,7 @@ def guided_setup_with_prompt_selection():
             print("💡 When you're ready, run 'stableagents-ai setup' to configure your API keys.")
             return True
     except (KeyboardInterrupt, EOFError):
-        print("\n👋 Setup cancelled.")
-        return False
+        exit_cli("👋 Setup cancelled.")
 
 def get_provider_url(provider: str) -> str:
     """Get signup URL for provider."""
@@ -1391,14 +1394,15 @@ def main():
             print("2. 🚀 Go directly to interactive mode")
             print("3. 📋 Explore examples and prompts")
             print()
+            print("💡 Type 'exit', 'quit', or 'q' to exit")
+            print()
             
             try:
                 choice = input("Enter your choice (1-3): ").strip()
                 
                 # Handle exit commands
-                if choice.lower() in ['exit', 'quit', 'q']:
-                    print("👋 Goodbye!")
-                    return 0
+                if check_exit_command(choice):
+                    exit_cli("👋 Goodbye!")
                 
                 if choice == "1":
                     print("\n🎯 Starting guided setup...")
@@ -1418,15 +1422,18 @@ def main():
                     print("\n" + "="*60)
                     print("🚀 Ready to get started?")
                     print("="*60)
-                    print("Run 'stableagents-ai guided-setup' for step-by-step setup")
-                    print("Run 'stableagents-ai interactive' to start building with AI")
+                    print("🎯 For new users: Run 'stableagents-ai guided-setup' for step-by-step setup")
+                    print("🔧 For setup: Run 'stableagents-ai setup' to configure your AI provider")
+                    print("🚀 For building: Run 'stableagents-ai interactive' to start building with AI")
+                    print("💡 For examples: Run 'stableagents-ai examples' to see AI in action")
+                    print()
+                    print("💡 Type 'exit', 'quit', or 'q' to exit the program")
                     return 0
                 else:
                     print("Invalid choice. Starting interactive mode...")
                     interactive_mode(agent, banner_style=args.banner)
             except (KeyboardInterrupt, EOFError):
-                print("\n👋 Goodbye!")
-                return 0
+                exit_cli("👋 Goodbye!")
         else:
             interactive_mode(agent, banner_style=args.banner)
     elif args.command == 'setup':
@@ -1465,6 +1472,8 @@ def main():
         print("🔧 For setup: Run 'stableagents-ai setup' to configure your AI provider")
         print("🚀 For building: Run 'stableagents-ai interactive' to start building with AI")
         print("💡 For examples: Run 'stableagents-ai examples' to see AI in action")
+        print()
+        print("💡 Type 'exit', 'quit', or 'q' to exit the program")
         return 0
     elif args.command == 'memory':
         if args.memory_command == 'add':
@@ -1583,6 +1592,8 @@ def main():
     elif args.command == 'prompt-setup':
         print("\n🎯 Interactive Prompt and Provider Setup")
         print("=" * 50)
+        print("💡 Type 'exit', 'quit', or 'q' at any time to cancel")
+        print()
         selected_provider, provider_info, prompt_info = interactive_prompt_selection()
         if not selected_provider:
             print("❌ Prompt setup was cancelled.")
@@ -1597,6 +1608,8 @@ def main():
         print("1. Get your API key from the selected provider (if needed)")
         print("2. Run 'stableagents-ai setup' to configure your keys")
         print("3. Run 'stableagents-ai interactive' to start building with your selected prompt!")
+        print()
+        print("💡 Type 'exit', 'quit', or 'q' to exit the program")
         return 0
     
     return 0

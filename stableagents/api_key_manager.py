@@ -200,10 +200,12 @@ class SecureAPIKeyManager:
         return True
     
     def setup_custom_api_keys(self, password: str) -> bool:
-        """Set up custom API keys provided by the user."""
+        """Setup custom API keys provided by the user"""
         print("\n🔑 Custom API Key Setup")
-        print("=" * 30)
-        print("Please provide your API keys. They will be securely encrypted.")
+        print("=" * 25)
+        print("Enter your API keys securely. They will be encrypted.")
+        print("You must provide at least one API key to continue.")
+        print("\nType 'exit' at any time to quit the setup.")
         print()
         
         custom_keys = {}
@@ -213,13 +215,18 @@ class SecureAPIKeyManager:
             try:
                 print(f"📡 {provider.capitalize()} API Key:")
                 print(f"   Get your key from: https://platform.{provider}.com/account/api-keys")
-                api_key = getpass.getpass(f"   Enter your {provider.capitalize()} API key (or press Enter to skip): ")
+                api_key = getpass.getpass(f"   Enter your {provider.capitalize()} API key (or type 'exit'): ")
                 
-                if api_key:
+                # Check for exit command
+                if api_key.lower() in ['exit', 'quit', 'q']:
+                    print("👋 Setup cancelled.")
+                    return False
+                
+                if api_key and api_key.strip():
                     custom_keys[provider] = api_key
                     print(f"   ✅ {provider.capitalize()} key stored securely")
                 else:
-                    print(f"   ⏭️  Skipped {provider.capitalize()}")
+                    print(f"   ⚠️  {provider.capitalize()} key skipped (optional)")
             except (KeyboardInterrupt, EOFError):
                 print(f"\n👋 Setup cancelled.")
                 return False
@@ -242,7 +249,8 @@ class SecureAPIKeyManager:
             print(f"🎯 Active provider: {first_provider.capitalize()}")
             return True
         else:
-            print("\n⚠️  No API keys provided")
+            print("\n❌ No API keys provided")
+            print("You must provide at least one API key to use AI features.")
             return False
     
     def get_api_key(self, provider: str, password: str) -> Optional[str]:
