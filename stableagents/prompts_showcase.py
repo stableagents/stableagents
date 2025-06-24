@@ -722,4 +722,308 @@ Need more specific help? Try the interactive menu or explore the examples!
                 
         except Exception as e:
             print(f"Error loading custom prompts: {str(e)}")
-            return {} 
+            return {}
+    
+    def select_prompt_interactive(self) -> Optional[Dict[str, Any]]:
+        """Interactive prompt selection for users."""
+        print("\n🎯 Let's pick a prompt to get started!")
+        print("=" * 50)
+        
+        # Show categories
+        categories = list(self.samples.keys())
+        print("Available categories:")
+        for i, category in enumerate(categories, 1):
+            category_data = self.samples[category]
+            print(f"  {i}. {category_data['title']}")
+            print(f"     {category_data['description']}")
+        
+        # Get category choice
+        while True:
+            try:
+                choice = input(f"\nSelect a category (1-{len(categories)}): ").strip()
+                cat_index = int(choice) - 1
+                if 0 <= cat_index < len(categories):
+                    selected_category = categories[cat_index]
+                    break
+                else:
+                    print(f"Please enter a number between 1 and {len(categories)}")
+            except ValueError:
+                print("Please enter a valid number")
+            except KeyboardInterrupt:
+                return None
+        
+        # Show prompts in selected category
+        category_data = self.samples[selected_category]
+        print(f"\n📁 {category_data['title']}")
+        print(f"📖 {category_data['description']}")
+        print("=" * 60)
+        
+        samples = category_data['samples']
+        for i, sample in enumerate(samples, 1):
+            difficulty_emoji = {
+                "beginner": "🟢",
+                "intermediate": "🟡", 
+                "advanced": "🔴"
+            }.get(sample['difficulty'], "⚪")
+            
+            print(f"{i}. {difficulty_emoji} {sample['name']}")
+            print(f"   💡 {sample['prompt']}")
+            print(f"   🎯 Difficulty: {sample['difficulty'].title()}")
+            print()
+        
+        # Get prompt choice
+        while True:
+            try:
+                choice = input(f"Select a prompt (1-{len(samples)}): ").strip()
+                prompt_index = int(choice) - 1
+                if 0 <= prompt_index < len(samples):
+                    selected_prompt = samples[prompt_index]
+                    selected_prompt['category'] = selected_category
+                    break
+                else:
+                    print(f"Please enter a number between 1 and {len(samples)}")
+            except ValueError:
+                print("Please enter a valid number")
+            except KeyboardInterrupt:
+                return None
+        
+        return selected_prompt
+    
+    def get_recommended_provider(self, prompt: Dict[str, Any]) -> str:
+        """Get recommended AI provider based on prompt type."""
+        category = prompt.get('category', '')
+        difficulty = prompt.get('difficulty', 'intermediate')
+        
+        # Provider recommendations based on category and difficulty
+        recommendations = {
+            'computer_control': {
+                'beginner': 'openai',
+                'intermediate': 'openai',
+                'advanced': 'anthropic'
+            },
+            'ai_applications': {
+                'beginner': 'openai',
+                'intermediate': 'anthropic',
+                'advanced': 'anthropic'
+            },
+            'code_generation': {
+                'beginner': 'openai',
+                'intermediate': 'anthropic',
+                'advanced': 'anthropic'
+            },
+            'content_creation': {
+                'beginner': 'openai',
+                'intermediate': 'openai',
+                'advanced': 'anthropic'
+            },
+            'data_analysis': {
+                'beginner': 'openai',
+                'intermediate': 'anthropic',
+                'advanced': 'anthropic'
+            },
+            'productivity': {
+                'beginner': 'openai',
+                'intermediate': 'anthropic',
+                'advanced': 'anthropic'
+            }
+        }
+        
+        return recommendations.get(category, {}).get(difficulty, 'openai')
+    
+    def show_provider_recommendations(self, prompt: Dict[str, Any]) -> str:
+        """Show provider recommendations for a selected prompt."""
+        recommended = self.get_recommended_provider(prompt)
+        
+        print(f"\n🤖 Provider Recommendations for: {prompt['name']}")
+        print("=" * 60)
+        
+        providers = {
+            'openai': {
+                'name': 'OpenAI (GPT-4, GPT-3.5)',
+                'pros': ['Fast response times', 'Good for general tasks', 'Wide model selection'],
+                'cons': ['Higher cost for GPT-4', 'Rate limits'],
+                'best_for': ['General AI tasks', 'Quick prototyping', 'Content creation']
+            },
+            'anthropic': {
+                'name': 'Anthropic (Claude)',
+                'pros': ['Excellent reasoning', 'Long context windows', 'Safety-focused'],
+                'cons': ['Slower response times', 'Higher cost'],
+                'best_for': ['Complex reasoning', 'Code generation', 'Analysis tasks']
+            },
+            'google': {
+                'name': 'Google (PaLM, Gemini)',
+                'pros': ['Good performance', 'Competitive pricing', 'Integration with Google services'],
+                'cons': ['Limited model selection', 'Newer to market'],
+                'best_for': ['Google ecosystem integration', 'Cost-effective solutions']
+            },
+            'local': {
+                'name': 'Local Models (GGUF)',
+                'pros': ['Privacy-focused', 'No API costs', 'Works offline'],
+                'cons': ['Limited model quality', 'Requires setup', 'Resource intensive'],
+                'best_for': ['Privacy-sensitive tasks', 'Offline use', 'Learning/experimentation']
+            }
+        }
+        
+        print(f"🎯 Recommended: {providers[recommended]['name']}")
+        print()
+        
+        for provider_id, provider_info in providers.items():
+            status = "⭐ RECOMMENDED" if provider_id == recommended else ""
+            print(f"📋 {provider_info['name']} {status}")
+            print(f"   ✅ Pros: {', '.join(provider_info['pros'])}")
+            print(f"   ⚠️  Cons: {', '.join(provider_info['cons'])}")
+            print(f"   🎯 Best for: {', '.join(provider_info['best_for'])}")
+            print()
+        
+        return recommended
+    
+    def select_provider_interactive(self, prompt: Dict[str, Any]) -> Optional[str]:
+        """Interactive provider selection for users."""
+        recommended = self.show_provider_recommendations(prompt)
+        
+        providers = ['openai', 'anthropic', 'google', 'local']
+        provider_names = {
+            'openai': 'OpenAI (GPT-4, GPT-3.5)',
+            'anthropic': 'Anthropic (Claude)',
+            'google': 'Google (PaLM, Gemini)',
+            'local': 'Local Models (GGUF)'
+        }
+        
+        print("Select your preferred provider:")
+        for i, provider in enumerate(providers, 1):
+            status = "⭐ RECOMMENDED" if provider == recommended else ""
+            print(f"  {i}. {provider_names[provider]} {status}")
+        
+        while True:
+            try:
+                choice = input(f"\nSelect provider (1-{len(providers)}): ").strip()
+                provider_index = int(choice) - 1
+                if 0 <= provider_index < len(providers):
+                    selected_provider = providers[provider_index]
+                    break
+                else:
+                    print(f"Please enter a number between 1 and {len(providers)}")
+            except ValueError:
+                print("Please enter a valid number")
+            except KeyboardInterrupt:
+                return None
+        
+        return selected_provider
+    
+    def get_setup_instructions(self, prompt: Dict[str, Any], provider: str) -> str:
+        """Get setup instructions for the selected prompt and provider."""
+        instructions = f"""
+🎯 Setup Instructions for: {prompt['name']}
+🤖 Provider: {provider.upper()}
+📋 Prompt: {prompt['prompt']}
+
+📋 NEXT STEPS:
+"""
+        
+        if provider == 'local':
+            instructions += """
+1. 📥 Download GGUF Models:
+   • Visit https://huggingface.co/TheBloke
+   • Download a model like: llama-2-7b-chat.Q4_K_M.gguf
+   • Place it in: ~/.stableagents/models/
+
+2. 🔧 Configure Local Model:
+   • Run: stableagents setup
+   • Choose "Local models only"
+   • Point to your downloaded model
+
+3. 🚀 Start Building:
+   • Run: stableagents interactive
+   • Try your selected prompt
+"""
+        else:
+            instructions += f"""
+1. 🔑 Get API Key:
+   • Visit: {self._get_provider_url(provider)}
+   • Create account and get API key
+   • Note: {self._get_provider_cost_info(provider)}
+
+2. 🔧 Configure API Key:
+   • Run: stableagents setup
+   • Choose "Bring your own API keys"
+   • Enter your {provider.upper()} API key
+
+3. 🚀 Start Building:
+   • Run: stableagents interactive
+   • Try your selected prompt
+"""
+        
+        return instructions
+    
+    def _get_provider_url(self, provider: str) -> str:
+        """Get signup URL for provider."""
+        urls = {
+            'openai': 'https://platform.openai.com/signup',
+            'anthropic': 'https://console.anthropic.com/',
+            'google': 'https://makersuite.google.com/app/apikey'
+        }
+        return urls.get(provider, 'https://example.com')
+    
+    def _get_provider_cost_info(self, provider: str) -> str:
+        """Get cost information for provider."""
+        costs = {
+            'openai': 'GPT-3.5: ~$0.002/1K tokens, GPT-4: ~$0.03/1K tokens',
+            'anthropic': 'Claude: ~$0.008/1K tokens',
+            'google': 'PaLM: ~$0.001/1K tokens, Gemini: ~$0.002/1K tokens'
+        }
+        return costs.get(provider, 'Check provider website for current pricing')
+    
+    def save_user_selection(self, prompt: Dict[str, Any], provider: str) -> bool:
+        """Save user's prompt and provider selection."""
+        selection_file = os.path.join(self.config_dir, "user_selection.json")
+        
+        try:
+            selection = {
+                "prompt": prompt,
+                "provider": provider,
+                "selected_at": time.time(),
+                "setup_completed": False
+            }
+            
+            with open(selection_file, 'w') as f:
+                json.dump(selection, f, indent=2)
+            
+            return True
+        except Exception as e:
+            print(f"Error saving selection: {str(e)}")
+            return False
+    
+    def get_user_selection(self) -> Optional[Dict[str, Any]]:
+        """Get user's saved prompt and provider selection."""
+        selection_file = os.path.join(self.config_dir, "user_selection.json")
+        
+        if not os.path.exists(selection_file):
+            return None
+        
+        try:
+            with open(selection_file, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading selection: {str(e)}")
+            return None
+    
+    def mark_setup_completed(self) -> bool:
+        """Mark the setup as completed."""
+        selection_file = os.path.join(self.config_dir, "user_selection.json")
+        
+        try:
+            if os.path.exists(selection_file):
+                with open(selection_file, 'r') as f:
+                    selection = json.load(f)
+                
+                selection["setup_completed"] = True
+                selection["completed_at"] = time.time()
+                
+                with open(selection_file, 'w') as f:
+                    json.dump(selection, f, indent=2)
+                
+                return True
+        except Exception as e:
+            print(f"Error marking setup completed: {str(e)}")
+        
+        return False 

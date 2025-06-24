@@ -254,6 +254,7 @@ def interactive_mode(agent, setup_ai=True, banner_style="default"):
     
     print("Starting interactive StableAgents session. Type 'exit' or 'quit' to end.")
     print("Commands: memory.add TYPE KEY VALUE, memory.get TYPE [KEY], control [COMMAND], ai [PROMPT], apikey [PROVIDER] [KEY], help")
+    print("New AI Commands: showcase, guided-setup, select-prompt, ai-capabilities")
     
     # Setup AI provider if requested
     if setup_ai:
@@ -281,8 +282,44 @@ def interactive_mode(agent, setup_ai=True, banner_style="default"):
                 print("  providers - List available AI providers")
                 print("  provider list - Show detailed provider status")
                 print("  provider [PROVIDER] - Set the active AI provider")
+                print("  showcase [CATEGORY] - Show AI functionality examples")
+                print("  guided-setup - Start guided setup with prompt selection")
+                print("  select-prompt - Select a prompt and provider")
+                print("  ai-capabilities - Check available AI capabilities")
                 print("  reset - Reset the agent")
                 print("  exit/quit - Exit the program")
+                continue
+                
+            if user_input.lower() == 'showcase':
+                print(agent.show_prompts_showcase())
+                continue
+                
+            if user_input.startswith('showcase '):
+                category = user_input[9:].strip()
+                print(agent.show_prompts_showcase(category))
+                continue
+                
+            if user_input.lower() == 'guided-setup':
+                print("🎯 Starting guided setup with prompt selection...")
+                result = agent.show_guided_setup()
+                print(f"Setup result: {result}")
+                continue
+                
+            if user_input.lower() == 'select-prompt':
+                print("🎯 Starting prompt and provider selection...")
+                result = agent.select_prompt_and_provider()
+                if result:
+                    print("✅ Selection completed successfully!")
+                else:
+                    print("❌ Selection was cancelled.")
+                continue
+                
+            if user_input.lower() == 'ai-capabilities':
+                capabilities = agent.get_ai_capabilities()
+                print("\n🔧 AI Capabilities:")
+                for capability, available in capabilities.items():
+                    status = "✅ Available" if available else "❌ Not Available"
+                    print(f"   {capability}: {status}")
                 continue
                 
             if user_input.lower() == 'reset':
@@ -537,6 +574,38 @@ def run_examples(agent, banner_style="default"):
     
     return 0
 
+def guided_setup_with_prompt_selection():
+    """Guided setup that includes prompt and provider selection before API setup"""
+    print("\n🎯 GUIDED SETUP WITH PROMPT SELECTION")
+    print("=" * 50)
+    print("This enhanced setup will help you:")
+    print("1. 📋 Pick a specific prompt to work with")
+    print("2. 🤖 Choose the best AI provider for your needs")
+    print("3. 🔧 Get step-by-step setup instructions")
+    print("4. 🚀 Start building immediately")
+    print()
+    
+    # Create agent instance for prompt selection
+    agent = StableAgents()
+    
+    # Show guided setup
+    setup_result = agent.show_guided_setup()
+    print(f"\nSetup Status: {setup_result}")
+    
+    if "Selection completed successfully" in setup_result or "Using existing selection" in setup_result:
+        print("\n" + "="*60)
+        print("🔧 READY FOR API KEY SETUP")
+        print("="*60)
+        print("Now that you've selected your prompt and provider,")
+        print("let's set up your API keys to start building!")
+        print()
+        
+        # Proceed with API key setup
+        return check_secure_api_setup()
+    else:
+        print("\n⚠️  Setup incomplete. You can try again later.")
+        return False
+
 def main():
     parser = argparse.ArgumentParser(description='StableAgents CLI')
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
@@ -554,6 +623,9 @@ def main():
     
     # Setup mode
     setup_parser = subparsers.add_parser('setup', help='Setup secure API keys')
+    
+    # Guided setup mode
+    guided_parser = subparsers.add_parser('guided-setup', help='Guided setup with prompt and provider selection')
     
     # Prompts showcase mode
     showcase_parser = subparsers.add_parser('showcase', help='Show AI functionality examples and prompts')
@@ -690,6 +762,16 @@ def main():
             print("\n✅ Setup completed successfully!")
         else:
             print("\n⚠️  Setup was not completed.")
+        return 0 if setup_success else 1
+    elif args.command == 'guided-setup':
+        print("🎯 Guided Setup with Prompt Selection")
+        print("=" * 40)
+        setup_success = guided_setup_with_prompt_selection()
+        if setup_success:
+            print("\n✅ Guided setup completed successfully!")
+            print("🚀 You're ready to start building with your selected prompt!")
+        else:
+            print("\n⚠️  Guided setup was not completed.")
         return 0 if setup_success else 1
     elif args.command == 'examples':
         return run_examples(agent, args.banner)

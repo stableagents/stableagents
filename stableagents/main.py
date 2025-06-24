@@ -5,6 +5,7 @@ import datetime
 import sys
 import time
 import logging
+from typing import Optional, Dict, Any
 
 # Make TensorFlow optional
 try:
@@ -659,6 +660,102 @@ class StableAgents:
         print("Now you can proceed to set up your AI provider and start building!")
         
         return "AI functionality showcase completed. Ready for provider setup."
+    
+    def select_prompt_and_provider(self) -> Optional[Dict[str, Any]]:
+        """
+        Interactive prompt and provider selection.
+        
+        Returns:
+            dict: Selected prompt and provider information, or None if cancelled
+        """
+        print("\n🎯 Let's get you started with a specific prompt!")
+        print("=" * 60)
+        
+        # Select a prompt
+        selected_prompt = self.prompts_showcase.select_prompt_interactive()
+        if not selected_prompt:
+            print("❌ Prompt selection cancelled.")
+            return None
+        
+        print(f"\n✅ Selected: {selected_prompt['name']}")
+        print(f"📋 Prompt: {selected_prompt['prompt']}")
+        
+        # Select a provider
+        selected_provider = self.prompts_showcase.select_provider_interactive(selected_prompt)
+        if not selected_provider:
+            print("❌ Provider selection cancelled.")
+            return None
+        
+        print(f"\n✅ Selected Provider: {selected_provider.upper()}")
+        
+        # Save the selection
+        self.prompts_showcase.save_user_selection(selected_prompt, selected_provider)
+        
+        # Show setup instructions
+        instructions = self.prompts_showcase.get_setup_instructions(selected_prompt, selected_provider)
+        print(instructions)
+        
+        return {
+            "prompt": selected_prompt,
+            "provider": selected_provider,
+            "instructions": instructions
+        }
+    
+    def get_user_selection(self) -> Optional[Dict[str, Any]]:
+        """
+        Get the user's saved prompt and provider selection.
+        
+        Returns:
+            dict: User selection or None if not found
+        """
+        return self.prompts_showcase.get_user_selection()
+    
+    def mark_setup_completed(self) -> bool:
+        """
+        Mark the setup as completed.
+        
+        Returns:
+            bool: True if successful
+        """
+        return self.prompts_showcase.mark_setup_completed()
+    
+    def show_guided_setup(self) -> str:
+        """
+        Show a guided setup process that includes prompt and provider selection.
+        
+        Returns:
+            str: Setup status
+        """
+        print("\n🎯 GUIDED SETUP PROCESS")
+        print("=" * 50)
+        print("This will help you:")
+        print("1. 📋 Pick a specific prompt to work with")
+        print("2. 🤖 Choose the best AI provider for your needs")
+        print("3. 🔧 Get step-by-step setup instructions")
+        print("4. 🚀 Start building immediately")
+        
+        # Check if user already has a selection
+        existing_selection = self.get_user_selection()
+        if existing_selection and not existing_selection.get("setup_completed", False):
+            print(f"\n📋 You have a previous selection:")
+            print(f"   Prompt: {existing_selection['prompt']['name']}")
+            print(f"   Provider: {existing_selection['provider'].upper()}")
+            
+            use_existing = input("\nUse this selection? (y/n): ").strip().lower()
+            if use_existing == 'y':
+                instructions = self.prompts_showcase.get_setup_instructions(
+                    existing_selection['prompt'], 
+                    existing_selection['provider']
+                )
+                print(instructions)
+                return "Using existing selection"
+        
+        # Start new selection process
+        result = self.select_prompt_and_provider()
+        if result:
+            return "Selection completed successfully"
+        else:
+            return "Selection was cancelled"
     
     def set_api_key(self, provider: str, api_key: str) -> bool:
         """
