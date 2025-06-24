@@ -42,7 +42,7 @@ def main():
         "open spotify and play some relaxing music"
     ]
     
-    print("🎯 Demo Commands:")
+    print("🎯 Example Commands:")
     for i, command in enumerate(demo_commands, 1):
         print(f"  {i}. {command}")
     print()

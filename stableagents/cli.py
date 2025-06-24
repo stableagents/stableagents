@@ -540,10 +540,11 @@ def interactive_mode(agent, setup_ai=True, banner_style="default"):
                 print("  switch-provider [PROVIDER] - Switch to a different AI provider")
                 print("  current-provider - Show the current active AI provider")
                 print("  reset - Reset the agent")
+                print("  reconfigure - Reconfigure AI provider settings")
                 print("  exit/quit/q - Exit the program")
                 print()
                 print("💡 AI Control Examples:")
-                print("  ai-control open youtube and play the latest bruno mars song")
+                print("  ai-control open youtube and search for the latest bruno mars song")
                 print("  ai-control search for python tutorials and open the first result")
                 print("  ai-control take a screenshot and save it to desktop")
                 print("  ai-control check system performance and show memory usage")
@@ -777,6 +778,15 @@ def interactive_mode(agent, setup_ai=True, banner_style="default"):
             if user_input.lower() == 'reset':
                 agent.reset()
                 print("Agent has been reset.")
+                continue
+                
+            if user_input.lower() == 'reconfigure':
+                print("🔧 Reconfiguring AI Provider")
+                print("=" * 30)
+                if agent.reconfigure_ai_provider():
+                    print("✅ AI provider reconfigured successfully!")
+                else:
+                    print("❌ AI provider reconfiguration failed.")
                 continue
                 
             if user_input.startswith('memory.add '):

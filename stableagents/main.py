@@ -363,8 +363,26 @@ class StableAgents:
         Returns:
             str: Result of the AI interpretation and command execution
         """
-        if not self.ai_provider:
-            return "❌ AI provider not available. Please configure an AI provider first."
+        # Check if AI provider is properly configured
+        if not self.check_ai_provider_ready():
+            print("❌ AI provider not properly configured.")
+            print("💡 You need to configure an AI provider to use AI-powered features.")
+            print()
+            
+            try:
+                reconfigure = input("Would you like to configure an AI provider now? (y/n): ").strip().lower()
+                if reconfigure in ['y', 'yes']:
+                    if self.reconfigure_ai_provider():
+                        print("✅ AI provider configured successfully!")
+                        print("🔄 Retrying your command...")
+                        # Recursive call to try again
+                        return self.ai_control_computer(natural_command)
+                    else:
+                        return "❌ AI provider configuration failed. Please run 'stableagents-ai setup' to configure manually."
+                else:
+                    return "❌ AI provider required for AI-powered computer control. Please configure an AI provider first."
+            except (KeyboardInterrupt, EOFError):
+                return "❌ Configuration cancelled. Please configure an AI provider first."
         
         try:
             # Step 1: Use AI to interpret the natural language command
@@ -411,7 +429,11 @@ class StableAgents:
             """
             
             # Get AI interpretation
-            interpretation_response = self.ai_provider.generate_text(interpretation_prompt)
+            ai_provider = self.get_ai_provider()
+            if not ai_provider:
+                return "❌ AI provider not available. Please configure an AI provider first."
+            
+            interpretation_response = ai_provider.generate_text(interpretation_prompt)
             
             # Parse the JSON response
             try:
@@ -1039,54 +1061,71 @@ class StableAgents:
     def generate_text(self, prompt: str, **kwargs) -> str:
         """
         Generate text from a prompt using the active AI provider or local model.
-        
-        Args:
-            prompt (str): The text prompt
-            **kwargs: Additional arguments to pass to the provider
-            
-        Returns:
-            str: The generated text
         """
         if self.using_local_model:
-            # Use local provider
             local_provider = self.ai_manager.get_provider("local")
             if not local_provider:
                 return "Local model provider not initialized. Please set up a local model first."
-                
             return local_provider.generate_text(prompt, **kwargs)
         else:
-            # Use remote provider
             provider = self.get_ai_provider()
             if not provider:
                 return "No AI provider available. Please set an API key first."
-            
-            return provider.generate_text(prompt, **kwargs)
-    
+            try:
+                return provider.generate_text(prompt, **kwargs)
+            except Exception as e:
+                # Detect 401 Unauthorized error
+                msg = str(e)
+                if ("401" in msg or "unauthorized" in msg.lower() or "invalid_api_key" in msg.lower()) and ("api key" in msg.lower() or "Unauthorized" in msg):
+                    print("\n❌ Your API key appears to be invalid or unauthorized.")
+                    print("Would you like to update your API key now? (y/n)")
+                    try:
+                        choice = input("> ").strip().lower()
+                        if choice in ["y", "yes"]:
+                            if self.reconfigure_ai_provider():
+                                print("✅ API key updated. Retrying your request...")
+                                return self.generate_text(prompt, **kwargs)
+                            else:
+                                return "❌ API key update cancelled. Please run 'reconfigure' to update your key."
+                        else:
+                            return "❌ API key is invalid. Please update it with 'reconfigure' or 'apikey set ...' command."
+                    except (KeyboardInterrupt, EOFError):
+                        return "❌ API key update cancelled."
+                raise
+
     def generate_chat(self, messages: list, **kwargs) -> str:
         """
         Generate a chat response using the active AI provider or local model.
-        
-        Args:
-            messages (list): A list of message dictionaries with 'role' and 'content' keys
-            **kwargs: Additional arguments to pass to the provider
-            
-        Returns:
-            str: The generated response
         """
         if self.using_local_model:
-            # Use local provider for chat inference
             local_provider = self.ai_manager.get_provider("local")
             if not local_provider:
                 return "Local model provider not initialized. Please set up a local model first."
-                
             return local_provider.generate_chat(messages, **kwargs)
         else:
-            # Use remote provider
             provider = self.get_ai_provider()
             if not provider:
                 return "No AI provider available. Please set an API key first."
-            
-            return provider.generate_chat(messages, **kwargs)
+            try:
+                return provider.generate_chat(messages, **kwargs)
+            except Exception as e:
+                msg = str(e)
+                if ("401" in msg or "unauthorized" in msg.lower() or "invalid_api_key" in msg.lower()) and ("api key" in msg.lower() or "Unauthorized" in msg):
+                    print("\n❌ Your API key appears to be invalid or unauthorized.")
+                    print("Would you like to update your API key now? (y/n)")
+                    try:
+                        choice = input("> ").strip().lower()
+                        if choice in ["y", "yes"]:
+                            if self.reconfigure_ai_provider():
+                                print("✅ API key updated. Retrying your request...")
+                                return self.generate_chat(messages, **kwargs)
+                            else:
+                                return "❌ API key update cancelled. Please run 'reconfigure' to update your key."
+                        else:
+                            return "❌ API key is invalid. Please update it with 'reconfigure' or 'apikey set ...' command."
+                    except (KeyboardInterrupt, EOFError):
+                        return "❌ API key update cancelled."
+                raise
     
     def embed_text(self, text: str, **kwargs) -> list:
         """
