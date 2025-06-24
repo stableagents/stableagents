@@ -89,82 +89,75 @@ def show_preview_prompts_and_select_provider():
         print("\n👋 Setup cancelled.")
         return None, None
     
-    # Step 2: Provider selection
+    # Step 2: Interactive prompt selection
     print("\n" + "="*60)
-    print("🤖 STEP 2: CHOOSE YOUR AI PROVIDER")
+    print("🎯 STEP 2: SELECT A SPECIFIC PROMPT")
     print("="*60)
-    print("Now let's help you choose the best AI provider for your needs:")
+    print("Let's pick a specific prompt to work with:")
     print()
     
-    providers = {
-        'openai': {
-            'name': 'OpenAI (GPT-4, GPT-3.5)',
-            'pros': ['Fast response times', 'Good for general tasks', 'Wide model selection'],
-            'cons': ['Higher cost for GPT-4', 'Rate limits'],
-            'best_for': ['General AI tasks', 'Quick prototyping', 'Content creation'],
-            'cost': 'GPT-3.5: ~$0.002/1K tokens, GPT-4: ~$0.03/1K tokens'
-        },
-        'anthropic': {
-            'name': 'Anthropic (Claude)',
-            'pros': ['Excellent reasoning', 'Long context windows', 'Safety-focused'],
-            'cons': ['Slower response times', 'Higher cost'],
-            'best_for': ['Complex reasoning', 'Code generation', 'Analysis tasks'],
-            'cost': 'Claude: ~$0.008/1K tokens'
-        },
-        'google': {
-            'name': 'Google (PaLM, Gemini)',
-            'pros': ['Good performance', 'Competitive pricing', 'Integration with Google services'],
-            'cons': ['Limited model selection', 'Newer to market'],
-            'best_for': ['Google ecosystem integration', 'Cost-effective solutions'],
-            'cost': 'PaLM: ~$0.001/1K tokens, Gemini: ~$0.002/1K tokens'
-        },
-        'local': {
-            'name': 'Local Models (GGUF)',
-            'pros': ['Privacy-focused', 'No API costs', 'Works offline'],
-            'cons': ['Limited model quality', 'Requires setup', 'Resource intensive'],
-            'best_for': ['Privacy-sensitive tasks', 'Offline use', 'Learning/experimentation'],
-            'cost': 'Free (one-time model download)'
-        }
-    }
-    
-    print("Available AI Providers:")
-    print()
-    
-    for i, (provider_id, provider_info) in enumerate(providers.items(), 1):
-        print(f"{i}. {provider_info['name']}")
-        print(f"   ✅ Pros: {', '.join(provider_info['pros'])}")
-        print(f"   ⚠️  Cons: {', '.join(provider_info['cons'])}")
-        print(f"   🎯 Best for: {', '.join(provider_info['best_for'])}")
-        print(f"   💰 Cost: {provider_info['cost']}")
-        print()
-    
-    # Get provider choice
     try:
-        while True:
-            choice = input(f"Select your preferred provider (1-{len(providers)}): ").strip()
-            
-            # Handle exit commands
-            if choice.lower() in ['exit', 'quit', 'q']:
-                print("\n👋 Setup cancelled.")
-                return None, None
-            
-            try:
-                provider_index = int(choice) - 1
-                if 0 <= provider_index < len(providers):
-                    selected_provider = list(providers.keys())[provider_index]
-                    break
-                else:
-                    print(f"Please enter a number between 1 and {len(providers)}")
-            except ValueError:
-                print("Please enter a valid number")
+        # Use the agent's prompt selection functionality
+        selected_prompt = agent.select_prompt_and_provider()
+        if not selected_prompt:
+            print("❌ Prompt selection cancelled.")
+            return None, None
+        
+        prompt_info = selected_prompt.get("prompt", {})
+        selected_provider = selected_prompt.get("provider")
+        
+        if not prompt_info or not selected_provider:
+            print("❌ Incomplete selection.")
+            return None, None
+        
+        print(f"\n✅ Selected Prompt: {prompt_info.get('name', 'Unknown')}")
+        print(f"📋 Prompt: {prompt_info.get('prompt', 'Unknown')}")
+        print(f"🎯 Category: {prompt_info.get('category', 'Unknown')}")
+        print(f"📊 Difficulty: {prompt_info.get('difficulty', 'Unknown')}")
+        print(f"🤖 Provider: {selected_provider.upper()}")
+        
+        # Get provider info for the next step
+        providers = {
+            'openai': {
+                'name': 'OpenAI (GPT-4, GPT-3.5)',
+                'pros': ['Fast response times', 'Good for general tasks', 'Wide model selection'],
+                'cons': ['Higher cost for GPT-4', 'Rate limits'],
+                'best_for': ['General AI tasks', 'Quick prototyping', 'Content creation'],
+                'cost': 'GPT-3.5: ~$0.002/1K tokens, GPT-4: ~$0.03/1K tokens'
+            },
+            'anthropic': {
+                'name': 'Anthropic (Claude)',
+                'pros': ['Excellent reasoning', 'Long context windows', 'Safety-focused'],
+                'cons': ['Slower response times', 'Higher cost'],
+                'best_for': ['Complex reasoning', 'Code generation', 'Analysis tasks'],
+                'cost': 'Claude: ~$0.008/1K tokens'
+            },
+            'google': {
+                'name': 'Google (PaLM, Gemini)',
+                'pros': ['Good performance', 'Competitive pricing', 'Integration with Google services'],
+                'cons': ['Limited model selection', 'Newer to market'],
+                'best_for': ['Google ecosystem integration', 'Cost-effective solutions'],
+                'cost': 'PaLM: ~$0.001/1K tokens, Gemini: ~$0.002/1K tokens'
+            },
+            'local': {
+                'name': 'Local Models (GGUF)',
+                'pros': ['Privacy-focused', 'No API costs', 'Works offline'],
+                'cons': ['Limited model quality', 'Requires setup', 'Resource intensive'],
+                'best_for': ['Privacy-sensitive tasks', 'Offline use', 'Learning/experimentation'],
+                'cost': 'Free (one-time model download)'
+            }
+        }
+        
+        provider_info = providers.get(selected_provider, {})
+        
+        return selected_provider, provider_info
+        
     except (KeyboardInterrupt, EOFError):
         print("\n👋 Setup cancelled.")
         return None, None
-    
-    print(f"\n✅ Selected Provider: {providers[selected_provider]['name']}")
-    
-    # Return the selected provider for the next step
-    return selected_provider, providers[selected_provider]
+    except Exception as e:
+        print(f"\n❌ Error during prompt selection: {e}")
+        return None, None
 
 def check_secure_api_setup(selected_provider=None, provider_info=None):
     """Check if secure API key management is available and guide user through setup"""
@@ -191,21 +184,24 @@ def check_secure_api_setup(selected_provider=None, provider_info=None):
         # Show options
         print("You have three options:")
         print()
-        print("1. 💳 Subscribe for $20/month")
+        print("1. 💳 Monthly Subscription ($20/month)")
         print("   - We provide working API keys")
         print("   - Keys are securely encrypted")
         print("   - Monthly recurring billing")
         print("   - Cancel anytime")
+        print("   - No setup fees or hidden costs")
         print()
         print("2. 🔑 Bring your own API keys")
         print("   - Use your existing OpenAI, Anthropic, etc. keys")
         print("   - Keys are securely encrypted")
         print("   - No additional cost beyond your API usage")
+        print("   - Full control over your providers")
         print()
         print("3. 🏠 Use local models only")
         print("   - Download GGUF models for local inference")
         print("   - No API keys or payment required")
         print("   - Works offline, privacy-focused")
+        print("   - Limited model quality")
         print()
         
         while True:
@@ -245,19 +241,30 @@ def setup_payment_option(manager):
     print("=" * 30)
     print("Setting up monthly subscription for API key access...")
     print("Amount: $20.00 USD per month")
-    print("Billing: Monthly recurring")
+    print("Billing: Monthly recurring subscription")
+    print("Payment: Credit card or PayPal")
+    print("Cancellation: Cancel anytime from your account")
+    print("\nType 'exit' at any time to quit the setup.")
     print()
     
     if manager.process_payment():
         print("✅ Subscription active!")
+        print("📅 Your subscription will automatically renew each month")
+        print("💳 You can manage your subscription anytime")
         print()
         
         # Get password for encryption
         while True:
             try:
-                password = getpass.getpass("Enter a password to encrypt your API keys: ")
+                password = getpass.getpass("Enter a password to encrypt your API keys (or type 'exit'): ")
+                if password.lower() in ['exit', 'quit', 'q']:
+                    print("👋 Setup cancelled.")
+                    return False
                 if password:
-                    confirm = getpass.getpass("Confirm password: ")
+                    confirm = getpass.getpass("Confirm password (or type 'exit'): ")
+                    if confirm.lower() in ['exit', 'quit', 'q']:
+                        print("👋 Setup cancelled.")
+                        return False
                     if password == confirm:
                         break
                     else:
@@ -274,6 +281,7 @@ def setup_payment_option(manager):
             print("🔒 Your keys are protected with your password")
             print("💡 You can now use AI features in stableagents-ai")
             print("📅 Your subscription will renew monthly")
+            print("💳 Manage your subscription: Check your email for account details")
             return True
         else:
             print("❌ Failed to provide API keys")
@@ -287,14 +295,22 @@ def setup_custom_keys(manager):
     print("\n🔑 Custom API Key Setup")
     print("=" * 25)
     print("Enter your API keys securely. They will be encrypted.")
+    print("You must provide at least one API key to continue.")
+    print("\nType 'exit' at any time to quit the setup.")
     print()
     
     # Get password for encryption
     while True:
         try:
-            password = getpass.getpass("Enter a password to encrypt your API keys: ")
+            password = getpass.getpass("Enter a password to encrypt your API keys (or type 'exit'): ")
+            if password.lower() in ['exit', 'quit', 'q']:
+                print("👋 Setup cancelled.")
+                return False
             if password:
-                confirm = getpass.getpass("Confirm password: ")
+                confirm = getpass.getpass("Confirm password (or type 'exit'): ")
+                if confirm.lower() in ['exit', 'quit', 'q']:
+                    print("👋 Setup cancelled.")
+                    return False
                 if password == confirm:
                     break
                 else:
@@ -312,17 +328,34 @@ def setup_custom_keys(manager):
     providers = ["openai", "anthropic", "google"]
     keys_set = False
     
+    print("\n🔑 API Key Entry")
+    print("=" * 20)
+    print("You must provide at least one API key to continue.")
+    print("Get your API keys from:")
+    print("  OpenAI: https://platform.openai.com/api-keys")
+    print("  Anthropic: https://console.anthropic.com/")
+    print("  Google: https://makersuite.google.com/app/apikey")
+    print("\nType 'exit' at any time to quit the setup.")
+    print()
+    
     for provider in providers:
         try:
-            print(f"\n{provider.capitalize()} API Key (press Enter to skip):")
+            print(f"\n{provider.capitalize()} API Key:")
             api_key = getpass.getpass("> ")
             
-            if api_key:
+            # Check for exit command
+            if api_key.lower() in ['exit', 'quit', 'q']:
+                print("👋 Setup cancelled.")
+                return False
+            
+            if api_key and api_key.strip():
                 if manager.set_api_key(provider, api_key, password):
                     print(f"✅ {provider.capitalize()} key stored securely")
                     keys_set = True
                 else:
                     print(f"❌ Failed to store {provider.capitalize()} key")
+            else:
+                print(f"⚠️  {provider.capitalize()} key skipped (optional)")
         except (KeyboardInterrupt, EOFError):
             print(f"\n👋 Setup cancelled.")
             return False
@@ -333,7 +366,8 @@ def setup_custom_keys(manager):
         print("💡 You can now use AI features in stableagents-ai")
         return True
     else:
-        print("\n⚠️  No API keys were set")
+        print("\n❌ No API keys were provided")
+        print("You must provide at least one API key to use AI features.")
         return False
 
 def setup_ai_provider(agent):
@@ -348,7 +382,10 @@ def setup_ai_provider(agent):
             
             if status.get('paid', False) and status.get('api_keys_provided'):
                 # User has secure keys, try to use them
-                password = getpass.getpass("Enter your encryption password: ")
+                password = getpass.getpass("Enter your encryption password (or type 'exit' to quit): ")
+                if password.lower() in ['exit', 'quit', 'q']:
+                    print("👋 Setup cancelled.")
+                    return False
                 
                 # Try to get keys for each provider
                 providers = ["openai", "anthropic", "google"]
@@ -382,50 +419,79 @@ def setup_ai_provider(agent):
         return True
         
     # No providers with keys, ask user to choose one
-    print("\nNo AI provider configured. Please select a provider:")
+    print("\n🔑 API KEY SETUP REQUIRED")
+    print("=" * 30)
+    print("To use AI features, you must configure an API key.")
+    print("Please select a provider (or type 'exit' to quit):")
     for i, provider in enumerate(providers, 1):
         print(f"  {i}. {provider['name']}")
     
     try:
-        choice = input("Enter number (or press Enter to skip): ")
-        if not choice:
-            print("AI setup skipped.")
-            return False
+        while True:
+            choice = input(f"\nSelect a provider (1-{len(providers)}) or type 'exit': ").strip()
             
-        # Handle exit commands
-        if choice.lower() in ['exit', 'quit', 'q']:
-            print("👋 AI setup cancelled.")
-            return False
-            
-        choice = int(choice)
-        if choice < 1 or choice > len(providers):
-            print("Invalid choice. AI setup skipped.")
-            return False
-            
-        provider_name = providers[choice-1]["name"]
-        
-        # Ask for API key
-        print(f"\nPlease enter your {provider_name.capitalize()} API key:")
-        try:
-            api_key = getpass.getpass("> ")
-            
-            if api_key:
-                agent.set_api_key(provider_name, api_key)
-                agent.set_active_ai_provider(provider_name)
-                print(f"AI provider {provider_name} configured successfully.")
-                return True
-            else:
-                print("No API key provided. AI setup skipped.")
+            # Handle exit commands
+            if choice.lower() in ['exit', 'quit', 'q']:
+                print("👋 Setup cancelled.")
                 return False
-        except (KeyboardInterrupt, EOFError):
-            print("\n👋 AI setup cancelled.")
-            return False
             
-    except (ValueError, IndexError):
-        print("Invalid input. AI setup skipped.")
-        return False
+            try:
+                choice_num = int(choice)
+                if choice_num < 1 or choice_num > len(providers):
+                    print(f"Please enter a number between 1 and {len(providers)} or type 'exit'")
+                    continue
+                    
+                provider_name = providers[choice_num-1]["name"]
+                break
+            except ValueError:
+                print("Please enter a valid number or type 'exit'")
+                continue
+        
+        # Ask for API key - REQUIRED, no skipping allowed
+        print(f"\n🔑 {provider_name.capitalize()} API Key Required")
+        print("=" * 40)
+        print("You must provide an API key to continue.")
+        print("Get your API key from:")
+        
+        if provider_name == "openai":
+            print("   https://platform.openai.com/api-keys")
+        elif provider_name == "anthropic":
+            print("   https://console.anthropic.com/")
+        elif provider_name == "google":
+            print("   https://makersuite.google.com/app/apikey")
+        else:
+            print(f"   {provider_name} provider website")
+        
+        print("\nType 'exit' at any time to quit the setup.")
+        print()
+        
+        while True:
+            try:
+                api_key = getpass.getpass(f"Enter your {provider_name.capitalize()} API key (or type 'exit'): ")
+                
+                # Check for exit command
+                if api_key.lower() in ['exit', 'quit', 'q']:
+                    print("👋 Setup cancelled.")
+                    return False
+                
+                if api_key and api_key.strip():
+                    if agent.set_api_key(provider_name, api_key):
+                        agent.set_active_ai_provider(provider_name)
+                        print(f"✅ {provider_name.capitalize()} API key configured successfully.")
+                        return True
+                    else:
+                        print(f"❌ Failed to configure {provider_name.capitalize()} API key.")
+                        print("Please check your API key and try again.")
+                        continue
+                else:
+                    print("❌ API key is required. Please enter a valid API key or type 'exit'.")
+                    continue
+            except (KeyboardInterrupt, EOFError):
+                print("\n👋 Setup cancelled.")
+                return False
+            
     except (KeyboardInterrupt, EOFError):
-        print("\n👋 AI setup cancelled.")
+        print("\n👋 Setup cancelled.")
         return False
 
 def interactive_mode(agent, setup_ai=True, banner_style="default"):
@@ -960,6 +1026,79 @@ def run_examples(agent, banner_style="default"):
     
     return 0
 
+def interactive_prompt_selection():
+    """Interactive prompt selection using the PromptsShowcase functionality"""
+    print("\n🎯 INTERACTIVE PROMPT SELECTION")
+    print("=" * 50)
+    print("Let's pick a specific prompt to work with:")
+    print()
+    
+    # Create agent instance
+    agent = StableAgents()
+    
+    try:
+        # Use the agent's prompt selection functionality
+        result = agent.select_prompt_and_provider()
+        if not result:
+            print("❌ Prompt selection cancelled.")
+            return None, None, None
+        
+        prompt_info = result.get("prompt", {})
+        selected_provider = result.get("provider")
+        
+        if not prompt_info or not selected_provider:
+            print("❌ Incomplete selection.")
+            return None, None, None
+        
+        print(f"\n✅ Selected Prompt: {prompt_info.get('name', 'Unknown')}")
+        print(f"📋 Prompt: {prompt_info.get('prompt', 'Unknown')}")
+        print(f"🎯 Category: {prompt_info.get('category', 'Unknown')}")
+        print(f"📊 Difficulty: {prompt_info.get('difficulty', 'Unknown')}")
+        print(f"🤖 Provider: {selected_provider.upper()}")
+        
+        # Get provider info
+        providers = {
+            'openai': {
+                'name': 'OpenAI (GPT-4, GPT-3.5)',
+                'pros': ['Fast response times', 'Good for general tasks', 'Wide model selection'],
+                'cons': ['Higher cost for GPT-4', 'Rate limits'],
+                'best_for': ['General AI tasks', 'Quick prototyping', 'Content creation'],
+                'cost': 'GPT-3.5: ~$0.002/1K tokens, GPT-4: ~$0.03/1K tokens'
+            },
+            'anthropic': {
+                'name': 'Anthropic (Claude)',
+                'pros': ['Excellent reasoning', 'Long context windows', 'Safety-focused'],
+                'cons': ['Slower response times', 'Higher cost'],
+                'best_for': ['Complex reasoning', 'Code generation', 'Analysis tasks'],
+                'cost': 'Claude: ~$0.008/1K tokens'
+            },
+            'google': {
+                'name': 'Google (PaLM, Gemini)',
+                'pros': ['Good performance', 'Competitive pricing', 'Integration with Google services'],
+                'cons': ['Limited model selection', 'Newer to market'],
+                'best_for': ['Google ecosystem integration', 'Cost-effective solutions'],
+                'cost': 'PaLM: ~$0.001/1K tokens, Gemini: ~$0.002/1K tokens'
+            },
+            'local': {
+                'name': 'Local Models (GGUF)',
+                'pros': ['Privacy-focused', 'No API costs', 'Works offline'],
+                'cons': ['Limited model quality', 'Requires setup', 'Resource intensive'],
+                'best_for': ['Privacy-sensitive tasks', 'Offline use', 'Learning/experimentation'],
+                'cost': 'Free (one-time model download)'
+            }
+        }
+        
+        provider_info = providers.get(selected_provider, {})
+        
+        return selected_provider, provider_info, prompt_info
+        
+    except (KeyboardInterrupt, EOFError):
+        print("\n👋 Setup cancelled.")
+        return None, None, None
+    except Exception as e:
+        print(f"\n❌ Error during prompt selection: {e}")
+        return None, None, None
+
 def guided_setup_with_prompt_selection():
     """Guided setup that includes prompt and provider selection before API setup"""
     print("\n🎯 GUIDED SETUP WITH PROMPT SELECTION")
@@ -972,7 +1111,7 @@ def guided_setup_with_prompt_selection():
     print()
     
     # Step 1: Show preview prompts and select provider
-    selected_provider, provider_info = show_preview_prompts_and_select_provider()
+    selected_provider, provider_info, prompt_info = interactive_prompt_selection()
     
     if not selected_provider:
         return False
@@ -1084,6 +1223,9 @@ def main():
     # Guided setup mode
     guided_parser = subparsers.add_parser('guided-setup', help='Guided setup with prompt and provider selection')
     
+    # Prompt setup mode (NEW)
+    prompt_setup_parser = subparsers.add_parser('prompt-setup', help='Interactive prompt and provider selection (new prompt setup)')
+    
     # Prompts showcase mode
     showcase_parser = subparsers.add_parser('showcase', help='Show AI functionality examples and prompts')
     showcase_parser.add_argument('category', nargs='?', 
@@ -1175,7 +1317,7 @@ def main():
     logger = setup_logging(args.verbose)
     
     # Display banner for all commands (unless --no-banner is specified)
-    if args.command != 'interactive' and not args.no_banner:  # Skip here as interactive mode already shows the banner
+    if args.command != 'interactive' and not args.no_banner:
         print(get_banner(args.banner))
     
     # Create agent instance
@@ -1188,7 +1330,7 @@ def main():
         print()
         
         # Run the new guided setup flow
-        selected_provider, provider_info = show_preview_prompts_and_select_provider()
+        selected_provider, provider_info, prompt_info = interactive_prompt_selection()
         
         if selected_provider:
             # Proceed with API key setup using the selected provider
@@ -1438,6 +1580,24 @@ def main():
                 print("Unknown desktop command. Use --help for available commands.")
         finally:
             run_async(desktop.close())
+    elif args.command == 'prompt-setup':
+        print("\n🎯 Interactive Prompt and Provider Setup")
+        print("=" * 50)
+        selected_provider, provider_info, prompt_info = interactive_prompt_selection()
+        if not selected_provider:
+            print("❌ Prompt setup was cancelled.")
+            return 1
+        print("\n" + "="*60)
+        print("📋 SETUP INSTRUCTIONS")
+        print("="*60)
+        # Print setup instructions for the selected prompt and provider
+        instructions = agent.prompts_showcase.get_setup_instructions(prompt_info, selected_provider)
+        print(instructions)
+        print("\nNext steps:")
+        print("1. Get your API key from the selected provider (if needed)")
+        print("2. Run 'stableagents-ai setup' to configure your keys")
+        print("3. Run 'stableagents-ai interactive' to start building with your selected prompt!")
+        return 0
     
     return 0
 
