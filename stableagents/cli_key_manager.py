@@ -41,11 +41,14 @@ Examples:
 
   # Show payment options
   stableagents-keys options
+
+  # Create Stripe payment link
+  stableagents-keys payment-link
         """
     )
     
     parser.add_argument('command', choices=[
-        'setup', 'status', 'reset', 'list', 'add', 'options', 'switch'
+        'setup', 'status', 'reset', 'list', 'add', 'options', 'switch', 'payment-link'
     ], help='Command to execute')
     
     parser.add_argument('--provider', choices=['openai', 'anthropic', 'google'],
@@ -198,21 +201,96 @@ Examples:
         print(f"🔄 Switching to {args.provider.capitalize()}")
         print("=" * 40)
         
-        # Check if provider has a key
-        providers = manager.list_providers(password)
-        provider_info = next((p for p in providers if p['name'] == args.provider), None)
-        
-        if not provider_info or not provider_info['has_key']:
-            print(f"❌ No API key configured for {args.provider.capitalize()}")
-            print(f"   Use 'stableagents-keys add {args.provider}' to add an API key first")
-            return 1
-        
-        # Switch to the provider
-        if manager.set_active_provider(args.provider, password):
+        if manager.switch_active_provider(args.provider, password):
             print(f"✅ Switched to {args.provider.capitalize()}")
-            print(f"   Active provider: {args.provider.capitalize()}")
         else:
             print(f"❌ Failed to switch to {args.provider.capitalize()}")
+            return 1
+    
+    elif args.command == 'payment-link':
+        # Create Stripe payment link
+        print("💳 Creating Stripe Payment Link")
+        print("=" * 35)
+        
+        try:
+            from stableagents.stripe_payment import StripePaymentManager
+            import webbrowser
+            
+            stripe_manager = StripePaymentManager()
+            
+            if not stripe_manager.stripe_secret_key:
+                print("❌ STRIPE_SECRET_KEY is not set")
+                print("Please set your Stripe secret key:")
+                print("export STRIPE_SECRET_KEY='sk_test_...'")
+                return 1
+            
+            print("🔗 Creating payment link for monthly subscription...")
+            payment_url = stripe_manager.create_payment_link()
+            
+            if payment_url:
+                print("✅ Payment link created successfully!")
+                print(f"🔗 Payment URL: {payment_url}")
+                print()
+                print("📋 Instructions:")
+                print("1. Click the payment link above or copy it to your browser")
+                print("2. Complete the subscription setup")
+                print("3. After payment, you'll be redirected to a success page")
+                print("4. Copy the session_id from the URL and paste it below")
+                print()
+                
+                # Try to open the payment link
+                try:
+                    webbrowser.open(payment_url)
+                    print("🌐 Payment page opened in your browser")
+                except Exception as e:
+                    print(f"⚠️  Could not open browser automatically: {e}")
+                    print("Please manually visit the payment URL above")
+                
+                print()
+                session_id = input("Paste the session_id from the success URL here (or press Enter to skip): ").strip()
+                
+                if session_id:
+                    print("\n🔍 Verifying payment with Stripe...")
+                    if stripe_manager._verify_checkout_session(session_id):
+                        print("✅ Subscription active!")
+                        print("📅 Your subscription will automatically renew each month")
+                        print("💳 You can manage your subscription anytime")
+                        print()
+                        
+                        # Get password for encryption
+                        password = getpass.getpass("Enter a password to encrypt your API keys: ")
+                        if password:
+                            # Provide API keys
+                            if manager.provide_api_keys_after_payment(password):
+                                print("✅ API keys have been securely stored and encrypted!")
+                                print("🔒 Your keys are protected with your password")
+                                print("💡 You can now use AI features in stableagents-ai")
+                                print("📅 Your subscription will renew monthly")
+                                print("💳 Manage your subscription: Check your email for account details")
+                            else:
+                                print("❌ Failed to provide API keys")
+                                return 1
+                        else:
+                            print("❌ Password required for encryption")
+                            return 1
+                    else:
+                        print("❌ Payment verification failed")
+                        print("💡 You can still complete the payment manually and try again")
+                        return 1
+                else:
+                    print("💡 Payment link created but not completed")
+                    print("You can complete the payment later by visiting the URL above")
+            else:
+                print("❌ Failed to create payment link")
+                print("Please check your Stripe configuration")
+                return 1
+                
+        except ImportError:
+            print("❌ Stripe integration not available")
+            print("Please install the stripe package: pip install stripe")
+            return 1
+        except Exception as e:
+            print(f"❌ Error creating payment link: {e}")
             return 1
     
     return 0

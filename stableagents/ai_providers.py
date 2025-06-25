@@ -328,7 +328,7 @@ class OpenAIProvider(AIProvider):
     def generate_text(self, prompt: str, **kwargs) -> str:
         """Generate text from a prompt using OpenAI."""
         if not self.available:
-            return "OpenAI not available. Install with: pip install openai"
+            raise Exception("OpenAI not available. Install with: pip install openai")
             
         try:
             model = kwargs.get("model", "gpt-3.5-turbo-instruct")
@@ -343,12 +343,12 @@ class OpenAIProvider(AIProvider):
             return response.choices[0].text.strip()
         except Exception as e:
             self.logger.error(f"Error generating text: {str(e)}")
-            return f"Error: {str(e)}"
+            raise  # Re-raise the exception so it can be caught by the main class
             
     def generate_chat(self, messages: List[Dict[str, str]], **kwargs) -> str:
         """Generate a chat response from messages using OpenAI."""
         if not self.available:
-            return "OpenAI not available. Install with: pip install openai"
+            raise Exception("OpenAI not available. Install with: pip install openai")
             
         try:
             model = kwargs.get("model", "gpt-3.5-turbo")
@@ -363,7 +363,7 @@ class OpenAIProvider(AIProvider):
             return response.choices[0].message.content.strip()
         except Exception as e:
             self.logger.error(f"Error generating chat: {str(e)}")
-            return f"Error: {str(e)}"
+            raise  # Re-raise the exception so it can be caught by the main class
             
     def embed_text(self, text: str, **kwargs) -> List[float]:
         """Generate embeddings for text using OpenAI."""

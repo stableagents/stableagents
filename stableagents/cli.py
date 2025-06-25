@@ -9,6 +9,7 @@ import logging
 import os
 import json
 import getpass
+import webbrowser
 
 # Import from the package
 from stableagents import StableAgents
@@ -188,11 +189,6 @@ def check_secure_api_setup(selected_provider=None, provider_info=None):
         print("\n🔐 API KEY SETUP")
         print("=" * 40)
         
-        if selected_provider and provider_info:
-            print(f"Setting up API keys for: {provider_info['name']}")
-            print(f"Cost: {provider_info['cost']}")
-            print()
-        
         # Show options
         print("You have three options:")
         print()
@@ -256,6 +252,94 @@ def setup_payment_option(manager):
     print("\nType 'exit' at any time to quit the setup.")
     print()
     
+    # Try to create a payment link first
+    try:
+        from stableagents.stripe_payment import StripePaymentManager
+        stripe_manager = StripePaymentManager()
+        
+        if stripe_manager.stripe_secret_key:
+            print("🔗 Creating Stripe payment link...")
+            payment_url = stripe_manager.create_payment_link()
+            
+            if payment_url:
+                print("✅ Payment link created successfully!")
+                print(f"🔗 Payment URL: {payment_url}")
+                print()
+                print("📋 Instructions:")
+                print("1. Click the payment link above or copy it to your browser")
+                print("2. Complete the subscription setup")
+                print("3. After payment, you'll be redirected to a success page")
+                print("4. Copy the session_id from the URL and paste it below")
+                print()
+                
+                # Try to open the payment link
+                try:
+                    webbrowser.open(payment_url)
+                    print("🌐 Payment page opened in your browser")
+                except Exception as e:
+                    print(f"⚠️  Could not open browser automatically: {e}")
+                    print("Please manually visit the payment URL above")
+                
+                print()
+                session_id = input("Paste the session_id from the success URL here (or press Enter to skip): ").strip()
+                
+                if session_id:
+                    print("\n🔍 Verifying payment with Stripe...")
+                    if stripe_manager._verify_checkout_session(session_id):
+                        print("✅ Subscription active!")
+                        print("📅 Your subscription will automatically renew each month")
+                        print("💳 You can manage your subscription anytime")
+                        print()
+                        
+                        # Get password for encryption
+                        while True:
+                            try:
+                                password = getpass.getpass("Enter a password to encrypt your API keys (or type 'exit'): ")
+                                if check_exit_command(password):
+                                    exit_cli("👋 Setup cancelled.")
+                                if password:
+                                    confirm = getpass.getpass("Confirm password (or type 'exit'): ")
+                                    if check_exit_command(confirm):
+                                        exit_cli("👋 Setup cancelled.")
+                                    if password == confirm:
+                                        break
+                                    else:
+                                        print("Passwords don't match. Please try again.")
+                                else:
+                                    print("Password cannot be empty.")
+                            except (KeyboardInterrupt, EOFError):
+                                exit_cli("👋 Setup cancelled.")
+                        
+                        # Provide API keys
+                        if manager.provide_api_keys_after_payment(password):
+                            print("✅ API keys have been securely stored and encrypted!")
+                            print("🔒 Your keys are protected with your password")
+                            print("💡 You can now use AI features in stableagents-ai")
+                            print("📅 Your subscription will renew monthly")
+                            print("💳 Manage your subscription: Check your email for account details")
+                            return True
+                        else:
+                            print("❌ Failed to provide API keys")
+                            return False
+                    else:
+                        print("❌ Payment verification failed")
+                        print("💡 You can still complete the payment manually and try again")
+                        return False
+                else:
+                    print("💡 Payment link created but not completed")
+                    print("You can complete the payment later by visiting the URL above")
+                    return False
+            else:
+                print("❌ Failed to create payment link")
+                print("Falling back to manual payment process...")
+        else:
+            print("⚠️  Stripe not configured")
+            print("Falling back to manual payment process...")
+    except Exception as e:
+        print(f"⚠️  Error with Stripe integration: {e}")
+        print("Falling back to manual payment process...")
+    
+    # Fallback to original payment process
     if manager.process_payment():
         print("✅ Subscription active!")
         print("📅 Your subscription will automatically renew each month")
@@ -898,7 +982,7 @@ def interactive_mode(agent, setup_ai=True, banner_style="default"):
                 providers = agent.list_ai_providers()
                 print("\nAvailable AI providers:")
                 for provider in providers:
-                    status = "✅" if provider["has_key"] else "❌"
+                    status = "✓" if provider["has_key"] else "✗"
                     active = " (active)" if provider["is_active"] else ""
                     print(f"  {status} {provider['name']}{active}")
                 print("\nTo set up a provider, use: apikey [PROVIDER] [KEY]")
@@ -1126,31 +1210,167 @@ def interactive_prompt_selection():
         return None, None, None
 
 def guided_setup_with_prompt_selection():
-    """Guided setup that includes prompt and provider selection before API setup"""
-    print("\n🎯 GUIDED SETUP WITH PROMPT SELECTION")
+    """Guided setup that includes payment options first, then prompt and provider selection"""
+    print("\n🎯 GUIDED SETUP")
     print("=" * 50)
     print("This enhanced setup will help you:")
-    print("1. 📋 Explore what you can build with AI")
-    print("2. 🤖 Choose your preferred AI provider")
-    print("3. 🔧 Get step-by-step setup instructions")
-    print("4. 🚀 Start building immediately")
+    print("1. 💳 Choose your payment/API key option")
+    print("2. 📋 Explore what you can build with AI")
+    print("3. 🤖 Choose your preferred AI provider (if needed)")
+    print("4. 🔧 Get step-by-step setup instructions")
+    print("5. 🚀 Start building immediately")
     print()
     print("💡 Type 'exit', 'quit', or 'q' at any time to cancel setup")
     print()
     
-    # Step 1: Show preview prompts and select provider
-    selected_provider, provider_info, prompt_info = interactive_prompt_selection()
+    # Step 1: Ask about payment/API key options FIRST
+    print("💳 STEP 1: CHOOSE YOUR PAYMENT/API KEY OPTION")
+    print("=" * 60)
+    print("You have three options:")
+    print()
+    print("1. 💳 Monthly Subscription ($20/month)")
+    print("   - We provide working API keys")
+    print("   - Keys are securely encrypted")
+    print("   - Monthly recurring billing")
+    print("   - Cancel anytime")
+    print("   - No setup fees or hidden costs")
+    print()
+    print("2. 🔑 Bring your own API keys")
+    print("   - Use your existing OpenAI, Anthropic, etc. keys")
+    print("   - Keys are securely encrypted")
+    print("   - No additional cost beyond your API usage")
+    print()
+    print("3. 🏠 Use local models only")
+    print("   - Download GGUF models for local inference")
+    print("   - No API keys or payment required")
+    print("   - Works offline, privacy-focused")
+    print()
+    print("💡 Type 'exit', 'quit', or 'q' at any time to cancel")
+    print()
     
-    if not selected_provider:
-        return False
-    
-    # Step 2: Show setup instructions
-    print("\n" + "="*60)
-    print("🔧 STEP 3: SETUP INSTRUCTIONS")
-    print("="*60)
-    
-    if selected_provider == 'local':
-        instructions = f"""
+    try:
+        payment_choice = input("Enter your choice (1-3): ").strip()
+        
+        if check_exit_command(payment_choice):
+            exit_cli("👋 Setup cancelled.")
+        
+        if payment_choice == "1":
+            # Monthly subscription - proceed with payment
+            print("\n" + "="*60)
+            print("💳 MONTHLY SUBSCRIPTION SETUP")
+            print("="*60)
+            
+            try:
+                from stableagents.api_key_manager import SecureAPIKeyManager
+                from stableagents.stripe_payment import StripePaymentManager
+                
+                manager = SecureAPIKeyManager()
+                stripe_manager = StripePaymentManager()
+                
+                if stripe_manager.process_monthly_subscription():
+                    print("✅ Subscription active!")
+                    print("📅 Your subscription will automatically renew each month")
+                    print("💳 You can manage your subscription anytime")
+                    print()
+                    
+                    # Get password for encryption
+                    while True:
+                        try:
+                            password = getpass.getpass("Enter a password to encrypt your API keys (or type 'exit'): ")
+                            if check_exit_command(password):
+                                exit_cli("👋 Setup cancelled.")
+                            if password:
+                                confirm = getpass.getpass("Confirm password (or type 'exit'): ")
+                                if check_exit_command(confirm):
+                                    exit_cli("👋 Setup cancelled.")
+                                if password == confirm:
+                                    break
+                                else:
+                                    print("Passwords don't match. Please try again.")
+                            else:
+                                print("Password cannot be empty.")
+                        except (KeyboardInterrupt, EOFError):
+                            exit_cli("👋 Setup cancelled.")
+                    
+                    # Provide API keys
+                    if manager.provide_api_keys_after_payment(password):
+                        print("✅ API keys have been securely stored and encrypted!")
+                        print("🔒 Your keys are protected with your password")
+                        print("💡 You can now use AI features in stableagents-ai")
+                        print("📅 Your subscription will renew monthly")
+                        print("💳 Manage your subscription: Check your email for account details")
+                        
+                        # Now show what they can build
+                        print("\n" + "="*60)
+                        print("🚀 READY TO BUILD!")
+                        print("="*60)
+                        print("Your subscription is active! Here's what you can build:")
+                        print()
+                        print("🖥️  Computer Control Examples:")
+                        print("   • 'Open my email and compose a new message'")
+                        print("   • 'Create a new folder and organize my files'")
+                        print("   • 'Search for Python tutorials and open the first 3 results'")
+                        print()
+                        print("🧠 AI Applications Examples:")
+                        print("   • 'Create a chatbot for customer support'")
+                        print("   • 'Build an app that reads PDFs and extracts key info'")
+                        print("   • 'Make an AI assistant that can identify objects in photos'")
+                        print()
+                        print("💻 Code Generation Examples:")
+                        print("   • 'Write a Python function to sort data'")
+                        print("   • 'Create a web scraper for e-commerce sites'")
+                        print("   • 'Generate code to integrate with REST APIs'")
+                        print()
+                        print("📝 Content Creation Examples:")
+                        print("   • 'Write a 500-word blog post about AI trends'")
+                        print("   • 'Create professional email templates'")
+                        print("   • 'Generate engaging social media posts'")
+                        print()
+                        print("📊 Data Analysis Examples:")
+                        print("   • 'Analyze monthly sales data and identify trends'")
+                        print("   • 'Process customer reviews and extract sentiment'")
+                        print("   • 'Build a model to predict customer churn'")
+                        print()
+                        print("⚡ Productivity Examples:")
+                        print("   • 'Automatically categorize emails and draft responses'")
+                        print("   • 'Create an AI assistant for meeting scheduling'")
+                        print("   • 'Build a system to prioritize tasks'")
+                        print()
+                        
+                        print("🎯 Ready to start building? Run: stableagents-ai interactive")
+                        return True
+                    else:
+                        print("❌ Failed to provide API keys")
+                        return False
+                else:
+                    print("❌ Subscription setup failed")
+                    return False
+            except Exception as e:
+                print(f"❌ Error during subscription setup: {e}")
+                return False
+                
+        elif payment_choice == "2":
+            # Bring your own API keys - now ask which provider
+            print("\n" + "="*60)
+            print("🔑 BRING YOUR OWN API KEYS")
+            print("="*60)
+            print("Great! Let's set up your API keys. First, let's explore what you can build,")
+            print("then choose which provider you'd like to use.")
+            print()
+            
+            # Step 2: Show preview prompts and select provider
+            selected_provider, provider_info, prompt_info = interactive_prompt_selection()
+            
+            if not selected_provider:
+                return False
+            
+            # Step 3: Show setup instructions for the selected provider
+            print("\n" + "="*60)
+            print("🔧 SETUP INSTRUCTIONS")
+            print("="*60)
+            
+            if selected_provider == 'local':
+                instructions = f"""
 🎯 Setup Instructions for Local Models
 🤖 Provider: {provider_info['name']}
 
@@ -1170,8 +1390,8 @@ def guided_setup_with_prompt_selection():
    • Run: stableagents-ai interactive
    • Try your first AI prompt!
 """
-    else:
-        instructions = f"""
+            else:
+                instructions = f"""
 🎯 Setup Instructions for {provider_info['name']}
 🤖 Provider: {selected_provider.upper()}
 
@@ -1191,32 +1411,60 @@ def guided_setup_with_prompt_selection():
    • Run: stableagents-ai interactive
    • Try your first AI prompt!
 """
-    
-    print(instructions)
-    
-    # Step 3: Ask if they want to proceed with setup
-    try:
-        print("💡 Type 'exit', 'quit', or 'q' to cancel, or 'y' to continue")
-        proceed = input("\nWould you like to proceed with the setup now? (y/n): ").strip().lower()
-        
-        if check_exit_command(proceed):
-            exit_cli("👋 Setup cancelled.")
-        
-        if proceed in ['y', 'yes']:
-            print("\n" + "="*60)
-            print("🔧 READY FOR API KEY SETUP")
-            print("="*60)
-            print("Now let's set up your API keys to start building!")
-            print()
             
-            # Proceed with API key setup using the selected provider
-            return check_secure_api_setup(selected_provider, provider_info)
-        else:
-            print("\n✅ Perfect! You now know what you can build and which provider to use.")
-            print("💡 When you're ready, run 'stableagents-ai setup' to configure your API keys.")
+            print(instructions)
+            
+            # Step 4: Ask if they want to proceed with setup
+            try:
+                print("💡 Type 'exit', 'quit', or 'q' to cancel, or 'y' to continue")
+                proceed = input("\nWould you like to proceed with the setup now? (y/n): ").strip().lower()
+                
+                if check_exit_command(proceed):
+                    exit_cli("👋 Setup cancelled.")
+                
+                if proceed in ['y', 'yes']:
+                    print("\n" + "="*60)
+                    print("🔧 READY FOR API KEY SETUP")
+                    print("="*60)
+                    print("Now let's set up your API keys to start building!")
+                    print()
+                    
+                    # Proceed with API key setup using the selected provider
+                    return check_secure_api_setup(selected_provider, provider_info)
+                else:
+                    print("\n✅ Perfect! You now know what you can build and which provider to use.")
+                    print("💡 When you're ready, run 'stableagents-ai setup' to configure your API keys.")
+                    return True
+            except (KeyboardInterrupt, EOFError):
+                exit_cli("👋 Setup cancelled.")
+                
+        elif payment_choice == "3":
+            # Local models only
+            print("\n" + "="*60)
+            print("🏠 LOCAL MODELS SETUP")
+            print("="*60)
+            print("Great choice! You can use StableAgents with local models.")
+            print("Download GGUF models and place them in ~/.stableagents/models/")
+            print("No API keys or payment required.")
+            print()
+            print("📋 NEXT STEPS:")
+            print("1. Download GGUF models from https://huggingface.co/TheBloke")
+            print("2. Place models in ~/.stableagents/models/")
+            print("3. Run: stableagents-ai interactive")
+            print("4. Start building with local AI!")
+            print()
+            print("🎉 Setup complete! You can now use StableAgents with local models.")
             return True
+            
+        else:
+            print("❌ Invalid choice. Please enter 1, 2, or 3.")
+            return False
+            
     except (KeyboardInterrupt, EOFError):
         exit_cli("👋 Setup cancelled.")
+    except Exception as e:
+        print(f"❌ Error during setup: {e}")
+        return False
 
 def get_provider_url(provider: str) -> str:
     """Get signup URL for provider."""
@@ -1257,6 +1505,9 @@ def main():
     
     # Prompt setup mode (NEW)
     prompt_setup_parser = subparsers.add_parser('prompt-setup', help='Interactive prompt and provider selection (new prompt setup)')
+    
+    # Payment link mode (NEW)
+    payment_link_parser = subparsers.add_parser('payment-link', help='Create Stripe payment link for monthly subscription')
     
     # Prompts showcase mode
     showcase_parser = subparsers.add_parser('showcase', help='Show AI functionality examples and prompts')
@@ -1671,6 +1922,93 @@ def main():
         print()
         print("💡 Type 'exit', 'quit', or 'q' to exit the program")
         return 0
+    elif args.command == 'payment-link':
+        print("\n💳 Creating Stripe payment link...")
+        try:
+            from stableagents.stripe_payment import StripePaymentManager
+            from stableagents.api_key_manager import SecureAPIKeyManager
+            
+            stripe_manager = StripePaymentManager()
+            manager = SecureAPIKeyManager()
+            
+            payment_url = stripe_manager.create_payment_link()
+            
+            if payment_url:
+                print("✅ Payment link created successfully!")
+                print(f"🔗 Payment URL: {payment_url}")
+                print()
+                print("📋 Instructions:")
+                print("1. Click the payment link above or copy it to your browser")
+                print("2. Complete the subscription setup")
+                print("3. After payment, you'll be redirected to a success page")
+                print("4. Copy the session_id from the URL and paste it below")
+                print()
+                
+                # Try to open the payment link
+                try:
+                    webbrowser.open(payment_url)
+                    print("🌐 Payment page opened in your browser")
+                except Exception as e:
+                    print(f"⚠️  Could not open browser automatically: {e}")
+                    print("Please manually visit the payment URL above")
+                
+                print()
+                session_id = input("Paste the session_id from the success URL here (or press Enter to skip): ").strip()
+                
+                if session_id:
+                    print("\n🔍 Verifying payment with Stripe...")
+                    if stripe_manager._verify_checkout_session(session_id):
+                        print("✅ Subscription active!")
+                        print("📅 Your subscription will automatically renew each month")
+                        print("💳 You can manage your subscription anytime")
+                        print()
+                        
+                        # Get password for encryption
+                        while True:
+                            try:
+                                password = getpass.getpass("Enter a password to encrypt your API keys (or type 'exit'): ")
+                                if check_exit_command(password):
+                                    exit_cli("👋 Setup cancelled.")
+                                if password:
+                                    confirm = getpass.getpass("Confirm password (or type 'exit'): ")
+                                    if check_exit_command(confirm):
+                                        exit_cli("👋 Setup cancelled.")
+                                    if password == confirm:
+                                        break
+                                    else:
+                                        print("Passwords don't match. Please try again.")
+                                else:
+                                    print("Password cannot be empty.")
+                            except (KeyboardInterrupt, EOFError):
+                                exit_cli("👋 Setup cancelled.")
+                        
+                        # Provide API keys
+                        if manager.provide_api_keys_after_payment(password):
+                            print("✅ API keys have been securely stored and encrypted!")
+                            print("🔒 Your keys are protected with your password")
+                            print("💡 You can now use AI features in stableagents-ai")
+                            print("📅 Your subscription will renew monthly")
+                            print("💳 Manage your subscription: Check your email for account details")
+                            return 0
+                        else:
+                            print("❌ Failed to provide API keys")
+                            return 1
+                    else:
+                        print("❌ Payment verification failed")
+                        print("💡 You can still complete the payment manually and try again")
+                        return 1
+                else:
+                    print("💡 Payment link created but not completed")
+                    print("You can complete the payment later by visiting the URL above")
+                    return 0
+            else:
+                print("❌ Failed to create payment link")
+                print("Please check your Stripe configuration")
+                return 1
+        except Exception as e:
+            print(f"❌ Error with Stripe integration: {e}")
+            print("Please check your Stripe configuration and try again")
+            return 1
     
     return 0
 
