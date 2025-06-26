@@ -384,6 +384,80 @@ setup(
             "files": files,
             "main_file": str(project_path / "main.py")
         }
+    
+    def get_setup_instructions(self) -> str:
+        """Get setup instructions for the natural language desktop generator."""
+        return """
+🔧 Natural Language Desktop Generator Setup
+==========================================
+
+📋 Prerequisites:
+1. Python 3.8 or higher
+2. Google Gemini API key
+3. Internet connection
+
+🔑 Getting a Gemini API Key:
+1. Go to: https://makersuite.google.com/app/apikey
+2. Sign in with your Google account
+3. Click 'Create API Key'
+4. Copy the API key
+
+🚀 Setting up the API Key:
+
+Option 1: Environment Variable (Recommended)
+```bash
+export GEMINI_API_KEY="your-api-key-here"
+```
+
+Option 2: Interactive Setup
+```bash
+stableagents-ai natural-desktop create
+# This will prompt you for the API key
+```
+
+Option 3: Python Code
+```python
+import os
+os.environ["GEMINI_API_KEY"] = "your-api-key-here"
+
+from stableagents.natural_language_desktop import NaturalLanguageDesktopGenerator
+generator = NaturalLanguageDesktopGenerator("your-api-key-here")
+```
+
+📦 Installing Dependencies:
+```bash
+# For CustomTkinter (recommended)
+pip install customtkinter
+
+# For PyQt (optional)
+pip install PyQt6
+
+# Tkinter comes with Python
+```
+
+🎯 Quick Start:
+```bash
+# Create your first app
+stableagents-ai natural-desktop create
+
+# Or create a demo app
+stableagents-ai natural-desktop demo
+
+# List supported frameworks
+stableagents-ai natural-desktop frameworks
+```
+
+💡 Tips:
+- Be specific in your descriptions for better results
+- CustomTkinter is recommended for modern, beautiful UIs
+- Tkinter is good for simple, quick prototypes
+- PyQt is best for professional, complex applications
+
+🔍 Troubleshooting:
+- If you get API key errors, make sure your key is valid and has sufficient credits
+- If imports fail, install the required dependencies
+- For UI issues, try a different framework
+"""
 
 
 def main():

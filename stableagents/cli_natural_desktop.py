@@ -268,7 +268,9 @@ def generate_code_interactive() -> bool:
     # Initialize generator
     try:
         generator = NaturalLanguageDesktopGenerator(api_key)
-        if not generator.gemini_provider or not generator.gemini_provider.available:
+        # Test the Gemini connection
+        test_response = generator.gemini.generate_text("Hello")
+        if not test_response:
             print("❌ Failed to initialize Gemini provider")
             return False
     except Exception as e:
@@ -295,10 +297,10 @@ def generate_code_interactive() -> bool:
     
     # Choose framework
     print("\n🎨 Choose Framework:")
-    frameworks = generator.list_supported_frameworks()
+    frameworks = generator.list_frameworks()
     
     for i, framework in enumerate(frameworks, 1):
-        print(f"{i}. {framework['display_name']}")
+        print(f"{i}. {framework}")
     
     try:
         choice = input("Enter your choice (1-3, default 1): ").strip()
@@ -307,7 +309,16 @@ def generate_code_interactive() -> bool:
         
         choice_idx = int(choice) - 1
         if 0 <= choice_idx < len(frameworks):
-            framework = frameworks[choice_idx]["name"]
+            # Extract framework name from the description
+            framework_desc = frameworks[choice_idx]
+            if "customtkinter" in framework_desc.lower():
+                framework = "customtkinter"
+            elif "tkinter" in framework_desc.lower():
+                framework = "tkinter"
+            elif "pyqt" in framework_desc.lower():
+                framework = "pyqt"
+            else:
+                framework = "customtkinter"
         else:
             print("❌ Invalid choice, using CustomTkinter")
             framework = "customtkinter"
@@ -321,10 +332,15 @@ def generate_code_interactive() -> bool:
     print()
     
     try:
-        code = generator.generate_code_from_prompt(
-            prompt=description,
-            framework=framework
-        )
+        # Use the existing code generation method
+        if framework == "customtkinter":
+            code = generator._generate_customtkinter_code(description, "Generated App", ["basic functionality"])
+        elif framework == "tkinter":
+            code = generator._generate_tkinter_code(description, "Generated App", ["basic functionality"])
+        elif framework == "pyqt":
+            code = generator._generate_pyqt_code(description, "Generated App", ["basic functionality"])
+        else:
+            code = generator._generate_customtkinter_code(description, "Generated App", ["basic functionality"])
         
         print("🎉 Code generated successfully!")
         print("=" * 50)
