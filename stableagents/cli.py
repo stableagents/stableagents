@@ -1628,6 +1628,25 @@ def main():
     # Frameworks command
     frameworks_parser = stable_desktop_subparsers.add_parser('frameworks', help='List available UI frameworks')
     
+    # Natural Language Desktop commands
+    natural_desktop_parser = subparsers.add_parser('natural-desktop', help='Create desktop apps using natural language and Google Gemini')
+    natural_desktop_subparsers = natural_desktop_parser.add_subparsers(dest='natural_desktop_command', help='Natural Desktop command')
+    
+    # Create app command
+    create_nl_parser = natural_desktop_subparsers.add_parser('create', help='Create a new desktop application from natural language')
+    
+    # Demo command
+    demo_nl_parser = natural_desktop_subparsers.add_parser('demo', help='Create a demo application')
+    
+    # Frameworks command
+    frameworks_nl_parser = natural_desktop_subparsers.add_parser('frameworks', help='List supported UI frameworks')
+    
+    # Setup command
+    setup_nl_parser = natural_desktop_subparsers.add_parser('setup', help='Show setup instructions')
+    
+    # Code generation command
+    code_nl_parser = natural_desktop_subparsers.add_parser('code', help='Generate code from description')
+    
     args = parser.parse_args()
     logger = setup_logging(args.verbose)
     

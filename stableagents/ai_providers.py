@@ -483,28 +483,134 @@ class AnthropicProvider(AIProvider):
         return "Audio transcription not currently supported by Anthropic"
 
 class GoogleProvider(AIProvider):
-    """Google AI provider implementation (stub)."""
+    """Google Gemini AI provider implementation."""
     
     def __init__(self, api_key: str):
         super().__init__(api_key)
+        self.client = None
         self.available = False
-        self.logger.warning("Google AI provider not fully implemented yet")
+        
+        # Try to initialize Google Generative AI
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=api_key)
+            self.client = genai
+            self.available = True
+            self.logger.info("Google Gemini API initialized successfully")
+        except ImportError:
+            self.logger.error("Google Generative AI not available. Install with: pip install google-generativeai")
+        except Exception as e:
+            self.logger.error(f"Error initializing Google Gemini: {str(e)}")
         
     def generate_text(self, prompt: str, **kwargs) -> str:
-        """Generate text from a prompt using Google."""
-        return "Google AI provider not fully implemented yet"
+        """Generate text from a prompt using Google Gemini."""
+        if not self.available or not self.client:
+            return "Google Gemini not available. Install with: pip install google-generativeai"
+            
+        try:
+            model_name = kwargs.get("model", "gemini-pro")
+            max_tokens = kwargs.get("max_tokens", 1000)
+            temperature = kwargs.get("temperature", 0.7)
+            
+            # Get the model
+            model = self.client.GenerativeModel(model_name)
+            
+            # Generate content
+            response = model.generate_content(
+                prompt,
+                generation_config=self.client.types.GenerationConfig(
+                    max_output_tokens=max_tokens,
+                    temperature=temperature
+                )
+            )
+            
+            return response.text
+        except Exception as e:
+            self.logger.error(f"Error generating text with Gemini: {str(e)}")
+            return f"Error: {str(e)}"
         
     def generate_chat(self, messages: List[Dict[str, str]], **kwargs) -> str:
-        """Generate a chat response from messages using Google."""
-        return "Google AI provider not fully implemented yet"
+        """Generate a chat response from messages using Google Gemini."""
+        if not self.available or not self.client:
+            return "Google Gemini not available. Install with: pip install google-generativeai"
+            
+        try:
+            model_name = kwargs.get("model", "gemini-pro")
+            max_tokens = kwargs.get("max_tokens", 1000)
+            temperature = kwargs.get("temperature", 0.7)
+            
+            # Get the model
+            model = self.client.GenerativeModel(model_name)
+            
+            # Start a chat session
+            chat = model.start_chat(history=[])
+            
+            # Convert messages to Gemini format
+            for message in messages:
+                role = message.get("role", "").lower()
+                content = message.get("content", "")
+                
+                if role == "user":
+                    # Send user message
+                    response = chat.send_message(content)
+                elif role == "assistant":
+                    # Add assistant response to history
+                    chat.history.append({
+                        "role": "user",
+                        "parts": [content]
+                    })
+                elif role == "system":
+                    # System messages are typically handled differently
+                    # For Gemini, we can prepend to the first user message
+                    continue
+            
+            # Get the last response
+            if chat.history:
+                return chat.history[-1]["parts"][0]
+            else:
+                return "No response generated"
+                
+        except Exception as e:
+            self.logger.error(f"Error generating chat with Gemini: {str(e)}")
+            return f"Error: {str(e)}"
         
     def embed_text(self, text: str, **kwargs) -> List[float]:
-        """Generate embeddings for text using Google."""
-        return []
+        """Generate embeddings for text using Google Gemini."""
+        if not self.available or not self.client:
+            return []
+            
+        try:
+            # Use the embedding model
+            embedding_model = self.client.EmbeddingModel("embedding-001")
+            embedding = embedding_model.embed_content(text)
+            return embedding.values[0]
+        except Exception as e:
+            self.logger.error(f"Error generating embeddings with Gemini: {str(e)}")
+            return []
         
     def transcribe_audio(self, audio_file: str, **kwargs) -> str:
-        """Transcribe audio to text using Google."""
-        return "Google AI provider not fully implemented yet"
+        """Transcribe audio to text using Google Gemini."""
+        if not self.available or not self.client:
+            return "Google Gemini not available. Install with: pip install google-generativeai"
+            
+        try:
+            # Load audio file
+            with open(audio_file, "rb") as f:
+                audio_data = f.read()
+            
+            # Use Gemini Pro Vision for audio transcription
+            model = self.client.GenerativeModel("gemini-pro")
+            
+            # Create audio part
+            audio_part = self.client.types.Part.from_data(audio_data, mime_type="audio/wav")
+            
+            # Generate transcription
+            response = model.generate_content([audio_part])
+            return response.text
+            
+        except Exception as e:
+            self.logger.error(f"Error transcribing audio with Gemini: {str(e)}")
+            return f"Error: {str(e)}"
 
 class LocalModelProvider(AIProvider):
     """Provider for local LLM inference (Llama, etc.)"""
