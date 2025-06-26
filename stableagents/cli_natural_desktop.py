@@ -56,7 +56,9 @@ def create_app_interactive() -> bool:
     # Initialize generator
     try:
         generator = NaturalLanguageDesktopGenerator(api_key)
-        if not generator.gemini_provider or not generator.gemini_provider.available:
+        # Test the Gemini connection
+        test_response = generator.gemini.generate_text("Hello")
+        if not test_response:
             print("❌ Failed to initialize Gemini provider")
             return False
     except Exception as e:
@@ -92,15 +94,10 @@ def create_app_interactive() -> bool:
     
     # Choose UI framework
     print("\n🎨 Choose UI Framework:")
-    frameworks = generator.list_supported_frameworks()
+    frameworks = generator.list_frameworks()
     
     for i, framework in enumerate(frameworks, 1):
-        status = "⭐ RECOMMENDED" if framework["recommended"] else ""
-        print(f"{i}. {framework['display_name']} {status}")
-        print(f"   {framework['description']}")
-        print(f"   ✅ Pros: {', '.join(framework['pros'])}")
-        print(f"   ❌ Cons: {', '.join(framework['cons'])}")
-        print()
+        print(f"{i}. {framework}")
     
     try:
         choice = input("Enter your choice (1-3, default 1): ").strip()
@@ -109,7 +106,16 @@ def create_app_interactive() -> bool:
         
         choice_idx = int(choice) - 1
         if 0 <= choice_idx < len(frameworks):
-            ui_framework = frameworks[choice_idx]["name"]
+            # Extract framework name from the description
+            framework_desc = frameworks[choice_idx]
+            if "customtkinter" in framework_desc.lower():
+                ui_framework = "customtkinter"
+            elif "tkinter" in framework_desc.lower():
+                ui_framework = "tkinter"
+            elif "pyqt" in framework_desc.lower():
+                ui_framework = "pyqt"
+            else:
+                ui_framework = "customtkinter"
         else:
             print("❌ Invalid choice, using CustomTkinter")
             ui_framework = "customtkinter"
@@ -123,40 +129,28 @@ def create_app_interactive() -> bool:
     print()
     
     try:
-        result = generator.create_app_from_description(
-            description=description,
-            app_name=app_name,
-            ui_framework=ui_framework
-        )
+        result = generator.generate_app(description, ui_framework)
         
-        if result.get("success"):
+        if result:
             print("🎉 App created successfully!")
-            print(f"📁 Project location: {result['project_path']}")
-            print(f"🚀 To run: cd {result['project_path']} && python main.py")
-            
-            # Show extracted features
-            if "natural_language" in result:
-                nl_data = result["natural_language"]
-                print(f"\n📋 Generated name: {nl_data.get('generated_name', 'N/A')}")
-                print(f"🔍 Extracted features: {', '.join(nl_data.get('extracted_features', []))}")
+            print(f"📁 Project location: {result['path']}")
+            print(f"🚀 To run: cd {result['path']} && python main.py")
             
             # Ask if user wants to run the app
             try:
                 run_app = input("\n🚀 Run the app now? (y/n): ").strip().lower()
                 if run_app == 'y':
-                    project_path = Path(result['project_path'])
-                    if generator.desktop_builder:
-                        success = generator.desktop_builder.run_app(project_path)
-                        if success:
-                            print("✅ App ran successfully!")
-                        else:
-                            print("❌ Failed to run app")
+                    success = generator.run_app(result['path'])
+                    if success:
+                        print("✅ App ran successfully!")
+                    else:
+                        print("❌ Failed to run app")
             except (KeyboardInterrupt, EOFError):
                 pass
             
             return True
         else:
-            print(f"❌ Failed to create app: {result.get('error', 'Unknown error')}")
+            print("❌ Failed to create app")
             return False
             
     except Exception as e:
@@ -177,7 +171,9 @@ def create_demo_app() -> bool:
     # Initialize generator
     try:
         generator = NaturalLanguageDesktopGenerator(api_key)
-        if not generator.gemini_provider or not generator.gemini_provider.available:
+        # Test the Gemini connection
+        test_response = generator.gemini.generate_text("Hello")
+        if not test_response:
             print("❌ Failed to initialize Gemini provider")
             return False
     except Exception as e:
@@ -190,30 +186,43 @@ def create_demo_app() -> bool:
     print()
     
     try:
-        result = generator.create_interactive_demo()
+        # Create a demo task manager app
+        demo_description = """
+        Create a modern task management application with:
+        - Beautiful modern UI with dark/light mode toggle
+        - Add, edit, and delete tasks with descriptions
+        - Task categories and priority levels (High, Medium, Low)
+        - Due dates and reminders
+        - Mark tasks as complete/incomplete with visual indicators
+        - Search and filter tasks by category, priority, or status
+        - Data persistence - save tasks to local file
+        - Export tasks to different formats (CSV, JSON)
+        - Statistics and progress tracking
+        - Responsive design for different window sizes
+        """
         
-        if result.get("success"):
+        result = generator.generate_app(demo_description, "customtkinter")
+        
+        if result:
             print("🎉 Demo app created successfully!")
-            print(f"📁 Project location: {result['project_path']}")
-            print(f"🚀 To run: cd {result['project_path']} && python main.py")
+            print(f"📁 Project location: {result['path']}")
+            print(f"🚀 To run: cd {result['path']} && python main.py")
             
             # Ask if user wants to run the app
             try:
                 run_app = input("\n🚀 Run the demo app now? (y/n): ").strip().lower()
                 if run_app == 'y':
-                    project_path = Path(result['project_path'])
-                    if generator.desktop_builder:
-                        success = generator.desktop_builder.run_app(project_path)
-                        if success:
-                            print("✅ Demo app ran successfully!")
-                        else:
-                            print("❌ Failed to run demo app")
+                    success = generator.run_app(result['path'])
+                    if success:
+                        print("✅ Demo app ran successfully!")
+                    else:
+                        print("❌ Failed to run demo app")
             except (KeyboardInterrupt, EOFError):
                 pass
             
             return True
         else:
-            print(f"❌ Failed to create demo app: {result.get('error', 'Unknown error')}")
+            print("❌ Failed to create demo app")
             return False
             
     except Exception as e:
@@ -227,19 +236,14 @@ def list_frameworks() -> bool:
     print("=" * 40)
     
     generator = NaturalLanguageDesktopGenerator()
-    frameworks = generator.list_supported_frameworks()
+    frameworks = generator.list_frameworks()
     
-    for framework in frameworks:
-        status = "⭐ RECOMMENDED" if framework["recommended"] else ""
-        print(f"\n📱 {framework['display_name']} {status}")
-        print(f"   📝 {framework['description']}")
-        print(f"   ✅ Pros: {', '.join(framework['pros'])}")
-        print(f"   ❌ Cons: {', '.join(framework['cons'])}")
-        print(f"   🎯 Best for: {', '.join(framework['best_for'])}")
+    for i, framework in enumerate(frameworks, 1):
+        print(f"\n{i}. {framework}")
     
-    print(f"\n💡 Recommendation for beginners: CustomTkinter")
-    print(f"💡 Recommendation for simple apps: Tkinter")
-    print(f"💡 Recommendation for professional apps: PyQt")
+    print("\n💡 Recommendation for beginners: CustomTkinter (modern and easy)")
+    print("💡 Recommendation for simple apps: Tkinter (built-in)")
+    print("💡 Recommendation for professional apps: PyQt (powerful)")
     
     return True
 

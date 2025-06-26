@@ -1,324 +1,416 @@
 #!/usr/bin/env python3
 """
-Natural Language Desktop App Generator
+Natural Language Desktop Application Generator
 
-This module allows users to create desktop applications using natural language
-descriptions and Google Gemini AI. It generates modern, native desktop apps
-without using Electron.
+Generates desktop applications from natural language descriptions using Google Gemini API.
 """
 
 import os
+import sys
 import json
 import subprocess
 import tempfile
-import logging
+import shutil
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from datetime import datetime
+from typing import Dict, List, Optional, Any
+import re
 
+# Import the configuration manager
+from .config_manager import ConfigManager, setup_gemini_api_key, get_gemini_api_key
 from .ai_providers import GoogleProvider
-from .stable_desktop.desktop_builder import DesktopBuilder
 
 
 class NaturalLanguageDesktopGenerator:
-    """
-    Generates desktop applications from natural language descriptions using Google Gemini.
+    """Generates desktop applications from natural language descriptions."""
     
-    Features:
-    - Natural language to desktop app conversion
-    - Modern UI frameworks (CustomTkinter, Tkinter, PyQt)
-    - Code generation with Gemini AI
-    - Automatic dependency management
-    - Cross-platform support
-    """
-    
-    def __init__(self, gemini_api_key: Optional[str] = None):
-        """
-        Initialize the natural language desktop generator.
+    def __init__(self, api_key: Optional[str] = None):
+        """Initialize the generator with optional API key."""
+        self.config_manager = ConfigManager()
         
-        Args:
-            gemini_api_key: Google Gemini API key
-        """
-        self.logger = logging.getLogger(__name__)
-        self.gemini_provider = None
-        self.desktop_builder = None
-        
-        # Initialize Gemini provider
-        if gemini_api_key:
-            self.gemini_provider = GoogleProvider(gemini_api_key)
-            if self.gemini_provider.available:
-                self.desktop_builder = DesktopBuilder(self.gemini_provider)
-                self.logger.info("Natural Language Desktop Generator initialized with Gemini")
-            else:
-                self.logger.error("Failed to initialize Gemini provider")
+        # Set up API key
+        if api_key:
+            self.config_manager.set_api_key("gemini", api_key)
         else:
-            self.logger.warning("No Gemini API key provided. Some features may be limited.")
-    
-    def create_app_from_description(self, 
-                                   description: str,
-                                   app_name: Optional[str] = None,
-                                   ui_framework: str = "customtkinter",
-                                   output_dir: Optional[Path] = None) -> Dict[str, Any]:
-        """
-        Create a desktop application from a natural language description.
+            # Try to get existing key
+            api_key = get_gemini_api_key()
+            if not api_key:
+                print("🔑 No Gemini API key found. Let's set one up...")
+                if not setup_gemini_api_key():
+                    raise ValueError("Gemini API key is required")
+                api_key = get_gemini_api_key()
         
-        Args:
-            description: Natural language description of the app
-            app_name: Name for the application (auto-generated if not provided)
-            ui_framework: UI framework to use (customtkinter, tkinter, pyqt)
-            output_dir: Output directory for the project
-            
-        Returns:
-            Dictionary with project information and status
+        self.gemini = GoogleProvider(api_key)
+        self.projects_dir = Path("stable_desktop_projects")
+        self.projects_dir.mkdir(exist_ok=True)
+    
+    def generate_app(self, description: str, framework: str = "customtkinter") -> Dict[str, Any]:
+        """Generate a desktop application from natural language description."""
+        print(f"🚀 Generating {framework} app from description...")
+        print(f"📝 Description: {description}")
+        
+        # Extract app name and features
+        app_info = self._extract_app_info(description)
+        app_name = app_info["name"]
+        features = app_info["features"]
+        
+        print(f"📱 App Name: {app_name}")
+        print(f"✨ Features: {', '.join(features)}")
+        
+        # Generate the application code
+        code = self._generate_app_code(description, framework, app_name, features)
+        
+        # Create project structure
+        project_path = self._create_project_structure(app_name, framework)
+        
+        # Write the generated code
+        self._write_app_code(project_path, code, framework)
+        
+        # Create additional project files
+        self._create_project_files(project_path, app_name, description, framework)
+        
+        print(f"✅ App generated successfully at: {project_path}")
+        
+        return {
+            "name": app_name,
+            "path": str(project_path),
+            "framework": framework,
+            "features": features,
+            "description": description
+        }
+    
+    def _extract_app_info(self, description: str) -> Dict[str, Any]:
+        """Extract app name and features from description using AI."""
+        prompt = f"""
+        Extract the application name and key features from this description:
+        "{description}"
+        
+        Return a JSON object with:
+        - "name": A short, descriptive name for the app (max 3 words)
+        - "features": List of main features/functionality
+        
+        Example:
+        {{
+            "name": "Calculator App",
+            "features": ["basic arithmetic", "scientific functions", "history"]
+        }}
+        
+        Only return the JSON object, nothing else.
         """
-        if not self.gemini_provider or not self.gemini_provider.available:
+        
+        try:
+            response = self.gemini.generate_text(prompt)
+            # Clean up the response to extract JSON
+            response = response.strip()
+            if response.startswith("```json"):
+                response = response[7:]
+            if response.endswith("```"):
+                response = response[:-3]
+            
+            app_info = json.loads(response)
+            return app_info
+        except Exception as e:
+            print(f"⚠️ Error extracting app info: {e}")
+            # Fallback: generate a simple name
+            words = description.split()[:3]
+            app_name = " ".join(words).title()
             return {
-                "success": False,
-                "error": "Google Gemini not available. Please provide a valid API key."
-            }
-        
-        try:
-            # Generate app name if not provided
-            if not app_name:
-                app_name = self._generate_app_name(description)
-            
-            # Analyze description and extract features
-            features = self._analyze_description(description)
-            
-            # Generate enhanced description
-            enhanced_description = self._enhance_description(description, features)
-            
-            # Create the application
-            result = self.desktop_builder.create_app(
-                app_name=app_name,
-                description=enhanced_description,
-                ui_framework=ui_framework,
-                features=features,
-                output_dir=output_dir
-            )
-            
-            if result.get("success"):
-                # Add natural language metadata
-                result["natural_language"] = {
-                    "original_description": description,
-                    "enhanced_description": enhanced_description,
-                    "extracted_features": features,
-                    "generated_name": app_name
-                }
-            
-            return result
-            
-        except Exception as e:
-            self.logger.error(f"Error creating app from description: {e}")
-            return {
-                "success": False,
-                "error": str(e)
+                "name": app_name,
+                "features": ["basic functionality"]
             }
     
-    def _generate_app_name(self, description: str) -> str:
-        """Generate an appropriate app name from the description."""
-        prompt = f"""
-        Based on this description, generate a short, catchy app name (2-3 words max):
-        
-        Description: {description}
-        
-        Return only the app name, nothing else.
-        """
-        
-        try:
-            name = self.gemini_provider.generate_text(prompt, max_tokens=50)
-            # Clean up the name
-            name = name.strip().replace('"', '').replace("'", "")
-            if len(name) > 50:
-                name = name[:50]
-            return name or "MyApp"
-        except Exception as e:
-            self.logger.error(f"Error generating app name: {e}")
-            return "MyApp"
+    def _generate_app_code(self, description: str, framework: str, app_name: str, features: List[str]) -> str:
+        """Generate the main application code."""
+        if framework == "customtkinter":
+            return self._generate_customtkinter_code(description, app_name, features)
+        elif framework == "tkinter":
+            return self._generate_tkinter_code(description, app_name, features)
+        elif framework == "pyqt":
+            return self._generate_pyqt_code(description, app_name, features)
+        else:
+            raise ValueError(f"Unsupported framework: {framework}")
     
-    def _analyze_description(self, description: str) -> List[str]:
-        """Analyze the description and extract features."""
+    def _generate_customtkinter_code(self, description: str, app_name: str, features: List[str]) -> str:
+        """Generate CustomTkinter application code."""
         prompt = f"""
-        Analyze this app description and extract the main features that should be implemented:
+        Create a modern CustomTkinter desktop application based on this description:
+        "{description}"
         
-        Description: {description}
-        
-        Return a JSON array of feature strings. Focus on:
-        - User interface elements (buttons, forms, lists, etc.)
-        - Core functionality (data storage, calculations, file operations, etc.)
-        - User interactions (clicking, typing, dragging, etc.)
-        - Visual elements (charts, images, animations, etc.)
-        
-        Example: ["User authentication", "Data input forms", "File upload", "Data visualization", "Settings panel"]
-        
-        Return only valid JSON array.
-        """
-        
-        try:
-            response = self.gemini_provider.generate_text(prompt, max_tokens=500)
-            features = json.loads(response)
-            if isinstance(features, list):
-                return features
-            else:
-                return []
-        except Exception as e:
-            self.logger.error(f"Error analyzing description: {e}")
-            return ["Basic UI", "User input", "Data display"]
-    
-    def _enhance_description(self, description: str, features: List[str]) -> str:
-        """Enhance the description with technical details."""
-        prompt = f"""
-        Enhance this app description with technical implementation details:
-        
-        Original Description: {description}
-        Extracted Features: {', '.join(features)}
-        
-        Create a detailed technical description that includes:
-        - Specific UI components needed
-        - Data structures and storage requirements
-        - User interaction patterns
-        - Error handling considerations
-        - Performance requirements
-        
-        Make it comprehensive for code generation.
-        """
-        
-        try:
-            enhanced = self.gemini_provider.generate_text(prompt, max_tokens=1000)
-            return enhanced or description
-        except Exception as e:
-            self.logger.error(f"Error enhancing description: {e}")
-            return description
-    
-    def generate_code_from_prompt(self, 
-                                 prompt: str,
-                                 code_type: str = "python",
-                                 framework: str = "customtkinter") -> str:
-        """
-        Generate code from a natural language prompt.
-        
-        Args:
-            prompt: Natural language description of the code needed
-            code_type: Type of code to generate (python, javascript, etc.)
-            framework: Framework to use (customtkinter, tkinter, pyqt)
-            
-        Returns:
-            Generated code as string
-        """
-        if not self.gemini_provider or not self.gemini_provider.available:
-            return "# Error: Google Gemini not available"
-        
-        code_prompt = f"""
-        Generate {code_type} code using {framework} framework for:
-        
-        {prompt}
+        App Name: {app_name}
+        Features: {', '.join(features)}
         
         Requirements:
-        - Use {framework} for the UI
-        - Include proper error handling
-        - Add comments explaining the code
-        - Make it production-ready
-        - Follow Python best practices
+        1. Use CustomTkinter for modern UI
+        2. Include proper imports and setup
+        3. Create a main window with title "{app_name}"
+        4. Add functionality based on the description
+        5. Include error handling
+        6. Add comments explaining the code
+        7. Make the UI responsive and user-friendly
+        8. Use modern styling with CustomTkinter themes
         
-        Return only the code, no explanations.
+        Return only the complete Python code, no explanations.
         """
+        
+        return self.gemini.generate_text(prompt)
+    
+    def _generate_tkinter_code(self, description: str, app_name: str, features: List[str]) -> str:
+        """Generate Tkinter application code."""
+        prompt = f"""
+        Create a Tkinter desktop application based on this description:
+        "{description}"
+        
+        App Name: {app_name}
+        Features: {', '.join(features)}
+        
+        Requirements:
+        1. Use standard Tkinter
+        2. Include proper imports and setup
+        3. Create a main window with title "{app_name}"
+        4. Add functionality based on the description
+        5. Include error handling
+        6. Add comments explaining the code
+        7. Make the UI responsive and user-friendly
+        
+        Return only the complete Python code, no explanations.
+        """
+        
+        return self.gemini.generate_text(prompt)
+    
+    def _generate_pyqt_code(self, description: str, app_name: str, features: List[str]) -> str:
+        """Generate PyQt application code."""
+        prompt = f"""
+        Create a PyQt6 desktop application based on this description:
+        "{description}"
+        
+        App Name: {app_name}
+        Features: {', '.join(features)}
+        
+        Requirements:
+        1. Use PyQt6 for modern UI
+        2. Include proper imports and setup
+        3. Create a main window with title "{app_name}"
+        4. Add functionality based on the description
+        5. Include error handling
+        6. Add comments explaining the code
+        7. Make the UI responsive and user-friendly
+        8. Use modern styling
+        
+        Return only the complete Python code, no explanations.
+        """
+        
+        return self.gemini.generate_text(prompt)
+    
+    def _create_project_structure(self, app_name: str, framework: str) -> Path:
+        """Create the project directory structure."""
+        # Clean app name for directory
+        clean_name = re.sub(r'[^a-zA-Z0-9\s-]', '', app_name).replace(' ', '_')
+        project_path = self.projects_dir / clean_name
+        
+        # Remove existing directory if it exists
+        if project_path.exists():
+            shutil.rmtree(project_path)
+        
+        # Create project structure
+        project_path.mkdir(parents=True)
+        
+        # Create UI components directory for modular apps
+        ui_dir = project_path / "ui"
+        ui_dir.mkdir(exist_ok=True)
+        
+        return project_path
+    
+    def _write_app_code(self, project_path: Path, code: str, framework: str):
+        """Write the generated code to the project."""
+        main_file = project_path / "main.py"
+        
+        with open(main_file, 'w') as f:
+            f.write(code)
+        
+        print(f"📄 Main app code written to: {main_file}")
+    
+    def _create_project_files(self, project_path: Path, app_name: str, description: str, framework: str):
+        """Create additional project files (README, requirements, etc.)."""
+        # Create README
+        readme_content = f"""# {app_name}
+
+A desktop application generated from natural language description.
+
+## Description
+{description}
+
+## Framework
+Built with {framework}
+
+## Installation
+```bash
+pip install -r requirements.txt
+```
+
+## Usage
+```bash
+python main.py
+```
+
+## Features
+- Generated from natural language description
+- Modern UI with {framework}
+- Cross-platform compatibility
+"""
+        
+        with open(project_path / "README.md", 'w') as f:
+            f.write(readme_content)
+        
+        # Create requirements.txt
+        requirements = self._get_framework_requirements(framework)
+        with open(project_path / "requirements.txt", 'w') as f:
+            f.write(requirements)
+        
+        # Create project.json for metadata
+        project_metadata = {
+            "name": app_name,
+            "description": description,
+            "framework": framework,
+            "generated_by": "StableAgents Natural Language Desktop Generator",
+            "version": "1.0.0"
+        }
+        
+        with open(project_path / "project.json", 'w') as f:
+            json.dump(project_metadata, f, indent=2)
+        
+        # Create setup.py
+        setup_content = f"""#!/usr/bin/env python3
+from setuptools import setup, find_packages
+
+setup(
+    name="{app_name.lower().replace(' ', '-')}",
+    version="1.0.0",
+    description="{description}",
+    packages=find_packages(),
+    install_requires=[
+        {', '.join(f'"{req}"' for req in requirements.split('\\n') if req.strip())}
+    ],
+    entry_points={{
+        'console_scripts': [
+            '{app_name.lower().replace(" ", "-")}=main:main',
+        ],
+    }},
+)
+"""
+        
+        with open(project_path / "setup.py", 'w') as f:
+            f.write(setup_content)
+    
+    def _get_framework_requirements(self, framework: str) -> str:
+        """Get requirements for the specified framework."""
+        requirements = {
+            "customtkinter": "customtkinter>=5.2.0",
+            "tkinter": "# tkinter is included with Python",
+            "pyqt": "PyQt6>=6.4.0"
+        }
+        
+        return requirements.get(framework, "customtkinter>=5.2.0")
+    
+    def run_app(self, project_path: str) -> bool:
+        """Run the generated application."""
+        project_path = Path(project_path)
+        main_file = project_path / "main.py"
+        
+        if not main_file.exists():
+            print(f"❌ Main file not found: {main_file}")
+            return False
+        
+        print(f"🚀 Running app: {project_path.name}")
         
         try:
-            return self.gemini_provider.generate_text(code_prompt, max_tokens=2000)
+            # Install requirements first
+            requirements_file = project_path / "requirements.txt"
+            if requirements_file.exists():
+                print("📦 Installing requirements...")
+                subprocess.run([
+                    sys.executable, "-m", "pip", "install", "-r", str(requirements_file)
+                ], check=True)
+            
+            # Run the app
+            result = subprocess.run([
+                sys.executable, str(main_file)
+            ], cwd=project_path, capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                print("✅ App ran successfully")
+                return True
+            else:
+                print(f"❌ Error running app: {result.stderr}")
+                return False
+                
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Error running app: {e}")
+            return False
         except Exception as e:
-            self.logger.error(f"Error generating code: {e}")
-            return f"# Error generating code: {e}"
+            print(f"❌ Unexpected error: {e}")
+            return False
     
-    def create_interactive_demo(self) -> Dict[str, Any]:
-        """Create an interactive demo application."""
-        demo_description = """
-        Create a modern task management application with the following features:
-        - Beautiful modern UI with dark/light mode toggle
-        - Add, edit, and delete tasks
-        - Mark tasks as complete/incomplete
-        - Task categories and priority levels
-        - Search and filter tasks
-        - Data persistence (save/load tasks)
-        - Responsive design that works on different screen sizes
-        - Professional animations and transitions
-        """
-        
-        return self.create_app_from_description(
-            description=demo_description,
-            app_name="TaskMaster",
-            ui_framework="customtkinter"
-        )
-    
-    def list_supported_frameworks(self) -> List[Dict[str, Any]]:
-        """List supported UI frameworks with descriptions."""
+    def list_frameworks(self) -> List[str]:
+        """List available UI frameworks."""
         return [
-            {
-                "name": "customtkinter",
-                "display_name": "CustomTkinter",
-                "description": "Modern and beautiful custom tkinter widgets",
-                "pros": ["Modern look", "Easy to use", "Built on tkinter", "Beautiful widgets"],
-                "cons": ["Newer library", "Limited widget set"],
-                "best_for": ["Modern applications", "Professional look", "Quick development"],
-                "recommended": True
-            },
-            {
-                "name": "tkinter",
-                "display_name": "Tkinter",
-                "description": "Python's standard GUI toolkit",
-                "pros": ["Built-in", "Simple", "Cross-platform", "No installation needed"],
-                "cons": ["Basic styling", "Limited widgets", "Outdated look"],
-                "best_for": ["Simple applications", "Quick prototypes", "Learning"],
-                "recommended": False
-            },
-            {
-                "name": "pyqt",
-                "display_name": "PyQt",
-                "description": "Qt framework for Python",
-                "pros": ["Professional", "Rich widgets", "Modern look", "Extensive features"],
-                "cons": ["Complex", "Large size", "License considerations"],
-                "best_for": ["Professional applications", "Complex UIs", "Commercial software"],
-                "recommended": False
-            }
+            "customtkinter - Modern, beautiful UI with dark mode support",
+            "tkinter - Standard Python GUI framework",
+            "pyqt - Professional Qt-based framework"
         ]
     
-    def get_setup_instructions(self) -> str:
-        """Get setup instructions for the natural language desktop generator."""
-        return """
-🎯 Natural Language Desktop App Generator Setup
-===============================================
+    def get_project_info(self, project_path: str) -> Dict[str, Any]:
+        """Get information about a generated project."""
+        project_path = Path(project_path)
+        
+        if not project_path.exists():
+            raise ValueError(f"Project not found: {project_path}")
+        
+        # Read project metadata
+        project_file = project_path / "project.json"
+        if project_file.exists():
+            with open(project_file, 'r') as f:
+                metadata = json.load(f)
+        else:
+            metadata = {"name": project_path.name}
+        
+        # Get file structure
+        files = []
+        for file_path in project_path.rglob("*"):
+            if file_path.is_file():
+                files.append(str(file_path.relative_to(project_path)))
+        
+        return {
+            "path": str(project_path),
+            "metadata": metadata,
+            "files": files,
+            "main_file": str(project_path / "main.py")
+        }
 
-1. 🔑 Get Google Gemini API Key:
-   • Visit: https://makersuite.google.com/app/apikey
-   • Create a new API key
-   • Copy the key for use in the application
 
-2. 📦 Install Dependencies:
-   • pip install google-generativeai
-   • pip install customtkinter
-   • pip install stableagents-ai
+def main():
+    """Main function for command-line usage."""
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Generate desktop apps from natural language")
+    parser.add_argument("description", help="Natural language description of the app")
+    parser.add_argument("--framework", "-f", default="customtkinter", 
+                       choices=["customtkinter", "tkinter", "pyqt"],
+                       help="UI framework to use")
+    parser.add_argument("--run", "-r", action="store_true", 
+                       help="Run the generated app")
+    
+    args = parser.parse_args()
+    
+    try:
+        generator = NaturalLanguageDesktopGenerator()
+        result = generator.generate_app(args.description, args.framework)
+        
+        if args.run:
+            generator.run_app(result["path"])
+            
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        sys.exit(1)
 
-3. 🚀 Start Creating Apps:
-   • Use the create_app_from_description() method
-   • Provide natural language descriptions
-   • Choose your preferred UI framework
-   • Let Gemini generate the code for you!
 
-4. 💡 Example Usage:
-   ```python
-   generator = NaturalLanguageDesktopGenerator("your-gemini-api-key")
-   result = generator.create_app_from_description(
-       "Create a calculator app with scientific functions"
-   )
-   ```
-
-5. 🎨 Supported Frameworks:
-   • CustomTkinter (Recommended) - Modern, beautiful UI
-   • Tkinter - Built-in, simple
-   • PyQt - Professional, feature-rich
-
-6. 🔧 Advanced Features:
-   • Code generation from prompts
-   • Interactive demos
-   • Framework recommendations
-   • Automatic dependency management
-        """ 
+if __name__ == "__main__":
+    main() 

@@ -489,6 +489,7 @@ class GoogleProvider(AIProvider):
         super().__init__(api_key)
         self.client = None
         self.available = False
+        self.available_models = []
         
         # Try to initialize Google Generative AI
         try:
@@ -497,10 +498,47 @@ class GoogleProvider(AIProvider):
             self.client = genai
             self.available = True
             self.logger.info("Google Gemini API initialized successfully")
+            
+            # Get available models
+            try:
+                self.available_models = [model.name for model in genai.list_models()]
+                self.logger.info(f"Available models: {self.available_models}")
+            except Exception as e:
+                self.logger.warning(f"Could not list models: {e}")
+                # Use default models if listing fails
+                self.available_models = ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-pro"]
+                
         except ImportError:
             self.logger.error("Google Generative AI not available. Install with: pip install google-generativeai")
         except Exception as e:
             self.logger.error(f"Error initializing Google Gemini: {str(e)}")
+    
+    def _get_available_model(self, preferred_model: str = None) -> str:
+        """Get an available model, falling back to alternatives if needed."""
+        # Define model preferences in order
+        model_preferences = [
+            "gemini-1.5-pro",
+            "gemini-1.5-flash", 
+            "gemini-pro",
+            "gemini-1.0-pro"
+        ]
+        
+        # If we have available models list, use it
+        if self.available_models:
+            # Try preferred model first
+            if preferred_model and preferred_model in self.available_models:
+                return preferred_model
+            
+            # Try model preferences in order
+            for model in model_preferences:
+                if model in self.available_models:
+                    return model
+            
+            # Fall back to first available model
+            return self.available_models[0]
+        
+        # If we don't have the list, try the preferences
+        return preferred_model or "gemini-1.5-pro"
         
     def generate_text(self, prompt: str, **kwargs) -> str:
         """Generate text from a prompt using Google Gemini."""
@@ -508,9 +546,12 @@ class GoogleProvider(AIProvider):
             return "Google Gemini not available. Install with: pip install google-generativeai"
             
         try:
-            model_name = kwargs.get("model", "gemini-pro")
+            preferred_model = kwargs.get("model", "gemini-1.5-pro")
+            model_name = self._get_available_model(preferred_model)
             max_tokens = kwargs.get("max_tokens", 1000)
             temperature = kwargs.get("temperature", 0.7)
+            
+            self.logger.info(f"Using model: {model_name}")
             
             # Get the model
             model = self.client.GenerativeModel(model_name)
@@ -527,6 +568,24 @@ class GoogleProvider(AIProvider):
             return response.text
         except Exception as e:
             self.logger.error(f"Error generating text with Gemini: {str(e)}")
+            # Try with a different model if the first one fails
+            if "not found" in str(e) or "not supported" in str(e):
+                try:
+                    fallback_model = self._get_available_model("gemini-1.5-flash")
+                    if fallback_model != model_name:
+                        self.logger.info(f"Trying fallback model: {fallback_model}")
+                        model = self.client.GenerativeModel(fallback_model)
+                        response = model.generate_content(
+                            prompt,
+                            generation_config=self.client.types.GenerationConfig(
+                                max_output_tokens=max_tokens,
+                                temperature=temperature
+                            )
+                        )
+                        return response.text
+                except Exception as e2:
+                    self.logger.error(f"Fallback model also failed: {str(e2)}")
+            
             return f"Error: {str(e)}"
         
     def generate_chat(self, messages: List[Dict[str, str]], **kwargs) -> str:
@@ -535,9 +594,12 @@ class GoogleProvider(AIProvider):
             return "Google Gemini not available. Install with: pip install google-generativeai"
             
         try:
-            model_name = kwargs.get("model", "gemini-pro")
+            preferred_model = kwargs.get("model", "gemini-1.5-pro")
+            model_name = self._get_available_model(preferred_model)
             max_tokens = kwargs.get("max_tokens", 1000)
             temperature = kwargs.get("temperature", 0.7)
+            
+            self.logger.info(f"Using model for chat: {model_name}")
             
             # Get the model
             model = self.client.GenerativeModel(model_name)
@@ -599,7 +661,8 @@ class GoogleProvider(AIProvider):
                 audio_data = f.read()
             
             # Use Gemini Pro Vision for audio transcription
-            model = self.client.GenerativeModel("gemini-pro")
+            model_name = self._get_available_model("gemini-1.5-pro")
+            model = self.client.GenerativeModel(model_name)
             
             # Create audio part
             audio_part = self.client.types.Part.from_data(audio_data, mime_type="audio/wav")

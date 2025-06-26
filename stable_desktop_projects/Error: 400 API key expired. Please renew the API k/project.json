@@ -1,0 +1,14 @@
+{
+  "app_name": "Error: 400 API key expired. Please renew the API k",
+  "safe_name": "error_400_api_key_expired_please_renew_the_api_k",
+  "description": "Error: 400 API key expired. Please renew the API key. [reason: \"API_KEY_INVALID\"\ndomain: \"googleapis.com\"\nmetadata {\n  key: \"service\"\n  value: \"generativelanguage.googleapis.com\"\n}\n, locale: \"en-US\"\nmessage: \"API key expired. Please renew the API key.\"\n]",
+  "ui_framework": "customtkinter",
+  "features": [
+    "Basic UI",
+    "User input",
+    "Data display"
+  ],
+  "created_at": "2025-06-26T02:31:56.071800",
+  "output_dir": "/Users/jordan/Dev/stableagents/stable_desktop_projects/Error: 400 API key expired. Please renew the API k",
+  "status": "created"
+}
