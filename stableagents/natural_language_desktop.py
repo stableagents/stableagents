@@ -312,7 +312,7 @@ setup(
     
     def run_app(self, project_path: str) -> bool:
         """Run the generated application."""
-        project_path = Path(project_path)
+        project_path = Path(project_path).resolve()  # Ensure absolute path
         main_file = project_path / "main.py"
         
         if not main_file.exists():
@@ -320,6 +320,8 @@ setup(
             return False
         
         print(f"🚀 Running app: {project_path.name}")
+        print(f"📁 Project path: {project_path}")
+        print(f"📄 Main file: {main_file}")
         
         try:
             # Install requirements first
@@ -330,10 +332,10 @@ setup(
                     sys.executable, "-m", "pip", "install", "-r", str(requirements_file)
                 ], check=True)
             
-            # Run the app
+            # Run the app - use the main file path directly, not with cwd
             result = subprocess.run([
                 sys.executable, str(main_file)
-            ], cwd=project_path, capture_output=True, text=True)
+            ], capture_output=True, text=True)
             
             if result.returncode == 0:
                 print("✅ App ran successfully")

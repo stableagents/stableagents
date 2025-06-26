@@ -3,7 +3,7 @@
 A desktop application generated from natural language description.
 
 ## Description
-I want to create a beautiful calculator
+I want to create a simple calculator app
 
 ## Framework
 Built with customtkinter
