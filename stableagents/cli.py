@@ -1267,7 +1267,7 @@ def guided_setup_with_prompt_selection():
                 manager = SecureAPIKeyManager()
                 stripe_manager = StripePaymentManager()
                 
-                if stripe_manager.process_monthly_subscription():
+                if manager.process_payment():
                     print("✅ Subscription active!")
                     print("📅 Your subscription will automatically renew each month")
                     print("💳 You can manage your subscription anytime")

@@ -161,13 +161,17 @@ class SecureAPIKeyManager:
         print()
     
     def process_payment(self) -> bool:
-        """Process monthly subscription signup"""
-        # Use Stripe API subscription only
-        if self.stripe_manager and self.stripe_manager.stripe_secret_key:
+        """Process monthly subscription signup using existing payment link"""
+        if self.stripe_manager:
             print("💳 Using Stripe for monthly subscription...")
-            if self.stripe_manager.process_monthly_subscription():
+            # Try to use existing payment link first
+            if self.stripe_manager.use_existing_payment_link():
                 return True
-        print("❌ Stripe is not configured. Please set STRIPE_SECRET_KEY as an environment variable.")
+            # Fallback to creating new checkout session if no existing link
+            elif self.stripe_manager.stripe_secret_key:
+                if self.stripe_manager.process_monthly_subscription():
+                    return True
+        print("❌ Stripe payment link not available. Please contact support.")
         return False
     
     def provide_api_keys_after_payment(self, password: str) -> bool:
