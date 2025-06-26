@@ -10,11 +10,13 @@ import os
 import json
 import getpass
 import webbrowser
+from pathlib import Path
 
 # Import from the package
 from stableagents import StableAgents
 from stableagents.core import get_banner
 from stableagents.desktop import DesktopAutomation, run_async
+from stableagents.stable_desktop import DesktopBuilder
 
 def setup_logging(verbose):
     """Configure logging based on verbosity level"""
@@ -1599,6 +1601,33 @@ def main():
     screenshot_parser = desktop_subparsers.add_parser('screenshot', help='Take a screenshot')
     screenshot_parser.add_argument('path', help='Path to save the screenshot')
     
+    # Stable Desktop commands
+    stable_desktop_parser = subparsers.add_parser('stable-desktop', help='Create desktop software using GPT')
+    stable_desktop_subparsers = stable_desktop_parser.add_subparsers(dest='stable_desktop_command', help='Stable Desktop command')
+    
+    # Create app command
+    create_app_parser = stable_desktop_subparsers.add_parser('create', help='Create a new desktop application')
+    create_app_parser.add_argument('name', help='Name of the application')
+    create_app_parser.add_argument('description', help='Description of what the app should do')
+    create_app_parser.add_argument('--framework', choices=['tkinter', 'customtkinter', 'pyqt', 'kivy'], 
+                                  default='tkinter', help='UI framework to use (default: tkinter)')
+    create_app_parser.add_argument('--features', nargs='+', help='List of features to include')
+    create_app_parser.add_argument('--output-dir', help='Output directory for the project')
+    
+    # List projects command
+    list_projects_parser = stable_desktop_subparsers.add_parser('list', help='List all created projects')
+    
+    # Build app command
+    build_app_parser = stable_desktop_subparsers.add_parser('build', help='Build a desktop application')
+    build_app_parser.add_argument('project_path', help='Path to the project directory')
+    
+    # Run app command
+    run_app_parser = stable_desktop_subparsers.add_parser('run', help='Run a desktop application')
+    run_app_parser.add_argument('project_path', help='Path to the project directory')
+    
+    # Frameworks command
+    frameworks_parser = stable_desktop_subparsers.add_parser('frameworks', help='List available UI frameworks')
+    
     args = parser.parse_args()
     logger = setup_logging(args.verbose)
     
@@ -2008,6 +2037,145 @@ def main():
         except Exception as e:
             print(f"❌ Error with Stripe integration: {e}")
             print("Please check your Stripe configuration and try again")
+            return 1
+    
+    elif args.command == 'stable-desktop':
+        # Check if we have an active AI provider for code generation
+        if not agent.get_active_ai_provider():
+            print("⚠️  No active AI provider detected.")
+            print("Setting up AI provider for code generation...")
+            if not setup_ai_provider(agent):
+                print("❌ AI setup failed. Stable Desktop requires an AI provider for code generation.")
+                print("💡 Run 'stableagents-ai setup' to configure your AI provider first.")
+                return 1
+        
+        # Create desktop builder with AI provider
+        try:
+            ai_provider = agent.get_active_ai_provider()
+            desktop_builder = DesktopBuilder(ai_provider)
+        except Exception as e:
+            print(f"❌ Error initializing desktop builder: {e}")
+            return 1
+        
+        # Handle stable desktop subcommands
+        if args.stable_desktop_command == 'create':
+            print("🚀 Creating desktop application with GPT...")
+            print("=" * 50)
+            
+            # Get output directory
+            output_dir = None
+            if args.output_dir:
+                output_dir = Path(args.output_dir)
+            
+            # Create the application
+            result = desktop_builder.create_app(
+                app_name=args.name,
+                description=args.description,
+                ui_framework=args.framework,
+                features=args.features or [],
+                output_dir=output_dir
+            )
+            
+            if result.get("success"):
+                print("\n🎉 Application created successfully!")
+                print(f"📁 Project location: {result['project_path']}")
+                print(f"🚀 To run: cd {result['project_path']} && python main.py")
+                print(f"🔨 To build: stableagents-ai stable-desktop build {result['project_path']}")
+                return 0
+            else:
+                print(f"❌ Failed to create application: {result.get('error', 'Unknown error')}")
+                return 1
+        
+        elif args.stable_desktop_command == 'list':
+            print("📋 Listing all desktop projects...")
+            print("=" * 40)
+            
+            projects = desktop_builder.list_projects()
+            if not projects:
+                print("No projects found.")
+                print("💡 Create your first project with: stableagents-ai stable-desktop create")
+                return 0
+            
+            for i, project in enumerate(projects, 1):
+                print(f"\n{i}. {project['app_name']}")
+                print(f"   📝 Description: {project['description']}")
+                print(f"   🎨 Framework: {project['ui_framework']}")
+                print(f"   📁 Location: {project['output_dir']}")
+                print(f"   📅 Created: {project['created_at']}")
+                if project['features']:
+                    print(f"   ⚡ Features: {', '.join(project['features'])}")
+            
+            return 0
+        
+        elif args.stable_desktop_command == 'build':
+            print("🔨 Building desktop application...")
+            print("=" * 40)
+            
+            project_path = Path(args.project_path)
+            if not project_path.exists():
+                print(f"❌ Project path not found: {project_path}")
+                return 1
+            
+            result = desktop_builder.build_app(project_path)
+            
+            if result.get("success"):
+                print("\n✅ Build completed successfully!")
+                print(f"📁 Build location: {result['build_path']}")
+                if result.get("executable_created"):
+                    print("📦 Executable created successfully!")
+                return 0
+            else:
+                print(f"❌ Build failed: {result.get('error', 'Unknown error')}")
+                return 1
+        
+        elif args.stable_desktop_command == 'run':
+            print("🚀 Running desktop application...")
+            print("=" * 40)
+            
+            project_path = Path(args.project_path)
+            if not project_path.exists():
+                print(f"❌ Project path not found: {project_path}")
+                return 1
+            
+            success = desktop_builder.run_app(project_path)
+            
+            if success:
+                print("✅ Application ran successfully!")
+                return 0
+            else:
+                print("❌ Failed to run application")
+                return 1
+        
+        elif args.stable_desktop_command == 'frameworks':
+            print("🎨 Available UI Frameworks")
+            print("=" * 40)
+            
+            ui_framework = desktop_builder.ui_framework
+            frameworks = ui_framework.list_frameworks()
+            
+            for framework in frameworks:
+                print(f"\n📱 {framework['name']}")
+                print(f"   📝 {framework['description']}")
+                print(f"   ✅ Pros: {', '.join(framework['pros'])}")
+                print(f"   ❌ Cons: {', '.join(framework['cons'])}")
+                print(f"   🎯 Best for: {', '.join(framework['best_for'])}")
+                
+                # Check availability
+                availability = ui_framework.check_framework_availability(framework['name'].lower())
+                if availability['available']:
+                    print(f"   🔧 Status: Available")
+                else:
+                    print(f"   🔧 Status: Not available - {availability.get('error', 'Unknown error')}")
+            
+            print(f"\n💡 Recommendation for beginners: tkinter (built-in)")
+            print(f"💡 Recommendation for modern apps: customtkinter")
+            print(f"💡 Recommendation for professional apps: pyqt")
+            
+            return 0
+        
+        else:
+            print("❌ Unknown stable-desktop command")
+            print("💡 Use --help for available commands")
             return 1
     
     return 0
