@@ -2197,6 +2197,35 @@ def main():
             print("💡 Use --help for available commands")
             return 1
     
+    elif args.command == 'natural-desktop':
+        # Import the natural language desktop generator
+        try:
+            from .cli_natural_desktop import (
+                create_app_interactive,
+                create_demo_app,
+                list_frameworks,
+                show_setup_instructions,
+                generate_code_interactive
+            )
+        except ImportError as e:
+            print(f"❌ Error importing natural desktop generator: {e}")
+            return 1
+        
+        # Handle natural desktop subcommands
+        if args.natural_desktop_command == 'create':
+            return 0 if create_app_interactive() else 1
+        elif args.natural_desktop_command == 'demo':
+            return 0 if create_demo_app() else 1
+        elif args.natural_desktop_command == 'frameworks':
+            return 0 if list_frameworks() else 1
+        elif args.natural_desktop_command == 'setup':
+            return 0 if show_setup_instructions() else 1
+        elif args.natural_desktop_command == 'code':
+            return 0 if generate_code_interactive() else 1
+        else:
+            # No command provided, run interactive mode
+            return 0 if create_app_interactive() else 1
+    
     return 0
 
 if __name__ == '__main__':
