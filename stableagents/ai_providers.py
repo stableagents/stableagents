@@ -536,6 +536,7 @@ class GoogleProvider(AIProvider):
         """Get an available model, falling back to alternatives if needed."""
         # Define model preferences in order (newer models first)
         model_preferences = [
+            "gemini-2.5-flash",
             "gemini-2.0-flash-exp",
             "gemini-2.0-flash",
             "gemini-1.5-pro",
@@ -559,7 +560,7 @@ class GoogleProvider(AIProvider):
             return self.available_models[0]
         
         # If we don't have the list, try the preferences
-        return preferred_model or "gemini-2.0-flash-exp"
+        return preferred_model or "gemini-2.5-flash"
     
     def _is_new_client(self) -> bool:
         """Check if we're using the new genai client."""
@@ -571,7 +572,7 @@ class GoogleProvider(AIProvider):
             return "Google Gemini not available. Install with: pip install google-generativeai"
             
         try:
-            preferred_model = kwargs.get("model", "gemini-2.0-flash-exp")
+            preferred_model = kwargs.get("model", "gemini-2.5-flash")
             model_name = self._get_available_model(preferred_model)
             max_tokens = kwargs.get("max_tokens", 1000)
             temperature = kwargs.get("temperature", 0.7)
@@ -583,10 +584,10 @@ class GoogleProvider(AIProvider):
                 response = self.client.models.generate_content(
                     model=model_name,
                     contents=prompt,
-                    generation_config={
-                        "max_output_tokens": max_tokens,
-                        "temperature": temperature
-                    }
+                    generation_config=self.client.types.GenerationConfig(
+                        max_output_tokens=max_tokens,
+                        temperature=temperature
+                    )
                 )
                 return response.text
             else:
@@ -613,10 +614,10 @@ class GoogleProvider(AIProvider):
                             response = self.client.models.generate_content(
                                 model=fallback_model,
                                 contents=prompt,
-                                generation_config={
-                                    "max_output_tokens": max_tokens,
-                                    "temperature": temperature
-                                }
+                                generation_config=self.client.types.GenerationConfig(
+                                    max_output_tokens=max_tokens,
+                                    temperature=temperature
+                                )
                             )
                             return response.text
                         else:
@@ -640,7 +641,7 @@ class GoogleProvider(AIProvider):
             return "Google Gemini not available. Install with: pip install google-generativeai"
             
         try:
-            preferred_model = kwargs.get("model", "gemini-2.0-flash-exp")
+            preferred_model = kwargs.get("model", "gemini-2.5-flash")
             model_name = self._get_available_model(preferred_model)
             max_tokens = kwargs.get("max_tokens", 1000)
             temperature = kwargs.get("temperature", 0.7)
@@ -663,10 +664,10 @@ class GoogleProvider(AIProvider):
                 response = self.client.models.generate_content(
                     model=model_name,
                     contents=contents,
-                    generation_config={
-                        "max_output_tokens": max_tokens,
-                        "temperature": temperature
-                    }
+                    generation_config=self.client.types.GenerationConfig(
+                        max_output_tokens=max_tokens,
+                        temperature=temperature
+                    )
                 )
                 return response.text
             else:

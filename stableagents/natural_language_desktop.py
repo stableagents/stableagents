@@ -538,7 +538,7 @@ stableagents-ai natural-desktop frameworks
         Return only the complete, runnable Python code. No explanations or markdown formatting.
         """
         
-        return self.gemini.generate_text(prompt, model="gemini-2.0-flash-exp", max_tokens=2000)
+        return self.gemini.generate_text(prompt, model="gemini-2.5-flash", max_tokens=2000)
     
     def _generate_enhanced_tkinter_code(self, description: str, app_name: str) -> str:
         """Generate enhanced Tkinter application code."""
@@ -570,7 +570,7 @@ stableagents-ai natural-desktop frameworks
         Return only the complete, runnable Python code. No explanations or markdown formatting.
         """
         
-        return self.gemini.generate_text(prompt, model="gemini-2.0-flash-exp", max_tokens=2000)
+        return self.gemini.generate_text(prompt, model="gemini-2.5-flash", max_tokens=2000)
     
     def _generate_enhanced_pyqt_code(self, description: str, app_name: str) -> str:
         """Generate enhanced PyQt application code."""
@@ -602,7 +602,7 @@ stableagents-ai natural-desktop frameworks
         Return only the complete, runnable Python code. No explanations or markdown formatting.
         """
         
-        return self.gemini.generate_text(prompt, model="gemini-2.0-flash-exp", max_tokens=2000)
+        return self.gemini.generate_text(prompt, model="gemini-2.5-flash", max_tokens=2000)
     
     def generate_code_from_prompt(self, prompt: str, framework: str = "customtkinter") -> str:
         """Generate specific UI code from a prompt."""
@@ -623,7 +623,7 @@ stableagents-ai natural-desktop frameworks
         Return only the complete Python code. No explanations or markdown formatting.
         """
         
-        return self.gemini.generate_text(enhanced_prompt, model="gemini-2.0-flash-exp", max_tokens=1500)
+        return self.gemini.generate_text(enhanced_prompt, model="gemini-2.5-flash", max_tokens=1500)
     
     def create_interactive_demo(self) -> Dict[str, Any]:
         """Create an interactive demo application showcasing the natural desktop capabilities."""
