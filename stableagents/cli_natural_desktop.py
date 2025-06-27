@@ -71,22 +71,7 @@ def create_app_interactive() -> bool:
             app_name = None
         
         # Choose framework
-        print("\n🎨 Choose UI Framework:")
-        frameworks = generator.list_frameworks()
-        for i, framework in enumerate(frameworks, 1):
-            print(f"  {i}. {framework}")
-        
-        while True:
-            try:
-                choice = input(f"\nEnter choice (1-{len(frameworks)}): ").strip()
-                framework_index = int(choice) - 1
-                if 0 <= framework_index < len(frameworks):
-                    ui_framework = frameworks[framework_index]
-                    break
-                else:
-                    print("❌ Invalid choice. Please try again.")
-            except ValueError:
-                print("❌ Please enter a number.")
+        ui_framework = _select_framework(generator)
         
         print(f"\n🚀 Creating {ui_framework} application...")
         print("⏳ This may take a moment as Gemini AI generates your application...")
@@ -158,16 +143,37 @@ def list_frameworks() -> bool:
     print("=" * 40)
     
     generator = NaturalLanguageDesktopGenerator()
-    frameworks = generator.list_frameworks()
+    framework_descriptions = generator.get_framework_descriptions()
     
-    for i, framework in enumerate(frameworks, 1):
-        print(f"\n{i}. {framework}")
+    for i, description in enumerate(framework_descriptions, 1):
+        print(f"\n{i}. {description}")
     
     print("\n💡 Recommendation for beginners: CustomTkinter (modern and easy)")
     print("💡 Recommendation for simple apps: Tkinter (built-in)")
     print("💡 Recommendation for professional apps: PyQt (powerful)")
     
     return True
+
+
+def _select_framework(generator) -> str:
+    """Helper function to select a framework with descriptions."""
+    print("\n🎨 Choose UI Framework:")
+    framework_descriptions = generator.get_framework_descriptions()
+    framework_names = generator.list_frameworks()
+    
+    for i, description in enumerate(framework_descriptions, 1):
+        print(f"  {i}. {description}")
+    
+    while True:
+        try:
+            choice = input(f"\nEnter choice (1-{len(framework_names)}): ").strip()
+            framework_index = int(choice) - 1
+            if 0 <= framework_index < len(framework_names):
+                return framework_names[framework_index]
+            else:
+                print("❌ Invalid choice. Please try again.")
+        except ValueError:
+            print("❌ Please enter a number.")
 
 
 def show_setup_instructions() -> bool:
@@ -201,22 +207,7 @@ def generate_code_interactive() -> bool:
             return False
         
         # Choose framework
-        print("\n🎨 Choose UI Framework:")
-        frameworks = generator.list_frameworks()
-        for i, framework in enumerate(frameworks, 1):
-            print(f"  {i}. {framework}")
-        
-        while True:
-            try:
-                choice = input(f"\nEnter choice (1-{len(frameworks)}): ").strip()
-                framework_index = int(choice) - 1
-                if 0 <= framework_index < len(frameworks):
-                    ui_framework = frameworks[framework_index]
-                    break
-                else:
-                    print("❌ Invalid choice. Please try again.")
-            except ValueError:
-                print("❌ Please enter a number.")
+        ui_framework = _select_framework(generator)
         
         print(f"\n🎨 Generating {ui_framework} code...")
         print("⏳ This may take a moment...")

@@ -583,11 +583,7 @@ class GoogleProvider(AIProvider):
                 # Use new genai client
                 response = self.client.models.generate_content(
                     model=model_name,
-                    contents=prompt,
-                    generation_config=self.client.types.GenerationConfig(
-                        max_output_tokens=max_tokens,
-                        temperature=temperature
-                    )
+                    contents=prompt
                 )
                 return response.text
             else:
@@ -613,11 +609,7 @@ class GoogleProvider(AIProvider):
                         if self._is_new_client():
                             response = self.client.models.generate_content(
                                 model=fallback_model,
-                                contents=prompt,
-                                generation_config=self.client.types.GenerationConfig(
-                                    max_output_tokens=max_tokens,
-                                    temperature=temperature
-                                )
+                                contents=prompt
                             )
                             return response.text
                         else:
@@ -663,11 +655,7 @@ class GoogleProvider(AIProvider):
                 
                 response = self.client.models.generate_content(
                     model=model_name,
-                    contents=contents,
-                    generation_config=self.client.types.GenerationConfig(
-                        max_output_tokens=max_tokens,
-                        temperature=temperature
-                    )
+                    contents=contents
                 )
                 return response.text
             else:
@@ -713,13 +701,13 @@ class GoogleProvider(AIProvider):
             if self._is_new_client():
                 # Use new genai client for embeddings
                 response = self.client.models.embed_content(
-                    model="embedding-001",
+                    model="gemini-embedding-exp-03-07",
                     content=text
                 )
                 return response.embedding.values[0]
             else:
                 # Use legacy client
-                embedding_model = self.client.EmbeddingModel("embedding-001")
+                embedding_model = self.client.EmbeddingModel("gemini-embedding-exp-03-07")
                 embedding = embedding_model.embed_content(text)
                 return embedding.values[0]
         except Exception as e:

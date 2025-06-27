@@ -2202,7 +2202,7 @@ def main():
         try:
             from .cli_natural_desktop import (
                 create_app_interactive,
-                create_demo_app,
+                create_enhanced_demo_app,
                 list_frameworks,
                 show_setup_instructions,
                 generate_code_interactive
@@ -2215,7 +2215,7 @@ def main():
         if args.natural_desktop_command == 'create':
             return 0 if create_app_interactive() else 1
         elif args.natural_desktop_command == 'demo':
-            return 0 if create_demo_app() else 1
+            return 0 if create_enhanced_demo_app() else 1
         elif args.natural_desktop_command == 'frameworks':
             return 0 if list_frameworks() else 1
         elif args.natural_desktop_command == 'setup':

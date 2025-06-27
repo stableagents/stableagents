@@ -151,7 +151,15 @@ class NaturalLanguageDesktopGenerator:
         Return only the complete Python code, no explanations.
         """
         
-        return self.gemini.generate_text(prompt)
+        try:
+            code = self.gemini.generate_text(prompt)
+            if not code or code.startswith("Error:"):
+                raise ValueError(f"Failed to generate code: {code}")
+            return code
+        except Exception as e:
+            print(f"❌ Error generating CustomTkinter code: {e}")
+            print("   Please check your API key and try again.")
+            raise
     
     def _generate_tkinter_code(self, description: str, app_name: str, features: List[str]) -> str:
         """Generate Tkinter application code."""
@@ -174,7 +182,15 @@ class NaturalLanguageDesktopGenerator:
         Return only the complete Python code, no explanations.
         """
         
-        return self.gemini.generate_text(prompt)
+        try:
+            code = self.gemini.generate_text(prompt)
+            if not code or code.startswith("Error:"):
+                raise ValueError(f"Failed to generate code: {code}")
+            return code
+        except Exception as e:
+            print(f"❌ Error generating Tkinter code: {e}")
+            print("   Please check your API key and try again.")
+            raise
     
     def _generate_pyqt_code(self, description: str, app_name: str, features: List[str]) -> str:
         """Generate PyQt application code."""
@@ -222,6 +238,19 @@ class NaturalLanguageDesktopGenerator:
     def _write_app_code(self, project_path: Path, code: str, framework: str):
         """Write the generated code to the project."""
         main_file = project_path / "main.py"
+        
+        # Check if the code looks like valid Python (not an error message)
+        if code.startswith("Error:") or code.startswith("❌") or "INVALID_ARGUMENT" in code:
+            print(f"❌ Error: Generated code contains an error message:")
+            print(f"   {code[:200]}...")
+            print("   Please check your API key and try again.")
+            raise ValueError("Failed to generate valid Python code")
+        
+        # Basic validation that it looks like Python code
+        if not any(keyword in code for keyword in ["import", "def ", "class ", "if __name__"]):
+            print(f"❌ Error: Generated code doesn't appear to be valid Python:")
+            print(f"   {code[:200]}...")
+            raise ValueError("Generated code is not valid Python")
         
         with open(main_file, 'w') as f:
             f.write(code)
@@ -352,7 +381,11 @@ setup(
             return False
     
     def list_frameworks(self) -> List[str]:
-        """List available UI frameworks."""
+        """List available UI framework names."""
+        return ["customtkinter", "tkinter", "pyqt"]
+    
+    def get_framework_descriptions(self) -> List[str]:
+        """List available UI frameworks with descriptions."""
         return [
             "customtkinter - Modern, beautiful UI with dark mode support",
             "tkinter - Standard Python GUI framework",
