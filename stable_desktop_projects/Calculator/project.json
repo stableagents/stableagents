@@ -1,7 +1,0 @@
-{
-  "name": "Calculator",
-  "description": "Create a modern calculator with scientific functions, dark mode, and history",
-  "framework": "tkinter",
-  "generated_by": "StableAgents Natural Language Desktop Generator",
-  "version": "1.0.0"
-}

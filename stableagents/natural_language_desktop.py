@@ -99,6 +99,12 @@ class NaturalLanguageDesktopGenerator:
         
         try:
             response = self.gemini.generate_text(prompt)
+            
+            # Check if response contains an error
+            if response.startswith("Error:") or "INVALID_ARGUMENT" in response:
+                print(f"⚠️ Error extracting app info: {response}")
+                raise ValueError(f"API error: {response}")
+            
             # Clean up the response to extract JSON
             response = response.strip()
             if response.startswith("```json"):
@@ -214,7 +220,15 @@ class NaturalLanguageDesktopGenerator:
         Return only the complete Python code, no explanations.
         """
         
-        return self.gemini.generate_text(prompt)
+        try:
+            code = self.gemini.generate_text(prompt)
+            if not code or code.startswith("Error:"):
+                raise ValueError(f"Failed to generate code: {code}")
+            return code
+        except Exception as e:
+            print(f"❌ Error generating PyQt code: {e}")
+            print("   Please check your API key and try again.")
+            raise
     
     def _create_project_structure(self, app_name: str, framework: str) -> Path:
         """Create the project directory structure."""
