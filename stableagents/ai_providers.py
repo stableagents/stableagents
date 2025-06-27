@@ -491,32 +491,53 @@ class GoogleProvider(AIProvider):
         self.available = False
         self.available_models = []
         
-        # Try to initialize Google Generative AI
+        # Try to initialize Google Generative AI with newer client
         try:
-            import google.generativeai as genai
-            genai.configure(api_key=api_key)
-            self.client = genai
+            from google import genai
+            self.client = genai.Client(api_key=api_key)
             self.available = True
-            self.logger.info("Google Gemini API initialized successfully")
+            self.logger.info("Google Gemini API initialized successfully with new client")
             
             # Get available models
             try:
-                self.available_models = [model.name for model in genai.list_models()]
+                # List available models
+                models = self.client.models.list()
+                self.available_models = [model.name for model in models]
                 self.logger.info(f"Available models: {self.available_models}")
             except Exception as e:
                 self.logger.warning(f"Could not list models: {e}")
                 # Use default models if listing fails
-                self.available_models = ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-pro"]
+                self.available_models = ["gemini-2.0-flash-exp", "gemini-1.5-pro", "gemini-1.5-flash", "gemini-pro"]
                 
         except ImportError:
-            self.logger.error("Google Generative AI not available. Install with: pip install google-generativeai")
+            # Fallback to older library if new one not available
+            try:
+                import google.generativeai as genai
+                genai.configure(api_key=api_key)
+                self.client = genai
+                self.available = True
+                self.logger.info("Google Gemini API initialized with legacy client")
+                
+                # Get available models
+                try:
+                    self.available_models = [model.name for model in genai.list_models()]
+                    self.logger.info(f"Available models: {self.available_models}")
+                except Exception as e:
+                    self.logger.warning(f"Could not list models: {e}")
+                    # Use default models if listing fails
+                    self.available_models = ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-pro"]
+                    
+            except ImportError:
+                self.logger.error("Google Generative AI not available. Install with: pip install google-generativeai")
         except Exception as e:
             self.logger.error(f"Error initializing Google Gemini: {str(e)}")
     
     def _get_available_model(self, preferred_model: str = None) -> str:
         """Get an available model, falling back to alternatives if needed."""
-        # Define model preferences in order
+        # Define model preferences in order (newer models first)
         model_preferences = [
+            "gemini-2.0-flash-exp",
+            "gemini-2.0-flash",
             "gemini-1.5-pro",
             "gemini-1.5-flash", 
             "gemini-pro",
@@ -538,7 +559,11 @@ class GoogleProvider(AIProvider):
             return self.available_models[0]
         
         # If we don't have the list, try the preferences
-        return preferred_model or "gemini-1.5-pro"
+        return preferred_model or "gemini-2.0-flash-exp"
+    
+    def _is_new_client(self) -> bool:
+        """Check if we're using the new genai client."""
+        return hasattr(self.client, 'models')
         
     def generate_text(self, prompt: str, **kwargs) -> str:
         """Generate text from a prompt using Google Gemini."""
@@ -546,26 +571,36 @@ class GoogleProvider(AIProvider):
             return "Google Gemini not available. Install with: pip install google-generativeai"
             
         try:
-            preferred_model = kwargs.get("model", "gemini-1.5-pro")
+            preferred_model = kwargs.get("model", "gemini-2.0-flash-exp")
             model_name = self._get_available_model(preferred_model)
             max_tokens = kwargs.get("max_tokens", 1000)
             temperature = kwargs.get("temperature", 0.7)
             
             self.logger.info(f"Using model: {model_name}")
             
-            # Get the model
-            model = self.client.GenerativeModel(model_name)
-            
-            # Generate content
-            response = model.generate_content(
-                prompt,
-                generation_config=self.client.types.GenerationConfig(
-                    max_output_tokens=max_tokens,
-                    temperature=temperature
+            if self._is_new_client():
+                # Use new genai client
+                response = self.client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                    generation_config={
+                        "max_output_tokens": max_tokens,
+                        "temperature": temperature
+                    }
                 )
-            )
-            
-            return response.text
+                return response.text
+            else:
+                # Use legacy client
+                model = self.client.GenerativeModel(model_name)
+                response = model.generate_content(
+                    prompt,
+                    generation_config=self.client.types.GenerationConfig(
+                        max_output_tokens=max_tokens,
+                        temperature=temperature
+                    )
+                )
+                return response.text
+                
         except Exception as e:
             self.logger.error(f"Error generating text with Gemini: {str(e)}")
             # Try with a different model if the first one fails
@@ -574,15 +609,26 @@ class GoogleProvider(AIProvider):
                     fallback_model = self._get_available_model("gemini-1.5-flash")
                     if fallback_model != model_name:
                         self.logger.info(f"Trying fallback model: {fallback_model}")
-                        model = self.client.GenerativeModel(fallback_model)
-                        response = model.generate_content(
-                            prompt,
-                            generation_config=self.client.types.GenerationConfig(
-                                max_output_tokens=max_tokens,
-                                temperature=temperature
+                        if self._is_new_client():
+                            response = self.client.models.generate_content(
+                                model=fallback_model,
+                                contents=prompt,
+                                generation_config={
+                                    "max_output_tokens": max_tokens,
+                                    "temperature": temperature
+                                }
                             )
-                        )
-                        return response.text
+                            return response.text
+                        else:
+                            model = self.client.GenerativeModel(fallback_model)
+                            response = model.generate_content(
+                                prompt,
+                                generation_config=self.client.types.GenerationConfig(
+                                    max_output_tokens=max_tokens,
+                                    temperature=temperature
+                                )
+                            )
+                            return response.text
                 except Exception as e2:
                     self.logger.error(f"Fallback model also failed: {str(e2)}")
             
@@ -594,43 +640,64 @@ class GoogleProvider(AIProvider):
             return "Google Gemini not available. Install with: pip install google-generativeai"
             
         try:
-            preferred_model = kwargs.get("model", "gemini-1.5-pro")
+            preferred_model = kwargs.get("model", "gemini-2.0-flash-exp")
             model_name = self._get_available_model(preferred_model)
             max_tokens = kwargs.get("max_tokens", 1000)
             temperature = kwargs.get("temperature", 0.7)
             
             self.logger.info(f"Using model for chat: {model_name}")
             
-            # Get the model
-            model = self.client.GenerativeModel(model_name)
-            
-            # Start a chat session
-            chat = model.start_chat(history=[])
-            
-            # Convert messages to Gemini format
-            for message in messages:
-                role = message.get("role", "").lower()
-                content = message.get("content", "")
+            if self._is_new_client():
+                # Use new genai client for chat
+                # Convert messages to the format expected by new client
+                contents = []
+                for message in messages:
+                    role = message.get("role", "").lower()
+                    content = message.get("content", "")
+                    if role in ["user", "assistant"]:
+                        contents.append({
+                            "role": role,
+                            "parts": [{"text": content}]
+                        })
                 
-                if role == "user":
-                    # Send user message
-                    response = chat.send_message(content)
-                elif role == "assistant":
-                    # Add assistant response to history
-                    chat.history.append({
-                        "role": "user",
-                        "parts": [content]
-                    })
-                elif role == "system":
-                    # System messages are typically handled differently
-                    # For Gemini, we can prepend to the first user message
-                    continue
-            
-            # Get the last response
-            if chat.history:
-                return chat.history[-1]["parts"][0]
+                response = self.client.models.generate_content(
+                    model=model_name,
+                    contents=contents,
+                    generation_config={
+                        "max_output_tokens": max_tokens,
+                        "temperature": temperature
+                    }
+                )
+                return response.text
             else:
-                return "No response generated"
+                # Use legacy client
+                model = self.client.GenerativeModel(model_name)
+                chat = model.start_chat(history=[])
+                
+                # Convert messages to Gemini format
+                for message in messages:
+                    role = message.get("role", "").lower()
+                    content = message.get("content", "")
+                    
+                    if role == "user":
+                        # Send user message
+                        response = chat.send_message(content)
+                    elif role == "assistant":
+                        # Add assistant response to history
+                        chat.history.append({
+                            "role": "user",
+                            "parts": [content]
+                        })
+                    elif role == "system":
+                        # System messages are typically handled differently
+                        # For Gemini, we can prepend to the first user message
+                        continue
+                
+                # Get the last response
+                if chat.history:
+                    return chat.history[-1]["parts"][0]
+                else:
+                    return "No response generated"
                 
         except Exception as e:
             self.logger.error(f"Error generating chat with Gemini: {str(e)}")
@@ -642,10 +709,18 @@ class GoogleProvider(AIProvider):
             return []
             
         try:
-            # Use the embedding model
-            embedding_model = self.client.EmbeddingModel("embedding-001")
-            embedding = embedding_model.embed_content(text)
-            return embedding.values[0]
+            if self._is_new_client():
+                # Use new genai client for embeddings
+                response = self.client.models.embed_content(
+                    model="embedding-001",
+                    content=text
+                )
+                return response.embedding.values[0]
+            else:
+                # Use legacy client
+                embedding_model = self.client.EmbeddingModel("embedding-001")
+                embedding = embedding_model.embed_content(text)
+                return embedding.values[0]
         except Exception as e:
             self.logger.error(f"Error generating embeddings with Gemini: {str(e)}")
             return []
@@ -660,16 +735,28 @@ class GoogleProvider(AIProvider):
             with open(audio_file, "rb") as f:
                 audio_data = f.read()
             
-            # Use Gemini Pro Vision for audio transcription
             model_name = self._get_available_model("gemini-1.5-pro")
-            model = self.client.GenerativeModel(model_name)
             
-            # Create audio part
-            audio_part = self.client.types.Part.from_data(audio_data, mime_type="audio/wav")
-            
-            # Generate transcription
-            response = model.generate_content([audio_part])
-            return response.text
+            if self._is_new_client():
+                # Use new genai client for audio transcription
+                response = self.client.models.generate_content(
+                    model=model_name,
+                    contents=[{
+                        "parts": [{
+                            "inline_data": {
+                                "mime_type": "audio/wav",
+                                "data": audio_data
+                            }
+                        }]
+                    }]
+                )
+                return response.text
+            else:
+                # Use legacy client
+                model = self.client.GenerativeModel(model_name)
+                audio_part = self.client.types.Part.from_data(audio_data, mime_type="audio/wav")
+                response = model.generate_content([audio_part])
+                return response.text
             
         except Exception as e:
             self.logger.error(f"Error transcribing audio with Gemini: {str(e)}")

@@ -42,191 +42,113 @@ def get_gemini_api_key() -> Optional[str]:
 
 
 def create_app_interactive() -> bool:
-    """Interactive app creation process."""
-    print("🎯 Natural Language Desktop App Creator")
+    """Interactive app creation with enhanced Gemini integration."""
+    print("\n🚀 Natural Language Desktop App Generator")
     print("=" * 50)
-    print("Create desktop applications using natural language descriptions!")
-    print()
-    
-    # Get API key
-    api_key = get_gemini_api_key()
-    if not api_key:
-        return False
-    
-    # Initialize generator
-    try:
-        generator = NaturalLanguageDesktopGenerator(api_key)
-        # Test the Gemini connection
-        test_response = generator.gemini.generate_text("Hello")
-        if not test_response:
-            print("❌ Failed to initialize Gemini provider")
-            return False
-    except Exception as e:
-        print(f"❌ Error initializing generator: {e}")
-        return False
-    
-    print("✅ Gemini API connected successfully!")
-    print()
-    
-    # Get app description
-    print("📝 Describe your application:")
-    print("Example: 'Create a calculator app with scientific functions and a modern UI'")
-    print("Example: 'Build a task manager with dark mode and data persistence'")
+    print("Create beautiful desktop applications using natural language and Google Gemini AI!")
     print()
     
     try:
+        # Initialize the generator
+        generator = NaturalLanguageDesktopGenerator()
+        print("✅ Gemini AI initialized successfully!")
+        
+        # Get app description
+        print("\n📝 Describe your desktop application:")
+        print("💡 Be specific about features, UI elements, and functionality")
+        print("💡 Example: 'Create a modern calculator with scientific functions, dark mode, and history'")
+        print()
+        
         description = input("Description: ").strip()
         if not description:
             print("❌ Description is required")
             return False
-    except (KeyboardInterrupt, EOFError):
-        print("\n👋 App creation cancelled.")
-        return False
-    
-    # Get app name (optional)
-    app_name = None
-    try:
-        app_name_input = input("App name (press Enter for auto-generate): ").strip()
-        if app_name_input:
-            app_name = app_name_input
-    except (KeyboardInterrupt, EOFError):
-        pass
-    
-    # Choose UI framework
-    print("\n🎨 Choose UI Framework:")
-    frameworks = generator.list_frameworks()
-    
-    for i, framework in enumerate(frameworks, 1):
-        print(f"{i}. {framework}")
-    
-    try:
-        choice = input("Enter your choice (1-3, default 1): ").strip()
-        if not choice:
-            choice = "1"
         
-        choice_idx = int(choice) - 1
-        if 0 <= choice_idx < len(frameworks):
-            # Extract framework name from the description
-            framework_desc = frameworks[choice_idx]
-            if "customtkinter" in framework_desc.lower():
-                ui_framework = "customtkinter"
-            elif "tkinter" in framework_desc.lower():
-                ui_framework = "tkinter"
-            elif "pyqt" in framework_desc.lower():
-                ui_framework = "pyqt"
-            else:
-                ui_framework = "customtkinter"
-        else:
-            print("❌ Invalid choice, using CustomTkinter")
-            ui_framework = "customtkinter"
-    except (ValueError, KeyboardInterrupt, EOFError):
-        print("❌ Invalid choice, using CustomTkinter")
-        ui_framework = "customtkinter"
-    
-    # Create the app
-    print(f"\n🚀 Creating '{app_name or 'Your App'}' with {ui_framework}...")
-    print("This may take a few moments...")
-    print()
-    
-    try:
-        result = generator.generate_app(description, ui_framework)
+        # Get app name (optional)
+        print("\n📱 App Name (optional, will be generated if not provided):")
+        app_name = input("Name: ").strip()
+        if not app_name:
+            app_name = None
         
-        if result:
-            print("🎉 App created successfully!")
-            print(f"📁 Project location: {result['path']}")
-            print(f"🚀 To run: cd {result['path']} && python main.py")
+        # Choose framework
+        print("\n🎨 Choose UI Framework:")
+        frameworks = generator.list_frameworks()
+        for i, framework in enumerate(frameworks, 1):
+            print(f"  {i}. {framework}")
+        
+        while True:
+            try:
+                choice = input(f"\nEnter choice (1-{len(frameworks)}): ").strip()
+                framework_index = int(choice) - 1
+                if 0 <= framework_index < len(frameworks):
+                    ui_framework = frameworks[framework_index]
+                    break
+                else:
+                    print("❌ Invalid choice. Please try again.")
+            except ValueError:
+                print("❌ Please enter a number.")
+        
+        print(f"\n🚀 Creating {ui_framework} application...")
+        print("⏳ This may take a moment as Gemini AI generates your application...")
+        
+        # Create the application
+        result = generator.create_app_from_description(
+            description=description,
+            app_name=app_name,
+            ui_framework=ui_framework
+        )
+        
+        if result.get("success"):
+            print("\n🎉 Application created successfully!")
+            print(f"📁 Location: {result['project_path']}")
+            print(f"🚀 To run: cd {result['project_path']} && python main.py")
             
             # Ask if user wants to run the app
-            try:
-                run_app = input("\n🚀 Run the app now? (y/n): ").strip().lower()
-                if run_app == 'y':
-                    success = generator.run_app(result['path'])
-                    if success:
-                        print("✅ App ran successfully!")
-                    else:
-                        print("❌ Failed to run app")
-            except (KeyboardInterrupt, EOFError):
-                pass
+            run_app = input("\nWould you like to run the application now? (y/n): ").strip().lower()
+            if run_app in ['y', 'yes']:
+                print("🚀 Starting application...")
+                generator.run_app(result['project_path'])
             
             return True
         else:
-            print("❌ Failed to create app")
+            print(f"❌ Failed to create application: {result.get('error', 'Unknown error')}")
             return False
             
     except Exception as e:
-        print(f"❌ Error creating app: {e}")
+        print(f"❌ Error: {str(e)}")
         return False
 
 
-def create_demo_app() -> bool:
-    """Create a demo application."""
-    print("🎯 Creating Demo Application")
+def create_enhanced_demo_app() -> bool:
+    """Create an enhanced demo application showcasing the capabilities."""
+    print("\n🎯 Enhanced Demo Application")
     print("=" * 40)
-    
-    # Get API key
-    api_key = get_gemini_api_key()
-    if not api_key:
-        return False
-    
-    # Initialize generator
-    try:
-        generator = NaturalLanguageDesktopGenerator(api_key)
-        # Test the Gemini connection
-        test_response = generator.gemini.generate_text("Hello")
-        if not test_response:
-            print("❌ Failed to initialize Gemini provider")
-            return False
-    except Exception as e:
-        print(f"❌ Error initializing generator: {e}")
-        return False
-    
-    print("✅ Gemini API connected successfully!")
-    print("🚀 Creating TaskMaster demo application...")
-    print("This may take a few moments...")
-    print()
+    print("Creating a comprehensive demo showcasing Natural Language Desktop capabilities...")
     
     try:
-        # Create a demo task manager app
-        demo_description = """
-        Create a modern task management application with:
-        - Beautiful modern UI with dark/light mode toggle
-        - Add, edit, and delete tasks with descriptions
-        - Task categories and priority levels (High, Medium, Low)
-        - Due dates and reminders
-        - Mark tasks as complete/incomplete with visual indicators
-        - Search and filter tasks by category, priority, or status
-        - Data persistence - save tasks to local file
-        - Export tasks to different formats (CSV, JSON)
-        - Statistics and progress tracking
-        - Responsive design for different window sizes
-        """
+        generator = NaturalLanguageDesktopGenerator()
         
-        result = generator.generate_app(demo_description, "customtkinter")
+        # Create the demo app
+        result = generator.create_interactive_demo()
         
-        if result:
-            print("🎉 Demo app created successfully!")
-            print(f"📁 Project location: {result['path']}")
-            print(f"🚀 To run: cd {result['path']} && python main.py")
+        if result.get("success"):
+            print("\n🎉 Enhanced demo application created successfully!")
+            print(f"📁 Location: {result['project_path']}")
+            print(f"🚀 To run: cd {result['project_path']} && python main.py")
             
-            # Ask if user wants to run the app
-            try:
-                run_app = input("\n🚀 Run the demo app now? (y/n): ").strip().lower()
-                if run_app == 'y':
-                    success = generator.run_app(result['path'])
-                    if success:
-                        print("✅ Demo app ran successfully!")
-                    else:
-                        print("❌ Failed to run demo app")
-            except (KeyboardInterrupt, EOFError):
-                pass
+            # Ask if user wants to run the demo
+            run_demo = input("\nWould you like to run the demo application now? (y/n): ").strip().lower()
+            if run_demo in ['y', 'yes']:
+                print("🚀 Starting demo application...")
+                generator.run_app(result['project_path'])
             
             return True
         else:
-            print("❌ Failed to create demo app")
+            print(f"❌ Failed to create demo app: {result.get('error', 'Unknown error')}")
             return False
             
     except Exception as e:
-        print(f"❌ Error creating demo app: {e}")
+        print(f"❌ Error: {str(e)}")
         return False
 
 
@@ -256,115 +178,76 @@ def show_setup_instructions() -> bool:
 
 
 def generate_code_interactive() -> bool:
-    """Interactive code generation."""
-    print("💻 Natural Language Code Generator")
-    print("=" * 40)
-    
-    # Get API key
-    api_key = get_gemini_api_key()
-    if not api_key:
-        return False
-    
-    # Initialize generator
-    try:
-        generator = NaturalLanguageDesktopGenerator(api_key)
-        # Test the Gemini connection
-        test_response = generator.gemini.generate_text("Hello")
-        if not test_response:
-            print("❌ Failed to initialize Gemini provider")
-            return False
-    except Exception as e:
-        print(f"❌ Error initializing generator: {e}")
-        return False
-    
-    print("✅ Gemini API connected successfully!")
-    print()
-    
-    # Get code description
-    print("📝 Describe the code you want to generate:")
-    print("Example: 'Create a login form with validation'")
-    print("Example: 'Build a data visualization widget'")
+    """Interactive code generation for specific UI components."""
+    print("\n🎨 Code Generation Tool")
+    print("=" * 30)
+    print("Generate specific UI components or functionality using natural language!")
     print()
     
     try:
-        description = input("Description: ").strip()
-        if not description:
+        generator = NaturalLanguageDesktopGenerator()
+        
+        # Get code prompt
+        print("📝 Describe the UI component or functionality you want to generate:")
+        print("💡 Examples:")
+        print("  - 'Create a login form with username and password fields'")
+        print("  - 'Build a data visualization widget with charts'")
+        print("  - 'Make a file upload component with drag and drop'")
+        print()
+        
+        prompt = input("Description: ").strip()
+        if not prompt:
             print("❌ Description is required")
             return False
-    except (KeyboardInterrupt, EOFError):
-        print("\n👋 Code generation cancelled.")
-        return False
-    
-    # Choose framework
-    print("\n🎨 Choose Framework:")
-    frameworks = generator.list_frameworks()
-    
-    for i, framework in enumerate(frameworks, 1):
-        print(f"{i}. {framework}")
-    
-    try:
-        choice = input("Enter your choice (1-3, default 1): ").strip()
-        if not choice:
-            choice = "1"
         
-        choice_idx = int(choice) - 1
-        if 0 <= choice_idx < len(frameworks):
-            # Extract framework name from the description
-            framework_desc = frameworks[choice_idx]
-            if "customtkinter" in framework_desc.lower():
-                framework = "customtkinter"
-            elif "tkinter" in framework_desc.lower():
-                framework = "tkinter"
-            elif "pyqt" in framework_desc.lower():
-                framework = "pyqt"
-            else:
-                framework = "customtkinter"
-        else:
-            print("❌ Invalid choice, using CustomTkinter")
-            framework = "customtkinter"
-    except (ValueError, KeyboardInterrupt, EOFError):
-        print("❌ Invalid choice, using CustomTkinter")
-        framework = "customtkinter"
-    
-    # Generate code
-    print(f"\n🚀 Generating code with {framework}...")
-    print("This may take a few moments...")
-    print()
-    
-    try:
-        # Use the existing code generation method
-        if framework == "customtkinter":
-            code = generator._generate_customtkinter_code(description, "Generated App", ["basic functionality"])
-        elif framework == "tkinter":
-            code = generator._generate_tkinter_code(description, "Generated App", ["basic functionality"])
-        elif framework == "pyqt":
-            code = generator._generate_pyqt_code(description, "Generated App", ["basic functionality"])
-        else:
-            code = generator._generate_customtkinter_code(description, "Generated App", ["basic functionality"])
+        # Choose framework
+        print("\n🎨 Choose UI Framework:")
+        frameworks = generator.list_frameworks()
+        for i, framework in enumerate(frameworks, 1):
+            print(f"  {i}. {framework}")
         
-        print("🎉 Code generated successfully!")
+        while True:
+            try:
+                choice = input(f"\nEnter choice (1-{len(frameworks)}): ").strip()
+                framework_index = int(choice) - 1
+                if 0 <= framework_index < len(frameworks):
+                    ui_framework = frameworks[framework_index]
+                    break
+                else:
+                    print("❌ Invalid choice. Please try again.")
+            except ValueError:
+                print("❌ Please enter a number.")
+        
+        print(f"\n🎨 Generating {ui_framework} code...")
+        print("⏳ This may take a moment...")
+        
+        # Generate the code
+        code = generator.generate_code_from_prompt(prompt, ui_framework)
+        
+        print("\n✅ Code generated successfully!")
+        print("\n📋 Generated Code:")
         print("=" * 50)
         print(code)
         print("=" * 50)
         
         # Ask if user wants to save the code
-        try:
-            save_code = input("\n💾 Save code to file? (y/n): ").strip().lower()
-            if save_code == 'y':
-                filename = input("Filename (default: generated_code.py): ").strip()
-                if not filename:
-                    filename = "generated_code.py"
-                
+        save_code = input("\nWould you like to save this code to a file? (y/n): ").strip().lower()
+        if save_code in ['y', 'yes']:
+            filename = input("Enter filename (e.g., my_component.py): ").strip()
+            if not filename.endswith('.py'):
+                filename += '.py'
+            
+            try:
                 with open(filename, 'w') as f:
                     f.write(code)
                 print(f"✅ Code saved to {filename}")
-        except (KeyboardInterrupt, EOFError):
-            pass
+            except Exception as e:
+                print(f"❌ Error saving file: {str(e)}")
         
         return True
         
     except Exception as e:
-        print(f"❌ Error generating code: {e}")
+        print(f"❌ Error: {str(e)}")
         return False
 
 
@@ -410,7 +293,7 @@ Examples:
     if args.command == 'create':
         return 0 if create_app_interactive() else 1
     elif args.command == 'demo':
-        return 0 if create_demo_app() else 1
+        return 0 if create_enhanced_demo_app() else 1
     elif args.command == 'frameworks':
         return 0 if list_frameworks() else 1
     elif args.command == 'setup':
