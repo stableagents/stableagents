@@ -491,23 +491,38 @@ class GoogleProvider(AIProvider):
         self.available = False
         self.available_models = []
         
+        # Set the environment variable for the new client
+        os.environ["GEMINI_API_KEY"] = api_key
+        
         # Try to initialize Google Generative AI with newer client
         try:
             from google import genai
-            self.client = genai.Client(api_key=api_key)
+            self.client = genai.Client()
             self.available = True
-            self.logger.info("Google Gemini API initialized successfully with new client")
+            self.logger.info("✅ Google Gemini API initialized successfully with new client")
             
             # Get available models
             try:
+                self.logger.info("🔍 Listing available models...")
                 # List available models
                 models = self.client.models.list()
                 self.available_models = [model.name for model in models]
-                self.logger.info(f"Available models: {self.available_models}")
+                self.logger.info(f"📋 Available models ({len(self.available_models)}): {self.available_models}")
+                
+                # Filter out embedding models from the list
+                text_models = [model for model in self.available_models 
+                             if not any(embedding_keyword in model.lower() 
+                                      for embedding_keyword in ["embedding", "gecko", "textembedding"])]
+                self.logger.info(f"🤖 Text generation models ({len(text_models)}): {text_models}")
+                
+                # Update available_models to only include text generation models
+                self.available_models = text_models
+                
             except Exception as e:
-                self.logger.warning(f"Could not list models: {e}")
+                self.logger.warning(f"⚠️ Could not list models: {e}")
                 # Use default models if listing fails
-                self.available_models = ["gemini-2.0-flash-exp", "gemini-1.5-pro", "gemini-1.5-flash", "gemini-pro"]
+                self.available_models = ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-pro", "gemini-1.5-flash", "gemini-pro"]
+                self.logger.info(f"📋 Using default models: {self.available_models}")
                 
         except ImportError:
             # Fallback to older library if new one not available
@@ -516,51 +531,121 @@ class GoogleProvider(AIProvider):
                 genai.configure(api_key=api_key)
                 self.client = genai
                 self.available = True
-                self.logger.info("Google Gemini API initialized with legacy client")
+                self.logger.info("✅ Google Gemini API initialized with legacy client")
                 
                 # Get available models
                 try:
+                    self.logger.info("🔍 Listing available models (legacy)...")
                     self.available_models = [model.name for model in genai.list_models()]
-                    self.logger.info(f"Available models: {self.available_models}")
+                    self.logger.info(f"📋 Available models ({len(self.available_models)}): {self.available_models}")
+                    
+                    # Filter out embedding models from the list
+                    text_models = [model for model in self.available_models 
+                                 if not any(embedding_keyword in model.lower() 
+                                          for embedding_keyword in ["embedding", "gecko", "textembedding"])]
+                    self.logger.info(f"🤖 Text generation models ({len(text_models)}): {text_models}")
+                    
+                    # Update available_models to only include text generation models
+                    self.available_models = text_models
+                    
                 except Exception as e:
-                    self.logger.warning(f"Could not list models: {e}")
+                    self.logger.warning(f"⚠️ Could not list models: {e}")
                     # Use default models if listing fails
-                    self.available_models = ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-pro"]
+                    self.available_models = ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-pro", "gemini-1.5-flash", "gemini-pro"]
+                    self.logger.info(f"📋 Using default models: {self.available_models}")
                     
             except ImportError:
-                self.logger.error("Google Generative AI not available. Install with: pip install google-generativeai")
+                self.logger.error("❌ Google Generative AI not available. Install with: pip install google-generativeai")
         except Exception as e:
-            self.logger.error(f"Error initializing Google Gemini: {str(e)}")
+            self.logger.error(f"❌ Error initializing Google Gemini: {str(e)}")
+            # Try fallback to legacy client
+            try:
+                import google.generativeai as genai
+                genai.configure(api_key=api_key)
+                self.client = genai
+                self.available = True
+                self.logger.info("✅ Google Gemini API initialized with legacy client (fallback)")
+            except Exception as e2:
+                self.logger.error(f"❌ Legacy client also failed: {str(e2)}")
     
     def _get_available_model(self, preferred_model: str = None) -> str:
         """Get an available model, falling back to alternatives if needed."""
-        # Define model preferences in order (newer models first)
-        model_preferences = [
+        # Define model preferences in order (newer models first) - TEXT GENERATION MODELS ONLY
+        # Updated to prioritize gemini-2.5-pro since that's what's available
+        text_generation_models = [
+            "gemini-2.5-pro",
             "gemini-2.5-flash",
-            "gemini-2.0-flash-exp",
+            "gemini-2.0-flash-exp", 
             "gemini-2.0-flash",
             "gemini-1.5-pro",
             "gemini-1.5-flash", 
-            "gemini-pro",
-            "gemini-1.0-pro"
+            "gemini-pro"
+            # Removed gemini-1.0-pro as it's deprecated
         ]
+        
+        print(f"🔍 Model selection - Preferred: {preferred_model}")
+        print(f"🔍 Available models: {self.available_models}")
+        self.logger.info(f"🔍 Model selection - Preferred: {preferred_model}")
+        self.logger.info(f"🔍 Available models: {self.available_models}")
         
         # If we have available models list, use it
         if self.available_models:
-            # Try preferred model first
-            if preferred_model and preferred_model in self.available_models:
-                return preferred_model
+            # Try preferred model first (with and without models/ prefix)
+            if preferred_model:
+                # Check both with and without models/ prefix
+                preferred_with_prefix = f"models/{preferred_model}"
+                if preferred_model in self.available_models:
+                    print(f"✅ Using preferred model: {preferred_model}")
+                    self.logger.info(f"✅ Using preferred model: {preferred_model}")
+                    return preferred_model
+                elif preferred_with_prefix in self.available_models:
+                    print(f"✅ Using preferred model: {preferred_with_prefix}")
+                    self.logger.info(f"✅ Using preferred model: {preferred_with_prefix}")
+                    return preferred_with_prefix
             
-            # Try model preferences in order
-            for model in model_preferences:
+            # Try text generation models in order (with and without models/ prefix)
+            for model in text_generation_models:
+                # Check both with and without models/ prefix
                 if model in self.available_models:
+                    print(f"✅ Using text generation model: {model}")
+                    self.logger.info(f"✅ Using text generation model: {model}")
                     return model
+                elif f"models/{model}" in self.available_models:
+                    model_with_prefix = f"models/{model}"
+                    print(f"✅ Using text generation model: {model_with_prefix}")
+                    self.logger.info(f"✅ Using text generation model: {model_with_prefix}")
+                    return model_with_prefix
             
-            # Fall back to first available model
-            return self.available_models[0]
+            # Fall back to first available model that's not an embedding model and not deprecated
+            for model in self.available_models:
+                model_lower = model.lower()
+                # Skip embedding models
+                if any(embedding_keyword in model_lower for embedding_keyword in 
+                      ["embedding", "gecko", "textembedding"]):
+                    continue
+                # Skip deprecated models
+                if any(deprecated_keyword in model_lower for deprecated_keyword in 
+                      ["1.0-pro", "vision", "imagen", "veo", "gemma", "learnlm", "aqa"]):
+                    continue
+                # Skip experimental/preview models unless specifically requested
+                if any(preview_keyword in model_lower for preview_keyword in 
+                      ["preview", "experimental", "exp-", "thinking"]):
+                    continue
+                
+                print(f"✅ Using fallback model: {model}")
+                self.logger.info(f"✅ Using fallback model: {model}")
+                return model
+            
+            # If all available models are embedding models, use default
+            print("⚠️ All available models are embedding models, using default")
+            self.logger.warning("⚠️ All available models are embedding models, using default")
+            return "gemini-2.5-pro"
         
-        # If we don't have the list, try the preferences
-        return preferred_model or "gemini-2.5-flash"
+        # If we don't have the list, use the preferred model or default
+        final_model = preferred_model or "gemini-2.5-pro"
+        print(f"✅ Using default model: {final_model}")
+        self.logger.info(f"✅ Using default model: {final_model}")
+        return final_model
     
     def _is_new_client(self) -> bool:
         """Check if we're using the new genai client."""
@@ -572,22 +657,29 @@ class GoogleProvider(AIProvider):
             return "Google Gemini not available. Install with: pip install google-generativeai"
             
         try:
-            preferred_model = kwargs.get("model", "gemini-2.5-flash")
+            preferred_model = kwargs.get("model", "gemini-2.5-pro")
             model_name = self._get_available_model(preferred_model)
             max_tokens = kwargs.get("max_tokens", 1000)
             temperature = kwargs.get("temperature", 0.7)
             
-            self.logger.info(f"Using model: {model_name}")
+            self.logger.info(f"🚀 Starting text generation")
+            self.logger.info(f"📝 Prompt length: {len(prompt)} characters")
+            self.logger.info(f"🤖 Selected model: {model_name}")
+            self.logger.info(f"⚙️ Parameters: max_tokens={max_tokens}, temperature={temperature}")
+            self.logger.info(f"🔧 Using new client: {self._is_new_client()}")
             
             if self._is_new_client():
                 # Use new genai client
+                self.logger.info(f"🔄 Making API call to new client with model: {model_name}")
                 response = self.client.models.generate_content(
                     model=model_name,
                     contents=prompt
                 )
+                self.logger.info(f"✅ API call successful, response length: {len(response.text)} characters")
                 return response.text
             else:
                 # Use legacy client
+                self.logger.info(f"🔄 Making API call to legacy client with model: {model_name}")
                 model = self.client.GenerativeModel(model_name)
                 response = model.generate_content(
                     prompt,
@@ -596,21 +688,26 @@ class GoogleProvider(AIProvider):
                         temperature=temperature
                     )
                 )
+                self.logger.info(f"✅ API call successful, response length: {len(response.text)} characters")
                 return response.text
                 
         except Exception as e:
-            self.logger.error(f"Error generating text with Gemini: {str(e)}")
+            self.logger.error(f"❌ Error generating text with Gemini: {str(e)}")
+            self.logger.error(f"🔍 Error details: {type(e).__name__}: {e}")
+            
             # Try with a different model if the first one fails
             if "not found" in str(e) or "not supported" in str(e):
                 try:
+                    self.logger.info(f"🔄 Trying fallback model...")
                     fallback_model = self._get_available_model("gemini-1.5-flash")
                     if fallback_model != model_name:
-                        self.logger.info(f"Trying fallback model: {fallback_model}")
+                        self.logger.info(f"🔄 Trying fallback model: {fallback_model}")
                         if self._is_new_client():
                             response = self.client.models.generate_content(
                                 model=fallback_model,
                                 contents=prompt
                             )
+                            self.logger.info(f"✅ Fallback API call successful")
                             return response.text
                         else:
                             model = self.client.GenerativeModel(fallback_model)
@@ -621,9 +718,10 @@ class GoogleProvider(AIProvider):
                                     temperature=temperature
                                 )
                             )
+                            self.logger.info(f"✅ Fallback API call successful")
                             return response.text
                 except Exception as e2:
-                    self.logger.error(f"Fallback model also failed: {str(e2)}")
+                    self.logger.error(f"❌ Fallback model also failed: {str(e2)}")
             
             return f"Error: {str(e)}"
         
@@ -633,7 +731,7 @@ class GoogleProvider(AIProvider):
             return "Google Gemini not available. Install with: pip install google-generativeai"
             
         try:
-            preferred_model = kwargs.get("model", "gemini-2.5-flash")
+            preferred_model = kwargs.get("model", "gemini-2.5-pro")
             model_name = self._get_available_model(preferred_model)
             max_tokens = kwargs.get("max_tokens", 1000)
             temperature = kwargs.get("temperature", 0.7)
@@ -693,26 +791,9 @@ class GoogleProvider(AIProvider):
             return f"Error: {str(e)}"
         
     def embed_text(self, text: str, **kwargs) -> List[float]:
-        """Generate embeddings for text using Google Gemini."""
-        if not self.available or not self.client:
-            return []
-            
-        try:
-            if self._is_new_client():
-                # Use new genai client for embeddings
-                response = self.client.models.embed_content(
-                    model="gemini-embedding-exp-03-07",
-                    content=text
-                )
-                return response.embedding.values[0]
-            else:
-                # Use legacy client
-                embedding_model = self.client.EmbeddingModel("gemini-embedding-exp-03-07")
-                embedding = embedding_model.embed_content(text)
-                return embedding.values[0]
-        except Exception as e:
-            self.logger.error(f"Error generating embeddings with Gemini: {str(e)}")
-            return []
+        """Embeddings are currently disabled for Gemini provider."""
+        self.logger.info("Embeddings are disabled for Gemini provider.")
+        return []
         
     def transcribe_audio(self, audio_file: str, **kwargs) -> str:
         """Transcribe audio to text using Google Gemini."""

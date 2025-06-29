@@ -10,6 +10,7 @@ import argparse
 import sys
 import os
 import getpass
+import json
 from pathlib import Path
 from typing import Optional
 
@@ -19,7 +20,7 @@ from .natural_language_desktop import NaturalLanguageDesktopGenerator
 def get_gemini_api_key() -> Optional[str]:
     """Get Gemini API key from user input or environment."""
     # Try environment variable first
-    api_key = os.getenv("GEMINI_API_KEY")
+    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
     if api_key:
         return api_key
     
@@ -41,6 +42,84 @@ def get_gemini_api_key() -> Optional[str]:
         return None
 
 
+def save_api_key_to_config(api_key: str) -> bool:
+    """Save API key to the stableagents configuration."""
+    try:
+        config_dir = os.path.expanduser("~/.stableagents")
+        os.makedirs(config_dir, exist_ok=True)
+        
+        config_file = os.path.join(config_dir, "api_keys.json")
+        
+        # Load existing config or create new one
+        if os.path.exists(config_file):
+            with open(config_file, 'r') as f:
+                config = json.load(f)
+        else:
+            config = {}
+        
+        # Update with new API key
+        config["gemini"] = api_key
+        config["active_provider"] = "google"  # Set as active provider
+        
+        # Save updated config
+        with open(config_file, 'w') as f:
+            json.dump(config, f, indent=2)
+        
+        print("✅ API key saved to configuration")
+        return True
+        
+    except Exception as e:
+        print(f"⚠️ Could not save API key to config: {e}")
+        return False
+
+
+def check_and_setup_api_key() -> Optional[str]:
+    """Check if API key is available and working, prompt for new one if needed."""
+    print("🔍 Checking API key...")
+    
+    # Try to get existing API key
+    api_key = get_gemini_api_key()
+    if not api_key:
+        print("❌ No API key found")
+        return None
+    
+    # Test the API key by trying to initialize the generator
+    try:
+        print("🧪 Testing API key...")
+        generator = NaturalLanguageDesktopGenerator(api_key)
+        
+        # Try a simple test call
+        test_response = generator.gemini.generate_text("Hello")
+        if test_response and not test_response.startswith("Error:"):
+            print("✅ API key is working!")
+            
+            # Try a more complex test to ensure it works for app generation
+            print("🧪 Testing app generation capability...")
+            complex_test = generator.gemini.generate_text("Create a simple Python function that adds two numbers")
+            if complex_test and not complex_test.startswith("Error:"):
+                print("✅ API key supports app generation!")
+                return api_key
+            else:
+                print("❌ API key works for simple calls but fails for complex generation")
+                raise ValueError("API key has limited capabilities")
+        else:
+            print("❌ API key test failed")
+            raise ValueError("API key test failed")
+            
+    except Exception as e:
+        print(f"❌ API key error: {str(e)}")
+        print("\n🔄 Let's set up a new API key...")
+        
+        # Prompt for new API key
+        new_api_key = get_gemini_api_key()
+        if new_api_key:
+            # Save to config
+            save_api_key_to_config(new_api_key)
+            return new_api_key
+        else:
+            return None
+
+
 def create_app_interactive() -> bool:
     """Interactive app creation with enhanced Gemini integration."""
     print("\n🚀 Natural Language Desktop App Generator")
@@ -48,9 +127,15 @@ def create_app_interactive() -> bool:
     print("Create beautiful desktop applications using natural language and Google Gemini AI!")
     print()
     
+    # Check and setup API key
+    api_key = check_and_setup_api_key()
+    if not api_key:
+        print("❌ Cannot proceed without a valid API key")
+        return False
+    
     try:
-        # Initialize the generator
-        generator = NaturalLanguageDesktopGenerator()
+        # Initialize the generator with the verified API key
+        generator = NaturalLanguageDesktopGenerator(api_key)
         print("✅ Gemini AI initialized successfully!")
         
         # Get app description
@@ -110,8 +195,14 @@ def create_enhanced_demo_app() -> bool:
     print("=" * 40)
     print("Creating a comprehensive demo showcasing Natural Language Desktop capabilities...")
     
+    # Check and setup API key
+    api_key = check_and_setup_api_key()
+    if not api_key:
+        print("❌ Cannot proceed without a valid API key")
+        return False
+    
     try:
-        generator = NaturalLanguageDesktopGenerator()
+        generator = NaturalLanguageDesktopGenerator(api_key)
         
         # Create the demo app
         result = generator.create_interactive_demo()
@@ -142,8 +233,27 @@ def list_frameworks() -> bool:
     print("🎨 Supported UI Frameworks")
     print("=" * 40)
     
-    generator = NaturalLanguageDesktopGenerator()
-    framework_descriptions = generator.get_framework_descriptions()
+    try:
+        # Try to initialize generator, but don't fail if API key is missing
+        api_key = get_gemini_api_key()
+        if api_key:
+            generator = NaturalLanguageDesktopGenerator(api_key)
+            framework_descriptions = generator.get_framework_descriptions()
+        else:
+            # Fallback to hardcoded list if no API key
+            framework_descriptions = [
+                "customtkinter - Modern, beautiful UI with dark mode support",
+                "tkinter - Standard Python GUI framework", 
+                "pyqt - Professional Qt-based framework"
+            ]
+    except Exception as e:
+        print(f"⚠️ Could not initialize generator: {e}")
+        # Fallback to hardcoded list
+        framework_descriptions = [
+            "customtkinter - Modern, beautiful UI with dark mode support",
+            "tkinter - Standard Python GUI framework",
+            "pyqt - Professional Qt-based framework"
+        ]
     
     for i, description in enumerate(framework_descriptions, 1):
         print(f"\n{i}. {description}")
@@ -178,8 +288,59 @@ def _select_framework(generator) -> str:
 
 def show_setup_instructions() -> bool:
     """Show setup instructions."""
-    generator = NaturalLanguageDesktopGenerator()
-    print(generator.get_setup_instructions())
+    try:
+        api_key = get_gemini_api_key()
+        if api_key:
+            generator = NaturalLanguageDesktopGenerator(api_key)
+            print(generator.get_setup_instructions())
+        else:
+            # Show basic setup instructions without generator
+            print("""
+🔧 Natural Language Desktop Generator Setup
+==========================================
+
+📋 Prerequisites:
+1. Python 3.8 or higher
+2. Google Gemini API key
+3. Internet connection
+
+🔑 Getting a Gemini API Key:
+1. Go to: https://makersuite.google.com/app/apikey
+2. Sign in with your Google account
+3. Click 'Create API Key'
+4. Copy the API key
+
+🚀 Setting up the API Key:
+
+Option 1: Environment Variable (Recommended)
+```bash
+export GEMINI_API_KEY="your-api-key-here"
+```
+
+Option 2: Interactive Setup
+Run the CLI and it will prompt you for the API key automatically.
+
+Option 3: Manual Configuration
+Edit ~/.stableagents/api_keys.json and add:
+{
+  "gemini": "your-api-key-here",
+  "active_provider": "google"
+}
+
+📦 Installation:
+```bash
+pip install stableagents
+```
+
+🎯 Usage:
+```bash
+python -m stableagents.cli natural-desktop create
+```
+            """)
+    except Exception as e:
+        print(f"⚠️ Could not load setup instructions: {e}")
+        print("Please check your API key configuration.")
+    
     return True
 
 
@@ -190,8 +351,14 @@ def generate_code_interactive() -> bool:
     print("Generate specific UI components or functionality using natural language!")
     print()
     
+    # Check and setup API key
+    api_key = check_and_setup_api_key()
+    if not api_key:
+        print("❌ Cannot proceed without a valid API key")
+        return False
+    
     try:
-        generator = NaturalLanguageDesktopGenerator()
+        generator = NaturalLanguageDesktopGenerator(api_key)
         
         # Get code prompt
         print("📝 Describe the UI component or functionality you want to generate:")

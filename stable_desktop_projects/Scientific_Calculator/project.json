@@ -1,0 +1,7 @@
+{
+  "name": "Scientific Calculator",
+  "description": "\n        Create a modern scientific calculator with the following features:\n        - Basic arithmetic operations (+, -, *, /)\n        - Scientific functions (sin, cos, tan, log, sqrt, power)\n        - Memory functions (M+, M-, MR, MC)\n        - History of calculations\n        - Dark mode toggle\n        - Responsive design with CustomTkinter\n        - Error handling for invalid operations\n        - Clear and intuitive user interface\n        ",
+  "framework": "customtkinter",
+  "generated_by": "StableAgents Natural Language Desktop Generator",
+  "version": "1.0.0"
+}
