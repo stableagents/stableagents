@@ -2,16 +2,16 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="scientific-calculator",
+    name="youtube",
     version="1.0.0",
-    description="make a scientifc calculator",
+    description="I want to create a simple web browser that can ope up a youtube page",
     packages=find_packages(),
     install_requires=[
         "customtkinter>=5.2.0"
     ],
     entry_points={
         'console_scripts': [
-            'scientific-calculator=main:main',
+            'youtube=main:main',
         ],
     },
 )

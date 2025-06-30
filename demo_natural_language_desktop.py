@@ -63,11 +63,11 @@ def demo_basic_functionality():
         print("✅ Generator initialized successfully")
         
         # List supported frameworks
-        frameworks = generator.list_supported_frameworks()
+        frameworks = generator.list_frameworks()
+        descriptions = generator.get_framework_descriptions()
         print(f"✅ Found {len(frameworks)} supported frameworks:")
-        for framework in frameworks:
-            status = "⭐ RECOMMENDED" if framework["recommended"] else ""
-            print(f"   - {framework['display_name']} {status}")
+        for name, desc in zip(frameworks, descriptions):
+            print(f"   - {name}: {desc}")
         
         # Show setup instructions
         instructions = generator.get_setup_instructions()
@@ -91,7 +91,7 @@ def demo_with_api_key(api_key):
         generator = NaturalLanguageDesktopGenerator(api_key)
         print("✅ Generator initialized with API key")
         
-        if not generator.gemini_provider or not generator.gemini_provider.available:
+        if not generator.gemini or not generator.gemini.available:
             print("❌ Gemini provider not available")
             return False
         

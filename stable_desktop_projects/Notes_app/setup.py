@@ -2,16 +2,16 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="scientific-calculator",
+    name="notes-app",
     version="1.0.0",
-    description="make a scientifc calculator",
+    description="Create a sleek and modern notes app",
     packages=find_packages(),
     install_requires=[
         "customtkinter>=5.2.0"
     ],
     entry_points={
         'console_scripts': [
-            'scientific-calculator=main:main',
+            'notes-app=main:main',
         ],
     },
 )

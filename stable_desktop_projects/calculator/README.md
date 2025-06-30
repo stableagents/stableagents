@@ -1,9 +1,9 @@
-# Scientific Calculator
+# calculator
 
 A desktop application generated from natural language description.
 
 ## Description
-make a scientifc calculator
+its a modern calculator with multiple colors and a modern desktop icon
 
 ## Framework
 Built with customtkinter

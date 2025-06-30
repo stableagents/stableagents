@@ -1,9 +1,9 @@
-# Scientific Calculator
+# Notes app
 
 A desktop application generated from natural language description.
 
 ## Description
-make a scientifc calculator
+Create a sleek and modern notes app
 
 ## Framework
 Built with customtkinter

@@ -253,6 +253,9 @@ class NaturalLanguageDesktopGenerator:
         """Write the generated code to the project."""
         main_file = project_path / "main.py"
         
+        # Clean up markdown formatting if present
+        code = self._clean_markdown_formatting(code)
+        
         # Check if the code looks like valid Python (not an error message)
         if code.startswith("Error:") or code.startswith("❌") or "INVALID_ARGUMENT" in code:
             print(f"❌ Error: Generated code contains an error message:")
@@ -270,6 +273,26 @@ class NaturalLanguageDesktopGenerator:
             f.write(code)
         
         print(f"📄 Main app code written to: {main_file}")
+    
+    def _clean_markdown_formatting(self, code: str) -> str:
+        """Remove markdown formatting from generated code."""
+        # Remove markdown code block markers
+        lines = code.split('\n')
+        cleaned_lines = []
+        
+        for line in lines:
+            # Skip markdown code block markers
+            if line.strip() in ['```python', '```', '```py']:
+                continue
+            cleaned_lines.append(line)
+        
+        # Join lines back together
+        cleaned_code = '\n'.join(cleaned_lines)
+        
+        # Remove any leading/trailing whitespace
+        cleaned_code = cleaned_code.strip()
+        
+        return cleaned_code
     
     def _create_project_files(self, project_path: Path, app_name: str, description: str, framework: str):
         """Create additional project files (README, requirements, etc.)."""
@@ -582,10 +605,10 @@ stableagents-ai natural-desktop frameworks
         - Event handlers and functionality
         - Main function with proper entry point
         
-        Return only the complete, runnable Python code. No explanations or markdown formatting.
+        IMPORTANT: Return ONLY the complete, runnable Python code. Do NOT include any markdown formatting, code blocks, or explanations. Start directly with the import statements and end with the main() function call.
         """
         
-        return self.gemini.generate_text(prompt, model="gemini-2.5-flash", max_tokens=2000)
+        return self.gemini.generate_text(prompt, model="gemini-2.5-pro", max_tokens=2000)
     
     def _generate_enhanced_tkinter_code(self, description: str, app_name: str) -> str:
         """Generate enhanced Tkinter application code."""
@@ -614,10 +637,10 @@ stableagents-ai natural-desktop frameworks
         - Event handlers and functionality
         - Main function with proper entry point
         
-        Return only the complete, runnable Python code. No explanations or markdown formatting.
+        IMPORTANT: Return ONLY the complete, runnable Python code. Do NOT include any markdown formatting, code blocks, or explanations. Start directly with the import statements and end with the main() function call.
         """
         
-        return self.gemini.generate_text(prompt, model="gemini-2.5-flash", max_tokens=2000)
+        return self.gemini.generate_text(prompt, model="gemini-2.5-pro", max_tokens=2000)
     
     def _generate_enhanced_pyqt_code(self, description: str, app_name: str) -> str:
         """Generate enhanced PyQt application code."""
@@ -646,10 +669,10 @@ stableagents-ai natural-desktop frameworks
         - Event handlers and functionality
         - Main function with QApplication
         
-        Return only the complete, runnable Python code. No explanations or markdown formatting.
+        IMPORTANT: Return ONLY the complete, runnable Python code. Do NOT include any markdown formatting, code blocks, or explanations. Start directly with the import statements and end with the main() function call.
         """
         
-        return self.gemini.generate_text(prompt, model="gemini-2.5-flash", max_tokens=2000)
+        return self.gemini.generate_text(prompt, model="gemini-2.5-pro", max_tokens=2000)
     
     def generate_code_from_prompt(self, prompt: str, framework: str = "customtkinter") -> str:
         """Generate specific UI code from a prompt."""

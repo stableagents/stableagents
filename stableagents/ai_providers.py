@@ -489,76 +489,24 @@ class GoogleProvider(AIProvider):
         super().__init__(api_key)
         self.client = None
         self.available = False
-        self.available_models = []
-        
-        # Set the environment variable for the new client
+        self.available_models = None  # Lazy load
         os.environ["GEMINI_API_KEY"] = api_key
-        
-        # Try to initialize Google Generative AI with newer client
         try:
             from google import genai
             self.client = genai.Client()
             self.available = True
             self.logger.info("✅ Google Gemini API initialized successfully with new client")
-            
-            # Get available models
-            try:
-                self.logger.info("🔍 Listing available models...")
-                # List available models
-                models = self.client.models.list()
-                self.available_models = [model.name for model in models]
-                self.logger.info(f"📋 Available models ({len(self.available_models)}): {self.available_models}")
-                
-                # Filter out embedding models from the list
-                text_models = [model for model in self.available_models 
-                             if not any(embedding_keyword in model.lower() 
-                                      for embedding_keyword in ["embedding", "gecko", "textembedding"])]
-                self.logger.info(f"🤖 Text generation models ({len(text_models)}): {text_models}")
-                
-                # Update available_models to only include text generation models
-                self.available_models = text_models
-                
-            except Exception as e:
-                self.logger.warning(f"⚠️ Could not list models: {e}")
-                # Use default models if listing fails
-                self.available_models = ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-pro", "gemini-1.5-flash", "gemini-pro"]
-                self.logger.info(f"📋 Using default models: {self.available_models}")
-                
         except ImportError:
-            # Fallback to older library if new one not available
             try:
                 import google.generativeai as genai
                 genai.configure(api_key=api_key)
                 self.client = genai
                 self.available = True
                 self.logger.info("✅ Google Gemini API initialized with legacy client")
-                
-                # Get available models
-                try:
-                    self.logger.info("🔍 Listing available models (legacy)...")
-                    self.available_models = [model.name for model in genai.list_models()]
-                    self.logger.info(f"📋 Available models ({len(self.available_models)}): {self.available_models}")
-                    
-                    # Filter out embedding models from the list
-                    text_models = [model for model in self.available_models 
-                                 if not any(embedding_keyword in model.lower() 
-                                          for embedding_keyword in ["embedding", "gecko", "textembedding"])]
-                    self.logger.info(f"🤖 Text generation models ({len(text_models)}): {text_models}")
-                    
-                    # Update available_models to only include text generation models
-                    self.available_models = text_models
-                    
-                except Exception as e:
-                    self.logger.warning(f"⚠️ Could not list models: {e}")
-                    # Use default models if listing fails
-                    self.available_models = ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-pro", "gemini-1.5-flash", "gemini-pro"]
-                    self.logger.info(f"📋 Using default models: {self.available_models}")
-                    
             except ImportError:
                 self.logger.error("❌ Google Generative AI not available. Install with: pip install google-generativeai")
         except Exception as e:
             self.logger.error(f"❌ Error initializing Google Gemini: {str(e)}")
-            # Try fallback to legacy client
             try:
                 import google.generativeai as genai
                 genai.configure(api_key=api_key)
@@ -568,8 +516,31 @@ class GoogleProvider(AIProvider):
             except Exception as e2:
                 self.logger.error(f"❌ Legacy client also failed: {str(e2)}")
     
+    def _ensure_models_loaded(self):
+        if self.available_models is not None:
+            return
+        self.logger.info("🔍 Lazy loading available models...")
+        try:
+            if hasattr(self.client, 'models'):
+                models = self.client.models.list()
+                self.available_models = [model.name for model in models]
+            else:
+                self.available_models = [model.name for model in self.client.list_models()]
+            # Filter out embedding models
+            text_models = [model for model in self.available_models 
+                         if not any(embedding_keyword in model.lower() 
+                                  for embedding_keyword in ["embedding", "gecko", "textembedding"])]
+            self.available_models = text_models
+            self.logger.info(f"📋 Available models ({len(self.available_models)}): {self.available_models}")
+        except Exception as e:
+            self.logger.warning(f"⚠️ Could not list models: {e}")
+            self.available_models = [
+                "gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-pro", "gemini-1.5-flash", "gemini-pro"
+            ]
+            self.logger.info(f"📋 Using default models: {self.available_models}")
+
     def _get_available_model(self, preferred_model: str = None) -> str:
-        """Get an available model, falling back to alternatives if needed."""
+        self._ensure_models_loaded()
         # Define model preferences in order (newer models first) - TEXT GENERATION MODELS ONLY
         # Updated to prioritize gemini-2.5-pro since that's what's available
         text_generation_models = [
@@ -647,10 +618,6 @@ class GoogleProvider(AIProvider):
         self.logger.info(f"✅ Using default model: {final_model}")
         return final_model
     
-    def _is_new_client(self) -> bool:
-        """Check if we're using the new genai client."""
-        return hasattr(self.client, 'models')
-        
     def generate_text(self, prompt: str, **kwargs) -> str:
         """Generate text from a prompt using Google Gemini."""
         if not self.available or not self.client:
@@ -666,30 +633,13 @@ class GoogleProvider(AIProvider):
             self.logger.info(f"📝 Prompt length: {len(prompt)} characters")
             self.logger.info(f"🤖 Selected model: {model_name}")
             self.logger.info(f"⚙️ Parameters: max_tokens={max_tokens}, temperature={temperature}")
-            self.logger.info(f"🔧 Using new client: {self._is_new_client()}")
             
-            if self._is_new_client():
-                # Use new genai client
-                self.logger.info(f"🔄 Making API call to new client with model: {model_name}")
-                response = self.client.models.generate_content(
-                    model=model_name,
-                    contents=prompt
-                )
-                self.logger.info(f"✅ API call successful, response length: {len(response.text)} characters")
-                return response.text
-            else:
-                # Use legacy client
-                self.logger.info(f"🔄 Making API call to legacy client with model: {model_name}")
-                model = self.client.GenerativeModel(model_name)
-                response = model.generate_content(
-                    prompt,
-                    generation_config=self.client.types.GenerationConfig(
-                        max_output_tokens=max_tokens,
-                        temperature=temperature
-                    )
-                )
-                self.logger.info(f"✅ API call successful, response length: {len(response.text)} characters")
-                return response.text
+            response = self.client.models.generate_content(
+                model=model_name,
+                contents=prompt
+            )
+            self.logger.info(f"✅ API call successful, response length: {len(response.text)} characters")
+            return response.text
                 
         except Exception as e:
             self.logger.error(f"❌ Error generating text with Gemini: {str(e)}")
@@ -702,24 +652,12 @@ class GoogleProvider(AIProvider):
                     fallback_model = self._get_available_model("gemini-1.5-flash")
                     if fallback_model != model_name:
                         self.logger.info(f"🔄 Trying fallback model: {fallback_model}")
-                        if self._is_new_client():
-                            response = self.client.models.generate_content(
-                                model=fallback_model,
-                                contents=prompt
-                            )
-                            self.logger.info(f"✅ Fallback API call successful")
-                            return response.text
-                        else:
-                            model = self.client.GenerativeModel(fallback_model)
-                            response = model.generate_content(
-                                prompt,
-                                generation_config=self.client.types.GenerationConfig(
-                                    max_output_tokens=max_tokens,
-                                    temperature=temperature
-                                )
-                            )
-                            self.logger.info(f"✅ Fallback API call successful")
-                            return response.text
+                        response = self.client.models.generate_content(
+                            model=fallback_model,
+                            contents=prompt
+                        )
+                        self.logger.info(f"✅ Fallback API call successful")
+                        return response.text
                 except Exception as e2:
                     self.logger.error(f"❌ Fallback model also failed: {str(e2)}")
             
@@ -738,53 +676,11 @@ class GoogleProvider(AIProvider):
             
             self.logger.info(f"Using model for chat: {model_name}")
             
-            if self._is_new_client():
-                # Use new genai client for chat
-                # Convert messages to the format expected by new client
-                contents = []
-                for message in messages:
-                    role = message.get("role", "").lower()
-                    content = message.get("content", "")
-                    if role in ["user", "assistant"]:
-                        contents.append({
-                            "role": role,
-                            "parts": [{"text": content}]
-                        })
-                
-                response = self.client.models.generate_content(
-                    model=model_name,
-                    contents=contents
-                )
-                return response.text
-            else:
-                # Use legacy client
-                model = self.client.GenerativeModel(model_name)
-                chat = model.start_chat(history=[])
-                
-                # Convert messages to Gemini format
-                for message in messages:
-                    role = message.get("role", "").lower()
-                    content = message.get("content", "")
-                    
-                    if role == "user":
-                        # Send user message
-                        response = chat.send_message(content)
-                    elif role == "assistant":
-                        # Add assistant response to history
-                        chat.history.append({
-                            "role": "user",
-                            "parts": [content]
-                        })
-                    elif role == "system":
-                        # System messages are typically handled differently
-                        # For Gemini, we can prepend to the first user message
-                        continue
-                
-                # Get the last response
-                if chat.history:
-                    return chat.history[-1]["parts"][0]
-                else:
-                    return "No response generated"
+            response = self.client.models.generate_content(
+                model=model_name,
+                contents=messages
+            )
+            return response.text
                 
         except Exception as e:
             self.logger.error(f"Error generating chat with Gemini: {str(e)}")
@@ -807,26 +703,18 @@ class GoogleProvider(AIProvider):
             
             model_name = self._get_available_model("gemini-1.5-pro")
             
-            if self._is_new_client():
-                # Use new genai client for audio transcription
-                response = self.client.models.generate_content(
-                    model=model_name,
-                    contents=[{
-                        "parts": [{
-                            "inline_data": {
-                                "mime_type": "audio/wav",
-                                "data": audio_data
-                            }
-                        }]
+            response = self.client.models.generate_content(
+                model=model_name,
+                contents=[{
+                    "parts": [{
+                        "inline_data": {
+                            "mime_type": "audio/wav",
+                            "data": audio_data
+                        }
                     }]
-                )
-                return response.text
-            else:
-                # Use legacy client
-                model = self.client.GenerativeModel(model_name)
-                audio_part = self.client.types.Part.from_data(audio_data, mime_type="audio/wav")
-                response = model.generate_content([audio_part])
-                return response.text
+                }]
+            )
+            return response.text
             
         except Exception as e:
             self.logger.error(f"Error transcribing audio with Gemini: {str(e)}")

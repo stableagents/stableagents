@@ -1,6 +1,6 @@
 {
-  "name": "Scientific Calculator",
-  "description": "make a scientifc calculator",
+  "name": "calculator",
+  "description": "its a modern calculator with multiple colors and a modern desktop icon",
   "framework": "customtkinter",
   "generated_by": "StableAgents Natural Language Desktop Generator",
   "version": "1.0.0"

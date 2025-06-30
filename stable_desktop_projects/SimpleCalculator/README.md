@@ -1,9 +1,16 @@
-# Scientific Calculator
+# SimpleCalculator
 
 A desktop application generated from natural language description.
 
 ## Description
-make a scientifc calculator
+
+        Create a simple calculator application with:
+        - Modern UI with dark/light mode toggle
+        - Basic arithmetic operations (add, subtract, multiply, divide)
+        - Clear and equals buttons
+        - Number display
+        - Responsive design
+        
 
 ## Framework
 Built with customtkinter

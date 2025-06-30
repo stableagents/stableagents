@@ -1,12 +1,12 @@
-# Scientific Calculator
+# email
 
 A desktop application generated from natural language description.
 
 ## Description
-make a scientifc calculator
+Create a simple email app
 
 ## Framework
-Built with customtkinter
+Built with pyqt
 
 ## Installation
 ```bash
@@ -20,5 +20,5 @@ python main.py
 
 ## Features
 - Generated from natural language description
-- Modern UI with customtkinter
+- Modern UI with pyqt
 - Cross-platform compatibility

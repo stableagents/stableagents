@@ -1,12 +1,12 @@
-# Scientific Calculator
+# web browser
 
 A desktop application generated from natural language description.
 
 ## Description
-make a scientifc calculator
+I want to create a new type of browser
 
 ## Framework
-Built with customtkinter
+Built with pyqt
 
 ## Installation
 ```bash
@@ -20,5 +20,5 @@ python main.py
 
 ## Features
 - Generated from natural language description
-- Modern UI with customtkinter
+- Modern UI with pyqt
 - Cross-platform compatibility

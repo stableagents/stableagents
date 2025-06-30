@@ -1,6 +1,6 @@
 {
-  "name": "Scientific Calculator",
-  "description": "make a scientifc calculator",
+  "name": "youtube",
+  "description": "I want to create a simple web browser that can ope up a youtube page",
   "framework": "customtkinter",
   "generated_by": "StableAgents Natural Language Desktop Generator",
   "version": "1.0.0"

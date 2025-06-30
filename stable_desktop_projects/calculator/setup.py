@@ -2,16 +2,16 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="scientific-calculator",
+    name="calculator",
     version="1.0.0",
-    description="make a scientifc calculator",
+    description="its a modern calculator with multiple colors and a modern desktop icon",
     packages=find_packages(),
     install_requires=[
         "customtkinter>=5.2.0"
     ],
     entry_points={
         'console_scripts': [
-            'scientific-calculator=main:main',
+            'calculator=main:main',
         ],
     },
 )

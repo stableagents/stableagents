@@ -1,9 +1,9 @@
-# Scientific Calculator
+# youtube
 
 A desktop application generated from natural language description.
 
 ## Description
-make a scientifc calculator
+I want to create a simple web browser that can ope up a youtube page
 
 ## Framework
 Built with customtkinter
