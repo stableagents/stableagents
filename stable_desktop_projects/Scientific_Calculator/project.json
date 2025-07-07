@@ -1,7 +1,0 @@
-{
-  "name": "Scientific Calculator",
-  "description": "make a scientifc calculator",
-  "framework": "customtkinter",
-  "generated_by": "StableAgents Natural Language Desktop Generator",
-  "version": "1.0.0"
-}

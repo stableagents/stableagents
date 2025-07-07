@@ -1,7 +1,0 @@
-{
-  "name": "email",
-  "description": "Create a simple email app",
-  "framework": "pyqt",
-  "generated_by": "StableAgents Natural Language Desktop Generator",
-  "version": "1.0.0"
-}

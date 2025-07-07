@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StableAgents Desktop App Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            font-family: 'Courier New', monospace;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <i class="fas fa-robot text-2xl mr-3"></i>
+                    <h1 class="text-2xl font-bold">StableAgents</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="apiKeyBtn" class="bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-key mr-2"></i>API Key
+                    </button>
+                    <button id="healthBtn" class="bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-heartbeat mr-2"></i>Health
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h2 class="text-4xl font-bold text-gray-900 mb-4">
+                Desktop App Generator
+            </h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Create beautiful desktop applications using natural language descriptions and Google Gemini AI. 
+                No coding required - just describe what you want!
+            </p>
+        </div>
+
+        <!-- Main Generator Form -->
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Input Section -->
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6">
+                        <i class="fas fa-magic mr-3 text-purple-600"></i>
+                        Describe Your App
+                    </h3>
+                    
+                    <form id="appGeneratorForm" class="space-y-6">
+                        <div>
+                            <label for="appDescription" class="block text-sm font-medium text-gray-700 mb-2">
+                                App Description
+                            </label>
+                            <textarea 
+                                id="appDescription" 
+                                name="description"
+                                rows="6"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                                placeholder="Describe your desktop application in detail. For example:&#10;&#10;Create a modern calculator with:&#10;- Scientific functions (sin, cos, tan, log, sqrt)&#10;- Memory functions (store, recall, clear)&#10;- Dark/light mode toggle&#10;- History of calculations&#10;- Beautiful modern UI with CustomTkinter"
+                                required
+                            ></textarea>
+                        </div>
+
+                        <div>
+                            <label for="appName" class="block text-sm font-medium text-gray-700 mb-2">
+                                App Name (Optional)
+                            </label>
+                            <input 
+                                type="text" 
+                                id="appName" 
+                                name="appName"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="e.g., SmartCalculator, TaskManager, FileExplorer"
+                            >
+                        </div>
+
+                        <div>
+                            <label for="uiFramework" class="block text-sm font-medium text-gray-700 mb-2">
+                                UI Framework
+                            </label>
+                            <select 
+                                id="uiFramework" 
+                                name="uiFramework"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            >
+                                <option value="customtkinter">CustomTkinter (Recommended)</option>
+                                <option value="tkinter">Tkinter</option>
+                                <option value="pyqt">PyQt</option>
+                            </select>
+                        </div>
+
+                        <button 
+                            type="submit"
+                            id="generateBtn"
+                            class="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 transform hover:scale-105"
+                        >
+                            <i class="fas fa-rocket mr-2"></i>
+                            Generate Desktop App
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Preview Section -->
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6">
+                        <i class="fas fa-eye mr-3 text-blue-600"></i>
+                        Live Preview
+                    </h3>
+                    
+                    <div id="previewSection" class="space-y-6">
+                        <!-- Loading State -->
+                        <div id="loadingState" class="hidden">
+                            <div class="flex items-center justify-center py-12">
+                                <div class="text-center">
+                                    <div class="loading-spinner mx-auto mb-4"></div>
+                                    <p class="text-gray-600">Generating your desktop application...</p>
+                                    <p class="text-sm text-gray-500 mt-2">This may take a few moments</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Success State -->
+                        <div id="successState" class="hidden">
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+                                <div class="flex items-center mb-4">
+                                    <i class="fas fa-check-circle text-green-600 text-2xl mr-3"></i>
+                                    <h4 class="text-lg font-semibold text-green-800">App Generated Successfully!</h4>
+                                </div>
+                                <div id="appDetails" class="space-y-3">
+                                    <!-- App details will be populated here -->
+                                </div>
+                                <div class="mt-6 flex space-x-3">
+                                    <button id="runAppBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                        <i class="fas fa-play mr-2"></i>Run App
+                                    </button>
+                                    <button id="viewCodeBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                        <i class="fas fa-code mr-2"></i>View Code
+                                    </button>
+                                    <button id="downloadBtn" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                                        <i class="fas fa-download mr-2"></i>Download
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Error State -->
+                        <div id="errorState" class="hidden">
+                            <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+                                <div class="flex items-center mb-4">
+                                    <i class="fas fa-exclamation-circle text-red-600 text-2xl mr-3"></i>
+                                    <h4 class="text-lg font-semibold text-red-800">Generation Failed</h4>
+                                </div>
+                                <p id="errorMessage" class="text-red-700"></p>
+                                <button id="retryBtn" class="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+                                    <i class="fas fa-redo mr-2"></i>Try Again
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Default State -->
+                        <div id="defaultState">
+                            <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                <i class="fas fa-desktop text-4xl text-gray-400 mb-4"></i>
+                                <h4 class="text-lg font-semibold text-gray-600 mb-2">Ready to Generate</h4>
+                                <p class="text-gray-500">
+                                    Fill out the form on the left and click "Generate Desktop App" to create your application.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Features -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Code Generation -->
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                <div class="text-center">
+                    <i class="fas fa-code text-3xl text-blue-600 mb-4"></i>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Code Generation</h3>
+                    <p class="text-gray-600 mb-4">Generate specific UI components and code snippets</p>
+                    <button id="codeGenBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        Generate Code
+                    </button>
+                </div>
+            </div>
+
+            <!-- Project Management -->
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                <div class="text-center">
+                    <i class="fas fa-folder text-3xl text-green-600 mb-4"></i>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Project Management</h3>
+                    <p class="text-gray-600 mb-4">View and manage your generated applications</p>
+                    <button id="projectsBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        View Projects
+                    </button>
+                </div>
+            </div>
+
+            <!-- Framework Info -->
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                <div class="text-center">
+                    <i class="fas fa-cogs text-3xl text-purple-600 mb-4"></i>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Framework Info</h3>
+                    <p class="text-gray-600 mb-4">Learn about supported UI frameworks</p>
+                    <button id="frameworksBtn" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                        View Frameworks
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Projects -->
+        <div class="bg-white rounded-xl shadow-lg p-8">
+            <h3 class="text-2xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-history mr-3 text-gray-600"></i>
+                Recent Projects
+            </h3>
+            <div id="recentProjects" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Projects will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    
+    <!-- API Key Modal -->
+    <div id="apiKeyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Set API Key</h3>
+                <form id="apiKeyForm" class="space-y-4">
+                    <div>
+                        <label for="apiKeyInput" class="block text-sm font-medium text-gray-700 mb-2">
+                            Google Gemini API Key
+                        </label>
+                        <input 
+                            type="password" 
+                            id="apiKeyInput"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="Enter your Gemini API key"
+                            required
+                        >
+                    </div>
+                    <div class="flex space-x-3">
+                        <button type="submit" class="flex-1 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
+                            Save
+                        </button>
+                        <button type="button" id="closeApiKeyModal" class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Code Generation Modal -->
+    <div id="codeGenModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-xl font-bold text-gray-900">Generate Code</h3>
+                </div>
+                <div class="p-6">
+                    <form id="codeGenForm" class="space-y-4 mb-6">
+                        <div>
+                            <label for="codePrompt" class="block text-sm font-medium text-gray-700 mb-2">
+                                Code Description
+                            </label>
+                            <textarea 
+                                id="codePrompt"
+                                rows="4"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                                placeholder="Describe the code you want to generate..."
+                                required
+                            ></textarea>
+                        </div>
+                        <div>
+                            <label for="codeFramework" class="block text-sm font-medium text-gray-700 mb-2">
+                                Framework
+                            </label>
+                            <select 
+                                id="codeFramework"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            >
+                                <option value="customtkinter">CustomTkinter</option>
+                                <option value="tkinter">Tkinter</option>
+                                <option value="pyqt">PyQt</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                            Generate Code
+                        </button>
+                    </form>
+                    <div id="generatedCode" class="hidden">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-3">Generated Code:</h4>
+                        <pre id="codeOutput" class="code-block"></pre>
+                        <button id="copyCodeBtn" class="mt-4 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-copy mr-2"></i>Copy Code
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6 border-t border-gray-200">
+                    <button id="closeCodeGenModal" class="bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Projects Modal -->
+    <div id="projectsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-xl font-bold text-gray-900">Your Projects</h3>
+                </div>
+                <div class="p-6">
+                    <div id="projectsList" class="space-y-4">
+                        <!-- Projects will be loaded here -->
+                    </div>
+                </div>
+                <div class="p-6 border-t border-gray-200">
+                    <button id="closeProjectsModal" class="bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+</body>
+</html> 

@@ -1,7 +1,0 @@
-{
-  "name": "web browser",
-  "description": "I want to create a new type of browser",
-  "framework": "pyqt",
-  "generated_by": "StableAgents Natural Language Desktop Generator",
-  "version": "1.0.0"
-}

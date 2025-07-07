@@ -1,7 +1,0 @@
-{
-  "name": "SimpleCalculator",
-  "description": "\n        Create a simple calculator application with:\n        - Modern UI with dark/light mode toggle\n        - Basic arithmetic operations (add, subtract, multiply, divide)\n        - Clear and equals buttons\n        - Number display\n        - Responsive design\n        ",
-  "framework": "customtkinter",
-  "generated_by": "StableAgents Natural Language Desktop Generator",
-  "version": "1.0.0"
-}
